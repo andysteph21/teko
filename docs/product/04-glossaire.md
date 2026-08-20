@@ -1,0 +1,41 @@
+# Teko — Glossaire
+
+Terminologie partagée produit/design/dev. Accompagne `01-PRD.md`, `02-regles-metier.md`, `03-user-stories.md`.
+
+- **Teko** — Plateforme de transport de personnes à la demande pour le Gabon (MVP). Vision long terme : super-app de services urbains.
+- **Ride-hailing** — Transport de personnes à la demande (commande d'une course via app). Périmètre du MVP.
+- **Super-app** — Application multi-services (mobilité, livraison, déménagement, restauration, ambulance) décrite au cahier des charges client ; hors MVP.
+- **Client** — Utilisateur qui commande et paie une course.
+- **Chauffeur** — Prestataire qui réalise la course (voiture ou moto). Soumis au KYC et au solde journalier.
+- **Catégorie** — Type de service de course au MVP : **Éco** (voiture standard), **Moto-taxi**, **Confort** (haut de gamme). Le **Covoiturage** (partage entre passagers) est reporté en version future (décision du 18 août 2026).
+- **Course** — Trajet commandé, de la demande à l'évaluation. Voir cycle de vie (`02` §5).
+- **Course immédiate / programmée** — Pour tout de suite / réservée à une date-heure.
+- **Solde (journalier)** — Position financière du chauffeur vis-à-vis de Teko. **Négatif** = le chauffeur doit à Teko ; **positif** = Teko doit au chauffeur.
+- **Commission** — Part de Teko sur une course *(paramétrable : taux ou montant fixe)*.
+- **Règlement** — Versement du chauffeur à Teko pour solder une dette (solde négatif), via mobile money.
+- **Payout** — Décaissement de Teko vers un chauffeur au solde positif.
+- **Échéance (4h)** — Heure limite quotidienne de règlement du solde négatif ; au-delà, désactivation automatique.
+- **Désactivation / réactivation** — Blocage automatique pour impayé / déblocage immédiat au paiement.
+- **Mobile money** — Paiement mobile (rails d'encaissement, règlement et payout). MVP : **Airtel Money**. **Moov Money** : version future.
+- **OTP** — Code à usage unique envoyé par SMS pour l'authentification (via Supabase Auth).
+- **KYC** — Vérification d'identité/documents du chauffeur (CNI/passeport, permis, carte grise, assurance, photo véhicule, casier judiciaire) validée par l'admin.
+- **Code PIN** — Code donné par le client au chauffeur pour démarrer la course (anti-erreur d'appariement).
+- **No-show** — Le client ne se présente pas après l'arrivée du chauffeur ; **No-answer** — il ne répond pas. Déclenchent des frais d'annulation.
+- **SOS** — Alerte d'urgence pendant la course.
+- **Partage de trajet** — Lien de suivi temps réel envoyé à un proche.
+- **Carte custom** — Carte Teko = fond **OSM** + couche de routes Teko + couche de propositions issues du GPS + couche de **points de repère**.
+- **Point de repère (landmark)** — Lieu nommé et reconnaissable (station-service, rond-point, marché, église, école, bâtiment connu…) servant à situer un lieu et à guider, en l'absence d'adresses fiables. Collaboratif (proposé par chauffeurs/clients) et validé par l'admin.
+- **Saillance** — Score indiquant à quel point un repère est connu/visible ; sert à choisir le meilleur repère pour une instruction de guidage. Se renforce avec l'usage et la validation.
+- **Adressage par repère** — Définir un départ/une destination par rapport à un repère (+ précision « derrière », « à côté ») plutôt que par une adresse.
+- **Guidage par repères** — Instructions de navigation formulées avec des repères (« tournez à droite après la station-service »).
+- **Point de rendez-vous** — Repère connu proposé comme lieu de rencontre client↔chauffeur pour la prise en charge.
+- **Trace GPS** — Enregistrement (consenti, agrégé, anonymisé) du parcours d'un chauffeur, source des propositions de routes.
+- **Proposition de route** — Tracé candidat généré automatiquement, à **valider** ou **infirmer** par un admin (`proposé` → `validée`/`rejetée`).
+- **Zone** — Découpage géographique servant à l'ouverture du service, à la grille tarifaire de repli et aux seuils de couverture.
+- **Widget data** — Indicateur flottant de consommation journalière de données de l'app.
+- **Mode économie de données** — Réglage réduisant fréquence GPS et richesse cartographique pour limiter la consommation.
+- **Badge « Top Service »** — Distinction d'un chauffeur dont la note moyenne ≥ 4,5 (fenêtre glissante).
+- **Admin** — Personnel Teko : opérations, cartographie, finance (rôles cumulables, séparables par permissions).
+- **Supabase** — Backend (Auth, Postgres, Realtime, Edge Functions, stockage).
+- **Monorepo / Turborepo / pnpm** — Dépôt unique regroupant apps et packages partagés, outillé par Turborepo et le gestionnaire pnpm.
+- **Expo / React Native** — Cadre de développement des applications mobiles client et chauffeur.
