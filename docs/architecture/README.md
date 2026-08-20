@@ -13,6 +13,7 @@ Ce dossier décrit l'architecture technique de Teko, en s'appuyant sur la docume
 5. **[05-decisions-et-transverses.md](05-decisions-et-transverses.md)** — sobriété data & temps réel, sécurité, i18n, observabilité, déploiement/CI, registre de décisions (ADR) et questions ouvertes techniques.
 6. **[06-infra-cartographie.md](06-infra-cartographie.md)** — infrastructure carto self-hosted (`infra/`) : génération de tuiles (Planetiler/PMTiles), serveur Martin, routing Valhalla, pipeline de reconstruction, hors-ligne, hébergement.
 7. **[07-evaluation-stack.md](07-evaluation-stack.md)** — évaluation contradictoire de la stack (août 2026) : Supabase + Expo confirmés face aux alternatives (Firebase, backend custom, Flutter…), risques réels, garde-fous, seuils de réévaluation (ADR-12 à 14).
+8. **[08-ecarts-backend-ux.md](08-ecarts-backend-ux.md)** — confrontation backend ↔ 79 maquettes : couverture, écarts E-01→E-17 (dispatch/offres, jobs, suppression de compte, SOS, grants DML, garde `daily_close`…), vérifiés par les tests e2e (`supabase/tests/e2e/`).
 
 ## Synthèse des choix structurants
 
