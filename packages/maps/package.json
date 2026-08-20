@@ -1,0 +1,33 @@
+{
+  "name": "@teko/maps",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Abstraction carte Teko : style MapLibre depuis les design tokens, couches (repères, itinéraire, véhicules, client), adaptateur de données Supabase (repères, présence, positions temps réel), mode éco.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./web": "./src/web/controller.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --reporter=verbose",
+    "test:unit": "vitest run --reporter=verbose --exclude '**/*.integration.test.ts'",
+    "demo:build": "esbuild demo/demo.ts --bundle --format=iife --outfile=demo/dist/bundle.js --loader:.png=dataurl"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "catalog:"
+  },
+  "peerDependencies": {
+    "maplibre-gl": "catalog:"
+  },
+  "devDependencies": {
+    "@teko/config": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "esbuild": "catalog:",
+    "maplibre-gl": "catalog:",
+    "pg": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
