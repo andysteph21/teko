@@ -1,0 +1,8 @@
+{
+  "//": "tsconfig racine — sert au confort de l'éditeur. Chaque package/app étend un preset de @teko/config.",
+  "extends": "@teko/config/tsconfig/base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "exclude": ["node_modules", "dist", ".next", ".expo", ".turbo"]
+}

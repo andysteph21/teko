@@ -1,0 +1,26 @@
+{
+  "name": "teko",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Teko — super-app de services urbains au Gabon (MVP ride-hailing). Monorepo.",
+  "packageManager": "pnpm@10.17.0",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "dev": "turbo run dev",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml}\""
+  },
+  "devDependencies": {
+    "prettier": "catalog:",
+    "turbo": "^2.7.0",
+    "typescript": "catalog:"
+  }
+}

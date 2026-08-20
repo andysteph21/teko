@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig/base.json",
+  "compilerOptions": {
+    "checkJs": false,
+    "noEmit": true
+  },
+  "include": ["eslint", "prettier"],
+  "exclude": ["node_modules"]
+}

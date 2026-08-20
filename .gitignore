@@ -1,0 +1,36 @@
+# Dépendances
+node_modules/
+.pnp.*
+
+# Templates Taxido achetés — référence seule (104 Mo, non versionnés ; cf. docs/product/05-questions-ouvertes.md)
+templates/
+
+# Build / sorties
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Turborepo
+.turbo/
+
+# Next.js
+.next/
+out/
+
+# Expo / React Native
+.expo/
+*.expo/
+web-build/
+android/app/build/
+ios/Pods/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Logs & divers
+*.log
+npm-debug.log*
+.DS_Store

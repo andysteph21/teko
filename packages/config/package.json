@@ -1,0 +1,36 @@
+{
+  "name": "@teko/config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Configurations partagées (TypeScript, ESLint, Prettier) du monorepo Teko.",
+  "type": "module",
+  "exports": {
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/nextjs.json": "./tsconfig/nextjs.json",
+    "./tsconfig/react-native.json": "./tsconfig/react-native.json",
+    "./tsconfig/react-library.json": "./tsconfig/react-library.json",
+    "./eslint": "./eslint/base.js",
+    "./eslint/next": "./eslint/next.js",
+    "./eslint/react-native": "./eslint/react-native.js",
+    "./prettier": "./prettier/index.js"
+  },
+  "files": [
+    "tsconfig",
+    "eslint",
+    "prettier"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@eslint/js": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "prettier": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

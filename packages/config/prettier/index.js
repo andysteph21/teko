@@ -1,0 +1,12 @@
+// Config Prettier partagée du monorepo Teko.
+/** @type {import("prettier").Config} */
+export default {
+  semi: true,
+  singleQuote: false,
+  printWidth: 100,
+  tabWidth: 2,
+  trailingComma: "all",
+  bracketSpacing: true,
+  arrowParens: "always",
+  endOfLine: "lf",
+};

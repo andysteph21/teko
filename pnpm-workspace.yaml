@@ -1,0 +1,19 @@
+# Espaces de travail du monorepo Teko.
+# Les apps (Expo client/chauffeur, admin Next.js) et les packages partagés.
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Catalogs : versions partagées et figées, référencées via "catalog:" dans les
+# package.json. Source unique de vérité pour les dépendances transverses.
+catalog:
+  # Langage & types
+  typescript: ^5.6.0
+  "@types/node": ^22.0.0
+
+  # Lint & format
+  eslint: ^9.9.0
+  "@eslint/js": ^9.9.0
+  typescript-eslint: ^8.8.0
+  eslint-config-prettier: ^9.1.0
+  prettier: ^3.3.0
