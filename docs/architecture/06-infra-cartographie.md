@@ -2,6 +2,8 @@
 
 **Décision (5 juin 2026) :** **self-hosted dès le jour 1** pour le rendu (tuiles) **et** le routing, en version **lean** (extract Gabon). Offre managée (MapTiler/Stadia) conservée uniquement en **repli d'urgence** (bascule par changement d'URL de style MapLibre). Remplace l'ancienne proposition ADR-10 « managé d'abord ».
 
+> **Implémenté le 20 août 2026** dans [`infra/`](../../infra/README.md) et vérifié de bout en bout en local : extract Gabon (Geofabrik, 25 Mo) → conflation des `road_segments` validés (ids stables 10¹⁵+, tags `teko:segment`) → graphe Valhalla (route Libreville 3,2 km OK ; **map-matching qui emprunte une route Teko validée** en Supabase quelques minutes plus tôt) → fond PMTiles Planetiler → **Martin** servant fond + couches PostGIS **en direct depuis Supabase** (rôle `martin_tiles` lecture seule + RLS dédiée « validé/actif uniquement », accès `profiles` refusé). CI légère : `.github/workflows/carto-ci.yml`. Pièges consignés dans `infra/` : interpolation `${VAR}` de Martin (non guillemetée), `search_path` extensions pour PostGIS, `id_column` refusé sur uuid, grant `spatial_ref_sys`.
+
 > Pourquoi pas managé pour les tuiles : (1) Valhalla est de toute façon self-hosted (pipeline OSM déjà en place) ; (2) l'extract Gabon est petit (génération en minutes) ; (3) **Martin** sert d'un seul tenant le fond PMTiles **et** les couches dynamiques PostGIS ; (4) sobriété data + **paquets hors-ligne** prioritaires ; (5) coût d'infra prévisible vs facturation par chargement.
 
 ---

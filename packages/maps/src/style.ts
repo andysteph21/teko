@@ -45,15 +45,35 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
 
   if (!eco && opts.tilesUrl) {
     sources["basemap"] = { type: "vector", url: opts.tilesUrl };
-    // Le détail des couches du fond vit dans le style Martin ; ici on ne pose
-    // que la voirie minimale pour que la carte reste lisible sans style complet.
-    layers.push({
-      id: "basemap-roads",
-      type: "line",
-      source: "basemap",
-      "source-layer": "transportation",
-      paint: { "line-color": MAP_COLORS.road, "line-width": 2 },
-    });
+    // Fond minimal lisible sur le schéma OpenMapTiles (Planetiler → Martin) :
+    // eau + voirie hiérarchisée, dans la palette des maquettes. Le style
+    // « plein » viendra avec la charte carto complète.
+    layers.push(
+      {
+        id: "basemap-water",
+        type: "fill",
+        source: "basemap",
+        "source-layer": "water",
+        paint: { "fill-color": "#CBD9EE" },
+      },
+      {
+        id: "basemap-roads-minor",
+        type: "line",
+        source: "basemap",
+        "source-layer": "transportation",
+        filter: ["!", ["in", ["get", "class"], ["literal", ["primary", "secondary", "trunk", "motorway"]]]],
+        paint: { "line-color": MAP_COLORS.road, "line-width": 1.5 },
+      },
+      {
+        id: "basemap-roads-major",
+        type: "line",
+        source: "basemap",
+        "source-layer": "transportation",
+        filter: ["in", ["get", "class"], ["literal", ["primary", "secondary", "trunk", "motorway"]]],
+        layout: { "line-cap": "round" },
+        paint: { "line-color": "#FFE3B3", "line-width": 4 },
+      },
+    );
   }
 
   layers.push(

@@ -27,7 +27,13 @@ const landmarks: LandmarkRow[] = [
 const origin = { lon: 9.4536, lat: 0.4032 }; // Pharmacie du Gros-Bouquet
 const dest = { lon: 9.4671, lat: 0.4148 }; // Lycée Léon Mba
 
-const map = new TekoMapController(document.getElementById("map")!, { eco: true });
+// Sans paramètre : mode éco autonome. Avec ?tiles=<url TileJSON Martin> :
+// mode normal sur le fond self-hosted (ex. ?tiles=http://127.0.0.1:3333/gabon).
+const tilesUrl = new URLSearchParams(location.search).get("tiles") ?? undefined;
+const map = new TekoMapController(document.getElementById("map")!, {
+  eco: !tilesUrl,
+  tilesUrl,
+});
 map.setLandmarks(landmarksToGeoJson(landmarks));
 map.setRoute([origin, { lon: 9.458, lat: 0.406 }, { lon: 9.463, lat: 0.409 }, dest]);
 map.setVehicles([{ id: "boris", lon: 9.4585, lat: 0.4068, bearing: 45 }]);
