@@ -2,6 +2,19 @@
 
 **Date :** 20 août 2026 · **Méthode :** chaque écran/parcours des maquettes (`../design/maquettes/`) a été confronté aux 24 tables, 41 fonctions SQL et politiques RLS des 15 migrations (`../../supabase/migrations/`). Ce document liste ce qui est couvert, puis les écarts classés par gravité. Les écarts sont des **migrations à écrire**, pas des refontes — le socle (ledger, RLS, machine à états course) tient.
 
+## ✔ Écarts comblés le 20 août 2026 (migrations 0016 → 0019)
+
+Tous les écarts base-de-données sont comblés et couverts par les tests (56 pgTAP + 52 e2e verts) :
+
+| Migration | Écarts | Contenu |
+|---|---|---|
+| `20260820100000_securite_grants` | **E-15, E-16** + failles d'audit | Grants DML aux rôles API (la RLS prend effet), `anon` désarmé, EXECUTE révoqué sur les fonctions internes (`set_service_mode`, `post_ledger`, `confirm_payment`…), garde `assert_admin_or_service` sur `daily_close` |
+| `20260820100100_dispatch_offres` | **E-01** | `driver_presence` (heartbeat), `ride_offers`, cascade au plus proche, `respond_offer`/`offer_details` (destination cachée — anti-écrémage), `accept_ride` re-branché sur l'offre, `expire_stale_offers` |
+| `20260820100200_compte_sos_favoris` | **E-04, E-05, E-06, E-08, E-09, E-10** | Suppression de compte (30 j + purge anonymisante), `trip_shares` (lien public à jeton), `incidents` (SOS/report/litiges + alerte ops), `saved_places`, `admin_invites` (réclamées à l'inscription), re-vérification d'inactivité |
+| `20260820100300_frais_jobs_validations` | **E-02, E-03, E-07, E-11, E-13, E-14, E-17** | Frais d'annulation max(fixe, %) + no-show au ledger, `validate_kyc`, `validate_road_proposal`, notification du proposant de repère, bucket `landmarks`, **pg_cron** (clôture 03:00 UTC, expiration d'offres 15 s, courses planifiées, rappels, purge) |
+
+Restent ouverts, hors périmètre base : **E-12** (activer l'OTP e-mail + choisir le fournisseur SMS — config Auth, question client n°21) et **R1** au registre des risques (signature du callback Airtel — Edge Function, lot 6). Le texte d'origine ci-dessous est conservé comme trace d'analyse.
+
 ## 1. Ce que le backend couvre déjà (conforme aux maquettes)
 
 | Domaine UX | Écrans | Support backend |
