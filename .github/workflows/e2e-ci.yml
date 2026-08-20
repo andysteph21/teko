@@ -1,0 +1,52 @@
+name: E2E CI
+
+# Tests end-to-end sur la stack Supabase locale (Docker) : utilisateurs seed
+# créés via l'API admin, actions jouées avec de vrais JWT à travers PostgREST
+# (RLS exercée comme en production), assertions sur la réaction de la base.
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/e2e-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/**"
+      - ".github/workflows/e2e-ci.yml"
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Stack complète (Auth, PostgREST, Realtime, Storage) + migrations + seed.
+      - name: Start Supabase
+        run: supabase start
+
+      - name: Exporter les clés locales (API_URL, ANON_KEY, SERVICE_ROLE_KEY, DB_URL)
+        run: supabase status -o env >> "$GITHUB_ENV"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Installer les dépendances de test
+        working-directory: supabase/tests/e2e
+        run: npm install
+
+      - name: Tests e2e
+        working-directory: supabase/tests/e2e
+        run: npm test
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop

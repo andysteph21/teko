@@ -1,0 +1,160 @@
+// Outils partagés des tests e2e.
+//
+// Deux canaux d'accès à la base, volontairement distincts :
+//  - supabase-js avec un vrai JWT utilisateur → exerce PostgREST + RLS + RPC
+//    exactement comme les apps le feront ;
+//  - connexion Postgres directe (rôle postgres) → seed privilégié et
+//    inspection de l'état, avec le GUC `teko.service = on` pour passer les
+//    gardes, comme le font les fonctions de service en production.
+
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
+import pg from "pg";
+
+const API_URL =
+  process.env.SUPABASE_URL ?? process.env.API_URL ?? "http://127.0.0.1:54321";
+const ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.ANON_KEY;
+const SERVICE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SERVICE_ROLE_KEY;
+const DB_URL =
+  process.env.SUPABASE_DB_URL ??
+  process.env.DB_URL ??
+  "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+
+if (!ANON_KEY || !SERVICE_KEY) {
+  throw new Error(
+    "ANON_KEY / SERVICE_ROLE_KEY absents. Lancez `supabase start` puis exportez `supabase status -o env`.",
+  );
+}
+
+export const admin = createClient(API_URL, SERVICE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+
+export const db = new pg.Pool({ connectionString: DB_URL, max: 3 });
+
+// Requête SQL en contexte service : gardes (`teko.service`) levées le temps
+// de la transaction, comme dans les fonctions SECURITY DEFINER de service.
+export async function serviceSql(text: string, params: unknown[] = []) {
+  const c = await db.connect();
+  try {
+    await c.query("begin");
+    await c.query("set local teko.service = 'on'");
+    const r = await c.query(text, params);
+    await c.query("commit");
+    return r;
+  } catch (e) {
+    await c.query("rollback");
+    throw e;
+  } finally {
+    c.release();
+  }
+}
+
+export interface TestUser {
+  id: string;
+  email: string;
+  client: SupabaseClient;
+}
+
+// Crée un utilisateur auth confirmé + session réelle (JWT anon + password).
+export async function createUser(
+  opts: {
+    role?: "client" | "driver" | "admin";
+    adminRole?: "ops" | "carto" | "finance" | "superadmin";
+    phone?: string;
+  } = {},
+): Promise<TestUser> {
+  const email = `e2e-${randomUUID()}@test.teko.ga`;
+  const password = "e2e-Passw0rd!";
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    ...(opts.phone ? { phone: opts.phone, phone_confirm: true } : {}),
+  });
+  if (error) throw error;
+  const id = data.user.id;
+
+  if (opts.role && opts.role !== "client") {
+    await serviceSql(
+      `update public.profiles
+          set role = $1::public.user_role,
+              admin_role = $2::public.admin_role
+        where id = $3`,
+      [opts.role, opts.adminRole ?? null, id],
+    );
+  }
+
+  const client = createClient(API_URL, ANON_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { error: signInError } = await client.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (signInError) throw signInError;
+  return { id, email, client };
+}
+
+// Chauffeur prêt à rouler : rôle driver + fiche drivers validée/active.
+export async function createDriver(
+  categories: string[] = ["eco"],
+): Promise<TestUser> {
+  const u = await createUser({ role: "driver" });
+  await serviceSql(
+    `insert into public.drivers (id, kyc_status, is_active, categories, gps_consent)
+     values ($1, 'validated', true, $2::public.vehicle_category[], true)`,
+    [u.id, categories],
+  );
+  return u;
+}
+
+export const point = (lon: number, lat: number) =>
+  `SRID=4326;POINT(${lon} ${lat})`;
+
+// Trajet de référence des maquettes : Pharmacie du Gros-Bouquet → Lycée Léon Mba.
+export const ORIGIN = point(9.4536, 0.4032);
+export const DEST = point(9.4671, 0.4148);
+export const DISTANCE_M = 3200;
+export const DURATION_S = 720;
+
+export async function requestRide(client: SupabaseClient, extra: object = {}) {
+  const { data, error } = await client.rpc("request_ride", {
+    p_category: "eco",
+    p_origin: ORIGIN,
+    p_dest: DEST,
+    p_distance_m: DISTANCE_M,
+    p_duration_s: DURATION_S,
+    ...extra,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function ridePin(rideId: string): Promise<string> {
+  const r = await serviceSql(
+    "select pin_code from public.rides where id = $1",
+    [rideId],
+  );
+  return r.rows[0].pin_code;
+}
+
+// Déroule une course cash complète et retourne la ligne finale de rides.
+export async function completeCashRide(client: TestUser, driver: TestUser) {
+  const ride = await requestRide(client.client);
+  // NB : l'id de course passe « hors bande » au chauffeur — le mécanisme
+  // d'offres/dispatch n'existe pas encore (écart E-01, docs/architecture/08).
+  let r = await driver.client.rpc("accept_ride", { p_ride: ride.id });
+  if (r.error) throw r.error;
+  r = await driver.client.rpc("mark_arrived", { p_ride: ride.id });
+  if (r.error) throw r.error;
+  r = await driver.client.rpc("start_ride", {
+    p_ride: ride.id,
+    p_pin: await ridePin(ride.id),
+  });
+  if (r.error) throw r.error;
+  r = await driver.client.rpc("complete_ride", { p_ride: ride.id });
+  if (r.error) throw r.error;
+  return r.data;
+}

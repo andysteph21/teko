@@ -1,0 +1,14 @@
+{
+  "name": "teko-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Tests end-to-end contre la stack Supabase locale : utilisateurs seed réels (JWT), actions via PostgREST, assertions sur l'état de la base.",
+  "scripts": {
+    "test": "vitest run --reporter=verbose --pool=forks --poolOptions.forks.singleFork=true"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "pg": "^8.12.0",
+    "vitest": "^2.1.0"
+  }
+}
