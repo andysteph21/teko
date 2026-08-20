@@ -113,6 +113,34 @@ export async function createDriver(
 export const point = (lon: number, lat: number) =>
   `SRID=4326;POINT(${lon} ${lat})`;
 
+// Passe un chauffeur « en ligne » (heartbeat D-09) à la position donnée —
+// condition d'éligibilité au dispatch par offres.
+export async function goOnline(driver: TestUser, lon: number, lat: number) {
+  const { error } = await driver.client.rpc("driver_heartbeat", {
+    p_point: point(lon, lat),
+  });
+  if (error) throw error;
+}
+
+// Repasse hors ligne les chauffeurs donnés (ou tous). À appeler en afterAll
+// de chaque spec qui utilise goOnline : les fichiers partagent la même base,
+// et un chauffeur resté en ligne détournerait les offres des specs suivantes.
+export async function allOffline() {
+  await serviceSql(`delete from public.driver_presence`);
+}
+
+// Offre en attente du chauffeur pour une course donnée (via RLS : il ne voit
+// que les siennes).
+export async function pendingOffer(driver: TestUser, rideId: string) {
+  const { data, error } = await driver.client
+    .from("ride_offers")
+    .select("*")
+    .eq("ride_id", rideId)
+    .eq("status", "pending");
+  if (error) throw error;
+  return data[0] ?? null;
+}
+
 // Trajet de référence des maquettes : Pharmacie du Gros-Bouquet → Lycée Léon Mba.
 export const ORIGIN = point(9.4536, 0.4032);
 export const DEST = point(9.4671, 0.4148);
@@ -141,10 +169,11 @@ export async function ridePin(rideId: string): Promise<string> {
 }
 
 // Déroule une course cash complète et retourne la ligne finale de rides.
+// Le chauffeur passe en ligne près du départ : le dispatch lui adresse
+// l'offre, qu'accept_ride accepte (E-01 comblé).
 export async function completeCashRide(client: TestUser, driver: TestUser) {
+  await goOnline(driver, 9.4535, 0.4031);
   const ride = await requestRide(client.client);
-  // NB : l'id de course passe « hors bande » au chauffeur — le mécanisme
-  // d'offres/dispatch n'existe pas encore (écart E-01, docs/architecture/08).
   let r = await driver.client.rpc("accept_ride", { p_ride: ride.id });
   if (r.error) throw r.error;
   r = await driver.client.rpc("mark_arrived", { p_ride: ride.id });

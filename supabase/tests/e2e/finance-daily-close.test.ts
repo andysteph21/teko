@@ -1,13 +1,14 @@
 // Solde journalier : course cash → dette de commission → clôture 04:00 →
 // règlement Airtel → solde soldé et chauffeur réactivable.
 
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   type TestUser,
   completeCashRide,
   createDriver,
   createUser,
   serviceSql,
+  allOffline,
 } from "./helpers";
 
 let nadia: TestUser;
@@ -19,6 +20,8 @@ beforeAll(async () => {
   boris = await createDriver(["eco"]);
   superadmin = await createUser({ role: "admin", adminRole: "superadmin" });
 });
+
+afterAll(allOffline);
 
 describe("moteur de solde", () => {
   let due: number;

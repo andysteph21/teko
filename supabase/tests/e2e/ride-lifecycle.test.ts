@@ -1,17 +1,20 @@
-// Parcours cœur : Nadia commande, Boris accepte → arrive → PIN → termine.
-// Vérifie à chaque étape comment la base réagit (statuts, événements,
-// notifications, ledger).
+// Parcours cœur : Nadia commande, l'offre part vers Boris (dispatch E-01),
+// Boris accepte → arrive → PIN → termine. Vérifie à chaque étape comment la
+// base réagit (statuts, offres, événements, notifications, ledger).
 
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   DISTANCE_M,
   DURATION_S,
   type TestUser,
   createDriver,
   createUser,
+  goOnline,
+  pendingOffer,
   requestRide,
   ridePin,
   serviceSql,
+  allOffline,
 } from "./helpers";
 
 let nadia: TestUser;
@@ -22,7 +25,12 @@ beforeAll(async () => {
   nadia = await createUser();
   boris = await createDriver(["eco"]);
   steeve = await createDriver(["eco"]);
+  // Boris est en ligne près du départ ; Steeve reste hors ligne (pas de
+  // heartbeat) : le dispatch ne doit adresser l'offre qu'à Boris.
+  await goOnline(boris, 9.4535, 0.4031);
 });
+
+afterAll(allOffline);
 
 describe("cycle de vie d'une course cash", () => {
   let rideId: string;
@@ -39,18 +47,44 @@ describe("cycle de vie d'une course cash", () => {
     expect(priceEst).toBe(500 + 250 * 3.2 + 25 * 12); // 1600 XAF
   });
 
-  it("request_ride crée la course en 'requested' avec PIN et prix estimé", async () => {
+  it("request_ride crée la course et déclenche une offre vers Boris (en ligne)", async () => {
     const ride = await requestRide(nadia.client);
     rideId = ride.id;
     expect(ride.status).toBe("requested");
-    expect(ride.client_id).toBe(nadia.id);
     expect(ride.driver_id).toBeNull();
     expect(Number(ride.price_est)).toBe(priceEst);
-    const pin = await ridePin(rideId);
-    expect(pin).toMatch(/^\d{4}$/);
+    expect(await ridePin(rideId)).toMatch(/^\d{4}$/);
+
+    const offer = await pendingOffer(boris, rideId);
+    expect(offer).not.toBeNull();
+    expect(offer.rank).toBe(1);
+    const notif = await serviceSql(
+      `select 1 from public.notifications where user_id = $1 and type = 'ride_offer'`,
+      [boris.id],
+    );
+    expect(notif.rows.length).toBeGreaterThan(0);
   });
 
-  it("accept_ride assigne Boris et notifie Nadia", async () => {
+  it("offer_details donne prix/commission/net mais JAMAIS la destination", async () => {
+    const offer = await pendingOffer(boris, rideId);
+    const { data, error } = await boris.client.rpc("offer_details", {
+      p_offer: offer.id,
+    });
+    expect(error).toBeNull();
+    expect(Number(data.price_est)).toBe(priceEst);
+    expect(Number(data.commission)).toBe(priceEst * 0.15);
+    expect(Number(data.net_driver)).toBe(priceEst * 0.85);
+    expect(Object.keys(data).join(",")).not.toMatch(/dest/);
+  });
+
+  it("Steeve, sans offre, ne peut pas accepter la course", async () => {
+    const { error } = await steeve.client.rpc("accept_ride", {
+      p_ride: rideId,
+    });
+    expect(error?.message).toMatch(/aucune offre active/i);
+  });
+
+  it("accept_ride (via l'offre) assigne Boris et notifie Nadia", async () => {
     const { data, error } = await boris.client.rpc("accept_ride", {
       p_ride: rideId,
     });
@@ -58,18 +92,16 @@ describe("cycle de vie d'une course cash", () => {
     expect(data.status).toBe("accepted");
     expect(data.driver_id).toBe(boris.id);
 
+    const off = await serviceSql(
+      `select status from public.ride_offers where ride_id = $1 and driver_id = $2`,
+      [rideId, boris.id],
+    );
+    expect(off.rows[0].status).toBe("accepted");
     const notif = await serviceSql(
       `select type from public.notifications where user_id = $1 and (payload->>'ride_id') = $2`,
       [nadia.id, rideId],
     );
     expect(notif.rows.map((r) => r.type)).toContain("ride_accepted");
-  });
-
-  it("un second chauffeur ne peut plus accepter la même course", async () => {
-    const { error } = await steeve.client.rpc("accept_ride", {
-      p_ride: rideId,
-    });
-    expect(error?.message).toMatch(/non disponible/i);
   });
 
   it("start_ride refuse un mauvais PIN puis démarre avec le bon", async () => {
@@ -96,7 +128,6 @@ describe("cycle de vie d'une course cash", () => {
     expect(data.status).toBe("completed");
     expect(Number(data.price_final)).toBe(priceEst);
 
-    // Commission 15 % (seed) due par le chauffeur qui a encaissé le cash.
     const ledger = await serviceSql(
       `select kind, amount_signed from public.ledger where driver_id = $1 and ride_id = $2`,
       [boris.id, rideId],
@@ -112,30 +143,33 @@ describe("cycle de vie d'une course cash", () => {
       [rideId],
     );
     const types = ev.rows.map((r) => r.type);
-    for (const t of ["requested", "accepted", "arrived", "started", "completed"]) {
+    for (const t of ["requested", "offer_sent", "accepted", "arrived", "started", "completed"]) {
       expect(types).toContain(t);
     }
     expect(types.indexOf("accepted")).toBeLessThan(types.indexOf("started"));
     expect(types.indexOf("started")).toBeLessThan(types.indexOf("completed"));
   });
 
-  // ÉCART E-15 (docs/architecture/08) : aucun grant DML sur les tables — la
-  // politique RLS ratings_insert_participant est inatteignable. Ce test décrit
-  // le comportement DÉSIRÉ ; `it.fails` le marque en échec attendu et se
-  // mettra à hurler (donc à inverser) quand les grants seront posés.
-  it.fails("Nadia peut noter la course (bloqué aujourd'hui : écart E-15)", async () => {
-    const r = await nadia.client.from("ratings").insert({
+  it("Nadia note la course (5 étoiles), une seule fois — E-15 comblé", async () => {
+    let r = await nadia.client.from("ratings").insert({
       ride_id: rideId,
       from_user: nadia.id,
       to_user: boris.id,
       stars: 5,
     });
     expect(r.error).toBeNull();
+    r = await nadia.client.from("ratings").insert({
+      ride_id: rideId,
+      from_user: nadia.id,
+      to_user: boris.id,
+      stars: 1,
+    });
+    expect(r.error).not.toBeNull(); // unique (ride_id, from_user)
   });
 });
 
-describe("annulation", () => {
-  it("le client peut annuler une course demandée → cancelled_client", async () => {
+describe("annulation et frais (E-03 comblé)", () => {
+  it("annulation avant acceptation : sans frais", async () => {
     const ride = await requestRide(nadia.client);
     const { data, error } = await nadia.client.rpc("cancel_ride", {
       p_ride: ride.id,
@@ -143,9 +177,35 @@ describe("annulation", () => {
     });
     expect(error).toBeNull();
     expect(data.status).toBe("cancelled_client");
+    const fee = await serviceSql(
+      `select 1 from public.ledger where ride_id = $1 and kind = 'cancellation'`,
+      [ride.id],
+    );
+    expect(fee.rows).toHaveLength(0);
   });
 
-  it("le chauffeur assigné peut déclarer un no_show", async () => {
+  it("annulation client après acceptation : max(300 F, 20 %) crédité au chauffeur", async () => {
+    const ride = await requestRide(nadia.client);
+    await boris.client.rpc("accept_ride", { p_ride: ride.id });
+    const { error } = await nadia.client.rpc("cancel_ride", { p_ride: ride.id });
+    expect(error).toBeNull();
+
+    const fee = await serviceSql(
+      `select amount_signed from public.ledger where ride_id = $1 and kind = 'cancellation'`,
+      [ride.id],
+    );
+    // max(300, 20 % × 1600) = 320 XAF
+    expect(fee.rows).toHaveLength(1);
+    expect(Number(fee.rows[0].amount_signed)).toBe(320);
+
+    const notif = await serviceSql(
+      `select 1 from public.notifications where user_id = $1 and type = 'cancellation_fee' and (payload->>'ride_id') = $2`,
+      [nadia.id, ride.id],
+    );
+    expect(notif.rows).toHaveLength(1);
+  });
+
+  it("no_show déclaré par le chauffeur : frais dédié (1 000 F, config)", async () => {
     const ride = await requestRide(nadia.client);
     await boris.client.rpc("accept_ride", { p_ride: ride.id });
     const { data, error } = await boris.client.rpc("cancel_ride", {
@@ -154,13 +214,11 @@ describe("annulation", () => {
     });
     expect(error).toBeNull();
     expect(data.status).toBe("no_show");
-    // Écart connu E-03 : aucun frais d'annulation n'est posté au ledger
-    // (docs/architecture/08-ecarts-backend-ux.md). Ce test documente l'état
-    // actuel et devra être renforcé quand cancel_ride postera le frais.
     const fee = await serviceSql(
-      `select 1 from public.ledger where ride_id = $1 and kind = 'cancellation'`,
+      `select amount_signed from public.ledger where ride_id = $1 and kind = 'cancellation'`,
       [ride.id],
     );
-    expect(fee.rows).toHaveLength(0);
+    expect(fee.rows).toHaveLength(1);
+    expect(Number(fee.rows[0].amount_signed)).toBe(1000);
   });
 });

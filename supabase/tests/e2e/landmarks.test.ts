@@ -79,13 +79,13 @@ describe("repères collaboratifs", () => {
     );
   });
 
-  // ÉCART E-17 : « vous serez notifiée du résultat » (C-26/C-31) n'est pas
-  // implémenté — validate_landmark_proposal ne poste aucune notification.
-  it.fails("désiré : le proposant est notifié du résultat (écart E-17)", async () => {
+  it("le proposant est notifié du résultat (E-17 comblé)", async () => {
     const notif = await serviceSql(
-      `select type from public.notifications where user_id = $1`,
+      `select type, payload->>'name' as name from public.notifications
+        where user_id = $1 and type = 'landmark_accepted'`,
       [nadia.id],
     );
-    expect(notif.rows.length).toBeGreaterThan(0);
+    expect(notif.rows).toHaveLength(1);
+    expect(notif.rows[0].name).toBe("Boulangerie d'Akébé");
   });
 });

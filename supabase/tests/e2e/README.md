@@ -30,12 +30,18 @@ touchant `supabase/`.
 
 | Fichier | Couvre |
 |---|---|
-| `ride-lifecycle.test.ts` | estimation, commande, acceptation exclusive, PIN, clôture, commission ledger, notes, annulations |
-| `security-rls.test.ts` | isolation RLS entre utilisateurs, gardes anti-escalade, RPC admin fermées, immuabilité du ledger |
+| `ride-lifecycle.test.ts` | estimation, commande → offre au chauffeur en ligne, `offer_details` sans destination, PIN, clôture, commission ledger, notes, frais d'annulation (max(300 F, 20 %), no-show) |
+| `dispatch.test.ts` | offre au plus proche, cascade sur refus, expiration par job, épuisement (client prévenu), rejeu d'offre refusé |
+| `security-rls.test.ts` | isolation RLS effective (grants posés), anonyme sans accès, gardes anti-escalade, fonctions internes verrouillées, `daily_close` gardée, immuabilité du ledger |
 | `finance-daily-close.test.ts` | solde négatif après course cash, `daily_close`, règlement Airtel simulé (callback service), idempotence |
-| `landmarks.test.ts` | proposition de repère, refus client, validation admin carto, visibilité `nearest_landmarks` |
+| `compte-sos.test.ts` | lieux favoris, partage de trajet public à jeton, SOS/incidents + alerte ops, suppression de compte (30 j, purge anonymisante), invitations admin, `validate_kyc`, re-vérification d'inactivité |
+| `landmarks.test.ts` | proposition de repère, refus client, validation admin carto, notification du proposant, visibilité `nearest_landmarks` |
 
-Les tests documentent aussi les **écarts connus** (`docs/architecture/08-ecarts-backend-ux.md`) :
-l'id de course passe « hors bande » au chauffeur (écart E-01, pas de dispatch)
-et l'absence de frais d'annulation est assertée telle quelle (écart E-03) —
-ces assertions devront être inversées quand les écarts seront comblés.
+Les écarts E-01→E-17 relevés par la première version de cette suite sont
+**comblés** (migrations `20260820*`, cf. `docs/architecture/08-ecarts-backend-ux.md`) ;
+les anciens `it.fails` ont été inversés en assertions positives.
+
+Convention : chaque spec qui met des chauffeurs en ligne (`goOnline`) les
+repasse hors ligne en `afterAll(allOffline)` — les fichiers partagent la même
+base et le dispatch vise le chauffeur en ligne le plus proche, quel que soit
+le fichier qui l'a créé.
