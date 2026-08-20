@@ -34,3 +34,6 @@ ios/Pods/
 *.log
 npm-debug.log*
 .DS_Store
+
+# Supabase CLI local
+supabase/.temp/
