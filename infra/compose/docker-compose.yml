@@ -1,0 +1,35 @@
+# Services carto de dev : Martin (tuiles) + Valhalla (routing).
+# Suppose : artefacts construits dans infra/_data (scripts pipeline/) et la
+# stack Supabase locale démarrée (Martin lit la base via le rôle martin_tiles,
+# port hôte 54322 — voir tiles/martin/setup-martin-role.sql).
+
+name: teko-carto
+
+services:
+  martin:
+    image: ghcr.io/maplibre/martin:latest
+    command: ["--config", "/config/martin-config.yaml"]
+    ports:
+      - "3333:3000"
+    environment:
+      DATABASE_URL: "postgresql://martin_tiles:martin_tiles_dev@host.docker.internal:54322/postgres"
+    volumes:
+      - ../tiles/martin/martin-config.yaml:/config/martin-config.yaml:ro
+      - ../_data/tiles:/data/tiles:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  valhalla:
+    image: ghcr.io/valhalla/valhalla-scripted:latest
+    ports:
+      - "8002:8002"
+    environment:
+      serve_tiles: "True"
+      build_elevation: "False"
+      build_admins: "False"
+      build_time_zones: "False"
+      use_default_speeds_config: "False"
+    volumes:
+      - ../_data/valhalla/custom_files:/custom_files
+    restart: unless-stopped

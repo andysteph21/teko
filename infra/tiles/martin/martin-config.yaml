@@ -1,0 +1,54 @@
+# Configuration Martin — un seul serveur pour :
+#  1. le fond PMTiles (gabon.pmtiles, généré par Planetiler) ;
+#  2. les couches dynamiques PostGIS servies EN DIRECT depuis Supabase
+#     (landmarks / road_segments / zones — visibles dès validation admin,
+#     via le rôle lecture seule martin_tiles + RLS dédiée).
+#
+# Les chemins/URL sont ceux du docker-compose de dev ; en prod, remplacer
+# la chaîne de connexion et le volume PMTiles.
+
+listen_addresses: "0.0.0.0:3000"
+
+pmtiles:
+  paths:
+    - /data/tiles
+
+# Chaîne de connexion : substituée depuis l'environnement du conteneur
+# (référence non guillemetée, requise par l'interpolation de Martin).
+postgres:
+  connection_string: ${DATABASE_URL}
+  auto_publish: false
+  tables:
+    landmarks:
+      schema: public
+      table: landmarks
+      srid: 4326
+      geometry_column: geom
+      geometry_type: POINT
+      minzoom: 11
+      maxzoom: 18
+      properties:
+        name: text
+        category: text
+        salience: numeric
+    teko_roads:
+      schema: public
+      table: road_segments
+      srid: 4326
+      geometry_column: geom
+      geometry_type: LINESTRING
+      minzoom: 10
+      maxzoom: 18
+      properties:
+        source: text
+        attributes: jsonb
+    zones:
+      schema: public
+      table: zones
+      srid: 4326
+      geometry_column: geom
+      minzoom: 6
+      maxzoom: 14
+      properties:
+        name: text
+        coverage_status: text

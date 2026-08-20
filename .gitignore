@@ -40,3 +40,6 @@ supabase/.temp/
 
 # Sorties de démo
 packages/*/demo/dist/
+
+# Artefacts carto générés
+infra/_data/

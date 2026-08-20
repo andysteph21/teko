@@ -1,0 +1,38 @@
+name: Carto CI
+
+# Valide l'infra carto sans la construire : syntaxe des scripts, config
+# docker-compose, config Martin, et test du convertisseur de conflation
+# (routes Teko → OSM XML, ids stables). Le build complet (extract, graphe,
+# tuiles) reste un job manuel/local — cf. infra/README.md.
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/carto-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/carto-ci.yml"
+
+jobs:
+  carto:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shellcheck des scripts pipeline
+        run: |
+          sudo apt-get install -y -qq shellcheck >/dev/null
+          shellcheck infra/pipeline/extract/*.sh infra/pipeline/conflate/*.sh \
+            infra/pipeline/rebuild/*.sh infra/tiles/planetiler/*.sh infra/routing/valhalla/*.sh
+
+      - name: Valider docker-compose
+        run: docker compose -f infra/compose/docker-compose.yml config -q
+
+      - name: Valider la config Martin (YAML)
+        run: python3 -c "import yaml; yaml.safe_load(open('infra/tiles/martin/martin-config.yaml'))"
+
+      - name: Test du convertisseur de conflation
+        run: python3 infra/pipeline/conflate/test_geojson_to_osm.py
