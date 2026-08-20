@@ -1,0 +1,26 @@
+name: Functions CI
+
+# Tests unitaires Deno des Edge Functions (logique de paiement, sans base ni réseau).
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/**"
+      - ".github/workflows/functions-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/**"
+      - ".github/workflows/functions-ci.yml"
+
+jobs:
+  deno-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Lint
+        run: deno lint supabase/functions
+      - name: Tests unitaires
+        run: deno test supabase/functions

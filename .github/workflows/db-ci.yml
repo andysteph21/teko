@@ -1,0 +1,44 @@
+name: Database CI
+
+# Valide les migrations et la RLS sur un Postgres réel à chaque PR/commit
+# touchant le dossier supabase/.
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/db-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/**"
+      - ".github/workflows/db-ci.yml"
+
+jobs:
+  db-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Démarre la stack locale (Docker) ET applique toutes les migrations
+      # de supabase/migrations sur une base neuve. Échoue si une migration casse.
+      - name: Start Supabase (applique les migrations)
+        run: supabase start
+
+      # Analyse statique du schéma (best practices, erreurs potentielles).
+      - name: Lint base de données
+        run: supabase db lint --level warning
+
+      # Exécute les tests pgTAP de supabase/tests/database.
+      - name: Tests pgTAP
+        run: supabase test db
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop
