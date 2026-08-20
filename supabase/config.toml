@@ -1,0 +1,10 @@
+# Configuration locale Supabase (minimale). À régénérer avec `supabase init`
+# si votre version de CLI attend des champs supplémentaires.
+project_id = "teko"
+
+[db]
+# Aligne le Postgres local sur la cible de production.
+major_version = 17
+
+[auth]
+enabled = true
