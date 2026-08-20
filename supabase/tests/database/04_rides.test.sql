@@ -24,6 +24,15 @@ end $$;
 -- 1) Tarification (eco seed : base 500 + 250/km + 25/min, 5 km / 10 min = 2000)
 select is( public.estimate_price('eco', 5000, 600, null), 2000::numeric, 'estimate_price eco 5km/10min = 2000' );
 
+-- Dispatch par offres (0017) : le chauffeur doit être en ligne (heartbeat)
+-- pour recevoir l'offre que accept_ride acceptera.
+do $$
+begin
+  perform set_config('request.jwt.claims',
+    '{"sub":"dddd0000-dddd-0000-dddd-000000000000","role":"authenticated"}', true);
+  perform public.driver_heartbeat(extensions.ST_SetSRID(extensions.ST_MakePoint(9.451, 0.391),4326));
+end $$;
+
 -- 2-3) Commande par le client C
 set local "request.jwt.claims" = '{"sub":"cccc0000-cccc-0000-cccc-000000000000","role":"authenticated"}';
 create temp table _r as
