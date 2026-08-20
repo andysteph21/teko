@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="108" height="108">
+  <!--
+    Android Adaptive Icon — Background commun
+    Ce fichier est utilisé comme base ; la couleur effective est définie dans app.json
+    via le champ backgroundColor (pas via ce SVG).
+
+    Ce SVG fournit un fond avec un léger relief / texture de marque subtile,
+    utilisable quand le système Android applique le calque background tel quel.
+
+    Version CLIENT : gradient violet→magenta
+    Pour le chauffeur, utiliser backgroundColor: "#00BFA5" dans app.json
+    et ce même fichier SVG en foreground only.
+
+    Note : Android découpe ce fond en cercle, squircle ou carré arrondi selon le launcher.
+    Le gradient doit couvrir les 108×108dp intégralement, sans zone blanche.
+  -->
+
+  <defs>
+    <!-- Gradient de marque principal pour le fond client -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5A1A80"/>
+      <stop offset="100%" stop-color="#8C238A"/>
+    </linearGradient>
+    <!-- Lueur centrale subtile pour la profondeur -->
+    <radialGradient id="bgGlow" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#9B35A8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#5A1A80" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Fond plein gradient — couvre toute la surface 108×108 -->
+  <rect x="0" y="0" width="108" height="108" fill="url(#bgGrad)"/>
+
+  <!-- Lueur centrale pour la profondeur -->
+  <rect x="0" y="0" width="108" height="108" fill="url(#bgGlow)"/>
+</svg>
