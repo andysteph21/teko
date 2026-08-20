@@ -64,7 +64,30 @@ def main() -> None:
     node_ids = [int(n.get("id")) for n in nodes]
     assert node_ids == sorted(node_ids)
 
-    print("✓ geojson_to_osm : conversion, filtrage, ids stables et triés")
+    # Ancrage réseau : connect_start_node / connect_end_node référencent des
+    # nœuds OSM existants (connectivité routing) sans générer de doublon.
+    anchored = dict(FIXTURE)
+    anchored["features"] = [dict(FIXTURE["features"][0])]
+    anchored["features"][0] = {
+        **anchored["features"][0],
+        "properties": {
+            "id": anchored["features"][0]["properties"]["id"],
+            "attributes": {"connect_start_node": "5577956425", "connect_end_node": "1820344863"},
+        },
+    }
+    out3 = subprocess.run(
+        [sys.executable, str(HERE / "geojson_to_osm.py")],
+        input=json.dumps(anchored),
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    root3 = ET.fromstring(out3)
+    refs = [n.get("ref") for n in root3.find("way").findall("nd")]
+    assert refs[0] == "5577956425" and refs[-1] == "1820344863"
+    assert len(root3.findall("node")) == 1  # seul le point intermédiaire est créé
+
+    print("✓ geojson_to_osm : conversion, filtrage, ids stables/triés, ancrage réseau")
 
 
 if __name__ == "__main__":

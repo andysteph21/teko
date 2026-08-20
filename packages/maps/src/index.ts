@@ -9,6 +9,10 @@ export {
   distanceM,
   bboxAround,
   parseEwkbPoint,
+  toLonLat,
+  decodePolyline6,
+  type GeomInput,
+  type GeoJsonPointLike,
 } from "./geo.js";
 export {
   type Feature,

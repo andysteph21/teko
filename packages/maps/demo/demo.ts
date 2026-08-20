@@ -7,8 +7,13 @@
 // Ajouter &tiles=<url TileJSON Martin> pour le fond self-hosted
 // (ex. ?scene=course&tiles=http://127.0.0.1:3333/gabon).
 
+//   ?scene=itineraire  itinéraire RÉEL calculé par Valhalla (suit la voirie)
+//                      &o=lon,lat&d=lon,lat [&valhalla=http://127.0.0.1:8002]
+//                      + couche teko_roads en direct (avant/après rebuild)
+
 import "maplibre-gl/dist/maplibre-gl.css";
 import { TekoMapController } from "../src/web/controller.js";
+import { decodePolyline6 } from "../src/geo.js";
 import { landmarksToGeoJson, type LandmarkRow } from "../src/geojson.js";
 import { MAP_COLORS } from "../src/tokens.js";
 
@@ -46,7 +51,54 @@ const map = new TekoMapController(document.getElementById("map")!, {
   tilesUrl,
 });
 
+function addLiveTekoRoads(): void {
+  map.map.on("load", () => {
+    map.map.addSource("teko-live-roads", {
+      type: "vector",
+      url: tilesUrl ? tilesUrl.replace(/\/gabon$/, "/teko_roads") : "http://127.0.0.1:3333/teko_roads",
+    });
+    map.map.addLayer({
+      id: "teko-live-roads-line",
+      type: "line",
+      source: "teko-live-roads",
+      "source-layer": "teko_roads",
+      layout: { "line-cap": "round" },
+      paint: { "line-color": MAP_COLORS.routeLine, "line-width": 5, "line-dasharray": [1.2, 1.6] },
+    });
+  });
+}
+
 switch (scene) {
+  case "itineraire": {
+    // Itinéraire réel Valhalla : la ligne violette SUIT la voirie. La couche
+    // teko_roads (dashed) montre les routes validées servies en direct —
+    // « visible tout de suite, empruntable au prochain rebuild ».
+    const parse = (v: string | null, fallback: { lon: number; lat: number }) => {
+      const [lon, lat] = (v ?? "").split(",").map(Number);
+      return lon !== undefined && lat !== undefined && Number.isFinite(lon) && Number.isFinite(lat)
+        ? { lon, lat }
+        : fallback;
+    };
+    const o = parse(params.get("o"), origin);
+    const d = parse(params.get("d"), dest);
+    const valhalla = params.get("valhalla") ?? "http://127.0.0.1:8002";
+    addLiveTekoRoads();
+    map.setClientPosition(o);
+    map.setLandmarks(landmarksToGeoJson([]));
+    map.fitTo([o, d], 350);
+    void fetch(`${valhalla}/route`, {
+      method: "POST",
+      body: JSON.stringify({ locations: [{ lat: o.lat, lon: o.lon }, { lat: d.lat, lon: d.lon }], costing: "auto" }),
+    })
+      .then((r) => r.json())
+      .then((r) => {
+        const leg = r.trip.legs[0];
+        map.setRoute(decodePolyline6(leg.shape));
+        (document.getElementById("status") as HTMLElement).dataset["route"] =
+          `${r.trip.summary.length.toFixed(2)} km`;
+      });
+    break;
+  }
   case "commande": {
     // C-08/C-09 : choisir le départ — repères proches + position, pas de course.
     map.setLandmarks(landmarksToGeoJson(landmarks));
@@ -71,24 +123,7 @@ switch (scene) {
   case "route-teko": {
     // A-04 : la couche teko_roads servie EN DIRECT par Martin (PostGIS) —
     // le « Passage Akébé » validé apparaît sans aucun rebuild de tuiles.
-    map.map.on("load", () => {
-      map.map.addSource("teko-live-roads", {
-        type: "vector",
-        url: tilesUrl ? tilesUrl.replace(/\/gabon$/, "/teko_roads") : "http://127.0.0.1:3333/teko_roads",
-      });
-      map.map.addLayer({
-        id: "teko-live-roads-line",
-        type: "line",
-        source: "teko-live-roads",
-        "source-layer": "teko_roads",
-        layout: { "line-cap": "round" },
-        paint: {
-          "line-color": MAP_COLORS.routeLine,
-          "line-width": 5,
-          "line-dasharray": [1.2, 1.6],
-        },
-      });
-    });
+    addLiveTekoRoads();
     map.setLandmarks(landmarksToGeoJson([lm("l5", "Passage Akébé (Teko)", "junction", 9.4568, 0.4055)]));
     map.fitTo([{ lon: 9.4535, lat: 0.4028 }, { lon: 9.4600, lat: 0.4082 }], 120);
     break;

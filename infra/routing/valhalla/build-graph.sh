@@ -18,7 +18,7 @@ cp -f "$OSM_SRC" "$DATA/custom_files/gabon.osm.pbf"
 echo "→ Build du graphe Valhalla (une passe éphémère)…"
 docker run --rm \
   -v "$DATA/custom_files":/custom_files \
-  -e serve_tiles=False \
+  -e serve_tiles=False -e force_rebuild=True -e use_tiles_ignore_pbf=False \
   -e build_elevation=False -e build_admins=False -e build_time_zones=False \
   -e use_default_speeds_config=False -e traffic_name= \
   ghcr.io/valhalla/valhalla-scripted:latest

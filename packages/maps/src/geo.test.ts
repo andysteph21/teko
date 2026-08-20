@@ -1,5 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { bboxAround, distanceM, ewktPoint, parseEwkbPoint, roundPosition, toLonLat } from "./geo.js";
+import { bboxAround, decodePolyline6, distanceM, ewktPoint, parseEwkbPoint, roundPosition, toLonLat } from "./geo.js";
+
+// Encodeur polyline6 de référence (test uniquement) — pour l'aller-retour.
+function encodePolyline6(points: Array<{ lon: number; lat: number }>): string {
+  let out = "";
+  let prevLat = 0;
+  let prevLon = 0;
+  const enc = (v: number) => {
+    let n = v < 0 ? ~(v << 1) : v << 1;
+    let s = "";
+    while (n >= 0x20) {
+      s += String.fromCharCode((0x20 | (n & 0x1f)) + 63);
+      n >>= 5;
+    }
+    return s + String.fromCharCode(n + 63);
+  };
+  for (const p of points) {
+    const lat = Math.round(p.lat * 1e6);
+    const lon = Math.round(p.lon * 1e6);
+    out += enc(lat - prevLat) + enc(lon - prevLon);
+    prevLat = lat;
+    prevLon = lon;
+  }
+  return out;
+}
 
 // Encodeur EWKB de référence (test uniquement) — construit ce que PostGIS/
 // PostgREST renvoie, pour vérifier le décodeur par aller-retour.
@@ -40,6 +64,26 @@ describe("parseEwkbPoint", () => {
     // type 2 = LineString
     const hex = "0102000000" + "00".repeat(16);
     expect(() => parseEwkbPoint(hex)).toThrow(/pas un Point/);
+  });
+});
+
+describe("decodePolyline6 (shape Valhalla)", () => {
+  it("aller-retour sur un trajet Libreville", () => {
+    const pts = [
+      { lon: 9.4536, lat: 0.4032 },
+      { lon: 9.458, lat: 0.406 },
+      { lon: 9.4671, lat: 0.4148 },
+      { lon: 9.4669, lat: 0.4147 },
+    ];
+    const decoded = decodePolyline6(encodePolyline6(pts));
+    expect(decoded).toHaveLength(4);
+    decoded.forEach((p, i) => {
+      expect(p.lon).toBeCloseTo(pts[i]!.lon, 6);
+      expect(p.lat).toBeCloseTo(pts[i]!.lat, 6);
+    });
+  });
+  it("chaîne vide → aucun point", () => {
+    expect(decodePolyline6("")).toEqual([]);
   });
 });
 

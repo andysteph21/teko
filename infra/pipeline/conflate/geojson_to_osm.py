@@ -40,8 +40,21 @@ def main() -> None:
         seg_id = str(props.get("id"))
         attrs = props.get("attributes") or {}
         way_id = stable_id(seg_id, "way")
+        # Ancrage réseau : si la proposition désigne des nœuds OSM existants
+        # (attributes.connect_start_node / connect_end_node), la nouvelle voie
+        # les référence — connectivité indispensable au ROUTING (les tuiles
+        # d'affichage, elles, n'en ont pas besoin).
+        connect_start = attrs.get("connect_start_node")
+        connect_end = attrs.get("connect_end_node")
+        coords = geom["coordinates"]
         refs: list[int] = []
-        for i, (lon, lat) in enumerate(geom["coordinates"]):
+        for i, (lon, lat) in enumerate(coords):
+            if i == 0 and connect_start:
+                refs.append(int(connect_start))
+                continue
+            if i == len(coords) - 1 and connect_end:
+                refs.append(int(connect_end))
+                continue
             nid = stable_id(seg_id, f"node:{i}")
             nodes.append((nid, lon, lat))
             refs.append(nid)

@@ -81,6 +81,34 @@ export function toLonLat(geom: GeomInput): LonLat {
   throw new Error(`toLonLat: géométrie Point invalide (${JSON.stringify(geom).slice(0, 80)})`);
 }
 
+/**
+ * Décode une polyligne encodée précision 6 (format des `shape` Valhalla)
+ * en liste de positions. Algorithme polyline Google, pas de dépendance.
+ */
+export function decodePolyline6(encoded: string): LonLat[] {
+  const points: LonLat[] = [];
+  let lat = 0;
+  let lon = 0;
+  let i = 0;
+  const next = (): number => {
+    let result = 0;
+    let shift = 0;
+    let byte: number;
+    do {
+      byte = encoded.charCodeAt(i++) - 63;
+      result |= (byte & 0x1f) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+    return result & 1 ? ~(result >> 1) : result >> 1;
+  };
+  while (i < encoded.length) {
+    lat += next();
+    lon += next();
+    points.push({ lon: lon / 1e6, lat: lat / 1e6 });
+  }
+  return points;
+}
+
 /** Cadre englobant [ouest, sud, est, nord] avec marge (mètres approx.). */
 export function bboxAround(points: LonLat[], paddingM = 200): [number, number, number, number] {
   if (points.length === 0) throw new Error("bboxAround: aucun point");
