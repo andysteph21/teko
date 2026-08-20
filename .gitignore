@@ -37,3 +37,6 @@ npm-debug.log*
 
 # Supabase CLI local
 supabase/.temp/
+
+# Sorties de démo
+packages/*/demo/dist/
