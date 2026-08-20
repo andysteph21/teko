@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>D-15 Solde quotidien</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .header { background:#00BFA5; padding:22px 20px 18px; color:#fff; }
+  .header h1 { font-size:20px; font-weight:700; margin:0; }
+  .header p { font-size:12px; opacity:0.85; margin:2px 0 0; }
+  .content { flex:1; padding:16px 16px 0; }
+  .balance { background:#FFFFFF; border:1.5px solid #E53E3E; border-radius:20px; padding:18px; margin-bottom:14px; }
+  .balance .lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#9B1C1C; margin:0 0 4px; }
+  .balance .amt { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:34px; font-weight:900; color:#E53E3E; margin:0 0 8px; }
+  .deadline { display:flex; align-items:center; gap:8px; background:#FFF0F0; border-radius:12px; padding:10px 12px; font-size:13px; color:#9B1C1C; font-weight:600; margin-bottom:12px; }
+  .deadline .mono { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-weight:900; }
+  .settle { height:48px; border:none; border-radius:20px; width:100%; background:#E53E3E; color:#fff; font-size:16px; font-weight:700; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .why { font-size:12px; color:#6B6B80; margin:10px 0 0; line-height:1.5; text-align:center; }
+  .sec { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6B6B80; margin:16px 0 8px 4px; }
+  .ledger { background:#FFFFFF; border:1px solid #E0E0EA; border-radius:16px; padding:4px 16px; }
+  .line { display:flex; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid #F0F0F5; font-size:13.5px; }
+  .line:last-child { border-bottom:none; }
+  .line p { margin:0; font-weight:500; }
+  .line span { font-size:11.5px; color:#6B6B80; display:block; }
+  .val { margin-left:auto; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-weight:700; }
+  .neg { color:#E53E3E; } .pos { color:#15874F; }
+</style></head><body>
+  <div class="phone">
+    <div class="header"><h1>Solde du jour</h1><p>Journée du lundi 18 août · clôture à 04 h 00</p></div>
+    <div class="content">
+      <div class="balance">
+        <p class="lbl">Vous devez à Teko</p>
+        <p class="amt">−3 000 FCFA</p>
+        <div class="deadline">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E53E3E" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          Urgence — clôture dans <span class="mono">1 h 30</span>
+        </div>
+        <button class="settle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="6" y="3" width="12" height="18" rx="2.5"/><path d="M10 18h4"/></svg>Régler par Airtel Money</button>
+        <p class="why">Un solde non réglé à 04 h 00 suspend la réception de nouvelles courses jusqu'au règlement.</p>
+      </div>
+      <p class="sec">Mouvements du jour</p>
+      <div class="ledger">
+        <div class="line"><p>Course Nadia · espèces encaissées<span>14 h 46 · commission 15 %</span></p><span class="val neg">−180 F</span></div>
+        <div class="line"><p>Course Paul · payée par Airtel<span>12 h 10 · part chauffeur</span></p><span class="val pos">+1 870 F</span></div>
+        <div class="line"><p>Course Awa · espèces encaissées<span>09 h 32 · commission 15 %</span></p><span class="val neg">−330 F</span></div>
+        <div class="line"><p>Report de la veille<span>non réglé dimanche</span></p><span class="val neg">−4 360 F</span></div>
+      </div>
+    </div>
+  </div>
+</body></html>

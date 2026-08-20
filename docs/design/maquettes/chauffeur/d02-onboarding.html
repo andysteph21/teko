@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>D-02 Onboarding chauffeur</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .top { display:flex; justify-content:flex-end; padding:22px 16px 0; }
+  .skip { font-size:15px; font-weight:600; color:#6B6B80; }
+  .art { flex:1; display:flex; align-items:center; justify-content:center; }
+  .demo-card { width:270px; background:#FFFFFF; border-radius:20px; box-shadow:0 8px 32px rgba(0,0,0,0.16); padding:20px; }
+  .demo-card .lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6B6B80; margin:0 0 4px; }
+  .demo-card .amt { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:28px; font-weight:900; color:#15874F; margin:0 0 10px; }
+  .demo-card .line { display:flex; justify-content:space-between; font-size:12px; color:#6B6B80; margin:4px 0; }
+  .demo-card .mono { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-weight:600; color:#323248; }
+  .demo-btn { margin-top:12px; height:40px; border-radius:16px; background:#00BFA5; color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .content { padding:0 24px 40px; text-align:center; }
+  h1 { font-size:24px; font-weight:700; letter-spacing:-0.3px; margin:0 0 10px; color:#3D0F5C; }
+  p.body { font-size:15px; line-height:1.5; color:#6B6B80; margin:0 auto 26px; max-width:30ch; }
+  .dots { display:flex; gap:8px; justify-content:center; margin-bottom:26px; }
+  .dots span { width:8px; height:8px; border-radius:9999px; background:#E0E0EA; }
+  .dots .on { width:24px; background:#00BFA5; }
+  .cta { height:48px; border:none; border-radius:20px; width:100%; background:linear-gradient(135deg,#5A1A80 0%,#8C238A 100%); color:#fff; font-size:17px; font-weight:600; font-family:inherit; box-shadow:0 4px 24px rgba(90,26,128,0.35); }
+</style></head><body>
+  <div class="phone">
+    <div class="top"><span class="skip">Passer</span></div>
+    <div class="art">
+      <div class="demo-card">
+        <p class="lbl">Votre solde du jour</p>
+        <p class="amt">+12 500 FCFA</p>
+        <div class="line"><span>8 courses</span><span class="mono">15 300 FCFA</span></div>
+        <div class="line"><span>Commission Teko</span><span class="mono">−2 800 FCFA</span></div>
+        <div class="demo-btn">Versé par Airtel Money</div>
+      </div>
+    </div>
+    <div class="content">
+      <h1>Vos gains, réglés chaque jour</h1>
+      <p class="body">Encaissez en espèces ou par Airtel Money. Le solde se règle automatiquement chaque nuit avant 04 h 00.</p>
+      <div class="dots"><span class="on"></span><span></span><span></span></div>
+      <button class="cta">Devenir chauffeur Teko</button>
+    </div>
+  </div>
+</body></html>

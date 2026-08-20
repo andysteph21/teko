@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>AM-03 Dossier KYC mobile</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; font-size:13px; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .appbar { background:#3D0F5C; color:#fff; padding:14px 16px; display:flex; align-items:center; gap:12px; flex:none; }
+  .back { width:36px; height:36px; border-radius:9999px; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; flex:none; }
+  .appbar h1 { font-size:15.5px; font-weight:800; margin:0; }
+  .appbar p { font-size:11px; opacity:0.8; margin:1px 0 0; }
+  .content { flex:1; padding:12px 16px 0; overflow:hidden; }
+  .who { display:flex; align-items:center; gap:12px; background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+  .avatar { width:46px; height:46px; border-radius:9999px; background:#E0F7F4; color:#007A6A; font-weight:800; font-size:15px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .who h3 { font-size:15px; font-weight:800; margin:0; }
+  .who p { font-size:11.5px; color:#6B6B80; margin:1px 0 0; font-family:ui-monospace,Menlo,monospace; }
+  .doc { background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; margin-bottom:8px; overflow:hidden; }
+  .doc-h { display:flex; align-items:center; gap:10px; padding:10px 14px; }
+  .doc h4 { font-size:13px; font-weight:700; margin:0; }
+  .doc p { font-size:11px; color:#6B6B80; margin:1px 0 0; }
+  .st { margin-left:auto; font-size:9.5px; font-weight:800; text-transform:uppercase; border-radius:9999px; padding:3px 9px; flex:none; }
+  .ok { background:#E6F9F0; color:#15874F; } .todo { background:#FFF8E6; color:#B57308; }
+  .preview { height:88px; background:#F0F0F5; display:flex; align-items:center; justify-content:center; color:#9090A8; font-size:11px; border-top:1px solid #F0F0F5; }
+  .preview em { font-style:normal; background:#E0E0EA; border-radius:8px; padding:16px 40px; }
+  .doc-acts { display:flex; border-top:1px solid #F0F0F5; }
+  .da { flex:1; padding:10px 0; text-align:center; font-size:12px; font-weight:800; }
+  .da.v { color:#15874F; } .da.r { color:#E53E3E; border-left:1px solid #F0F0F5; }
+  .foot { padding:10px 16px 14px; background:#FFFFFF; border-top:1px solid #E3E1EC; flex:none; }
+  .approve { height:48px; border:none; border-radius:20px; width:100%; background:linear-gradient(135deg,#5A1A80 0%,#8C238A 100%); color:#fff; font-size:15px; font-weight:800; font-family:inherit; box-shadow:0 4px 24px rgba(90,26,128,0.35); }
+  .foot p { font-size:10.5px; color:#9090A8; text-align:center; margin:8px 0 0; }
+</style></head><body>
+  <div class="phone">
+    <div class="appbar">
+      <span class="back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></span>
+      <div><h1>Dossier — Steeve O.</h1><p>Moto-taxi · déposé il y a 4 h · Yamaha Crux · GA-217-LBV</p></div>
+    </div>
+    <div class="content">
+      <div class="who"><span class="avatar">SO</span><div><h3>Steeve O.</h3><p>+241 06 44 78 12 · Airtel vérifié ✓ (1 F)</p></div></div>
+      <div class="doc">
+        <div class="doc-h"><div><h4>Pièce d'identité</h4><p>cni_recto.jpg · touchez pour zoomer</p></div><span class="st todo">À examiner</span></div>
+        <div class="preview"><em>Aperçu du document</em></div>
+        <div class="doc-acts"><span class="da v">✓ Conforme</span><span class="da r">✗ Refuser…</span></div>
+      </div>
+      <div class="doc">
+        <div class="doc-h"><div><h4>Carte grise moto</h4><p>carte_grise.jpg</p></div><span class="st todo">À examiner</span></div>
+        <div class="doc-acts"><span class="da v">✓ Conforme</span><span class="da r">✗ Refuser…</span></div>
+      </div>
+      <div class="doc"><div class="doc-h"><div><h4>Permis de conduire A</h4><p>Validé par Aline K. · 14 h 05</p></div><span class="st ok">Conforme</span></div></div>
+      <div class="doc"><div class="doc-h"><div><h4>Assurance</h4><p>Expire 02/2027 · lisible</p></div><span class="st ok">Conforme</span></div></div>
+    </div>
+    <div class="foot">
+      <button class="approve">Tout valider — activer le chauffeur</button>
+      <p>Un refus exige un motif — il sera visible par le chauffeur (D-08b). Action journalisée.</p>
+    </div>
+  </div>
+</body></html>

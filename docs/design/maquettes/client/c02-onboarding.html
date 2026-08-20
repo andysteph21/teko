@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>C-02 Onboarding</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .top { display:flex; justify-content:flex-end; padding:22px 16px 0; }
+  .skip { font-size:15px; font-weight:600; color:#6B6B80; }
+  .art { flex:1; display:flex; align-items:center; justify-content:center; }
+  .content { padding:0 24px 40px; text-align:center; }
+  h1 { font-size:24px; font-weight:700; letter-spacing:-0.3px; margin:0 0 10px; color:#3D0F5C; }
+  p.body { font-size:15px; line-height:1.5; color:#6B6B80; margin:0 auto 26px; max-width:30ch; }
+  .dots { display:flex; gap:8px; justify-content:center; margin-bottom:26px; }
+  .dots span { width:8px; height:8px; border-radius:9999px; background:#E0E0EA; }
+  .dots .on { width:24px; background:#8C238A; }
+  .cta { height:48px; border:none; border-radius:20px; width:100%; background:linear-gradient(135deg,#5A1A80 0%,#8C238A 100%); color:#fff; font-size:17px; font-weight:600; font-family:inherit; box-shadow:0 4px 24px rgba(90,26,128,0.35); }
+</style></head><body>
+  <div class="phone">
+    <div class="top"><span class="skip">Passer</span></div>
+    <div class="art">
+      <svg width="260" height="240" viewBox="0 0 260 240" role="img" aria-label="Un repère ambre marque une pharmacie entre deux bâtiments">
+        <rect x="18" y="120" width="70" height="86" rx="6" fill="#E8C6FF"/>
+        <rect x="30" y="134" width="14" height="14" rx="2" fill="#F9F9FB"/>
+        <rect x="56" y="134" width="14" height="14" rx="2" fill="#F9F9FB"/>
+        <rect x="30" y="158" width="14" height="14" rx="2" fill="#F9F9FB"/>
+        <rect x="56" y="158" width="14" height="14" rx="2" fill="#F9F9FB"/>
+        <rect x="172" y="104" width="72" height="102" rx="6" fill="#D49FFF"/>
+        <rect x="184" y="118" width="14" height="14" rx="2" fill="#F9F9FB"/>
+        <rect x="210" y="118" width="14" height="14" rx="2" fill="#F9F9FB"/>
+        <rect x="184" y="142" width="14" height="14" rx="2" fill="#F9F9FB"/>
+        <rect x="210" y="142" width="14" height="14" rx="2" fill="#F9F9FB"/>
+        <rect x="96" y="146" width="68" height="60" rx="6" fill="#5A1A80"/>
+        <rect x="112" y="170" width="36" height="36" rx="3" fill="#8C238A"/>
+        <path d="M96 146h68l-8-16H104z" fill="#3D0F5C"/>
+        <rect x="0" y="206" width="260" height="10" rx="5" fill="#E0E0EA"/>
+        <path d="M130 118c-20-17-34-33-34-52a34 34 0 1 1 68 0c0 19-14 35-34 52z" fill="#F5A623"/>
+        <circle cx="130" cy="64" r="13" fill="#FFF8E6"/>
+        <path d="M124 64h12M130 58v12" stroke="#B57308" stroke-width="3.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="content">
+      <h1>Des repères, pas d'adresses</h1>
+      <p class="body">Indiquez la pharmacie, l'école ou le marché le plus proche — le chauffeur vous trouve.</p>
+      <div class="dots"><span class="on"></span><span></span><span></span></div>
+      <button class="cta">Continuer</button>
+    </div>
+  </div>
+</body></html>

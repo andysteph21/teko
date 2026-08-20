@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Teko — Widget data</title>
+<style>
+  body { margin:0; background:#F9F9FB; color:#323248; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; padding:28px; }
+  h1 { font-size:20px; font-weight:700; margin:0 0 4px; color:#3D0F5C; }
+  .sub { font-size:13px; color:#6B6B80; margin:0 0 24px; max-width:60ch; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:20px; }
+  .cell { border-radius:12px; padding:20px; background:#E0E0EA; position:relative; min-height:150px;
+          background-image:linear-gradient(#D5D5E2 1px,transparent 1px),linear-gradient(90deg,#D5D5E2 1px,transparent 1px); background-size:28px 28px; }
+  .label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#4A4A60; margin:0 0 12px; }
+  .widget { position:absolute; bottom:16px; left:16px; background:#FFFFFF; border-radius:9999px; box-shadow:0 8px 32px rgba(0,0,0,0.16); display:flex; align-items:center; gap:8px; padding:8px 14px 8px 8px; border:1.5px solid transparent; }
+  .widget .ring { width:30px; height:30px; border-radius:9999px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .widget .qty { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:13px; font-weight:700; }
+  .widget .cap { font-size:10px; color:#6B6B80; margin-top:-2px; }
+  .w-normal .ring { background:#F5E6FF; color:#5A1A80; }
+  .w-warn { border-color:#F5A623; }
+  .w-warn .ring { background:#FFF8E6; color:#B57308; }
+  .w-crit { border-color:#E53E3E; }
+  .w-crit .ring { background:#FFF0F0; color:#9B1C1C; }
+  .eco { position:absolute; bottom:66px; left:16px; background:#1E1E30; color:#fff; font-size:11px; font-weight:600; border-radius:9999px; padding:5px 12px; display:flex; gap:6px; align-items:center; }
+  .eco .dot { width:7px; height:7px; border-radius:9999px; background:#22C47A; }
+  .rules { font-size:12.5px; color:#6B6B80; margin-top:22px; max-width:64ch; line-height:1.55; }
+</style></head><body>
+  <h1>Widget de consommation data</h1>
+  <p class="sub">Flottant en bas à gauche de tout écran carte (z-index 300). Trois états selon la part du budget data mensuel consommée. Tap = ouvre C-25 (Données &amp; mode éco).</p>
+  <div class="grid">
+    <div class="cell"><p class="label">Normal · &lt; 50 %</p>
+      <div class="widget w-normal"><span class="ring"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 18v-6M10 18V9M16 18V4"/></svg></span>
+        <span><span class="qty">12 Mo</span><br><span class="cap">ce mois</span></span></div>
+    </div>
+    <div class="cell"><p class="label">Alerte · 50–80 %</p>
+      <div class="widget w-warn"><span class="ring"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 18v-6M10 18V9M16 18V4"/></svg></span>
+        <span><span class="qty">48 Mo</span><br><span class="cap">ce mois</span></span></div>
+    </div>
+    <div class="cell"><p class="label">Critique · &gt; 80 % + mode éco</p>
+      <div class="eco"><span class="dot"></span>Mode éco actif</div>
+      <div class="widget w-crit"><span class="ring"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 18v-6M10 18V9M16 18V4"/></svg></span>
+        <span><span class="qty">82 Mo</span><br><span class="cap">ce mois</span></span></div>
+    </div>
+  </div>
+  <p class="rules"><strong>Mode éco</strong> (manuel, ou automatique sous 2G ou à l'état critique) : tuiles remplacées par un fond uni neutral-200, photos → initiales, animations coupées, position 1 s → 5 s, photos véhicules → icône générique. Le widget prend une bordure ambre et reste le seul élément flottant de l'écran.</p>
+</body></html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>C-18 Planifier une course</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .nav { padding:22px 16px 0; display:flex; align-items:center; gap:12px; }
+  .back { width:40px; height:40px; border-radius:9999px; background:#F0F0F5; display:flex; align-items:center; justify-content:center; }
+  .nav h1 { font-size:20px; font-weight:700; margin:0; color:#3D0F5C; }
+  .content { padding:22px 24px 0; flex:1; }
+  .sec { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6B6B80; margin:0 0 10px; }
+  .days { display:flex; gap:8px; margin-bottom:24px; }
+  .day { flex:1; border:1.5px solid #E0E0EA; border-radius:16px; padding:12px 0; text-align:center; background:#FFFFFF; }
+  .day.on { border-color:#8C238A; background:#F5E6FF; }
+  .day p { margin:0; font-size:13px; font-weight:600; }
+  .day span { font-size:11px; color:#6B6B80; }
+  .wheel { background:#FFFFFF; border:1px solid #E0E0EA; border-radius:16px; display:flex; justify-content:center; gap:24px; padding:10px 0; margin-bottom:14px; position:relative; }
+  .col { display:flex; flex-direction:column; align-items:center; gap:6px; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:18px; }
+  .col span { color:#C4C4D4; }
+  .col .sel { color:#3D0F5C; font-weight:700; font-size:22px; }
+  .band { position:absolute; left:16px; right:16px; top:50%; transform:translateY(-50%); height:38px; border-radius:10px; background:#F5E6FF; opacity:0.5; }
+  .note { font-size:12.5px; color:#6B6B80; background:#E6F0FF; border-radius:12px; padding:10px 14px; margin-bottom:20px; }
+  .cta { height:48px; border:none; border-radius:20px; width:100%; background:linear-gradient(135deg,#5A1A80 0%,#8C238A 100%); color:#fff; font-size:17px; font-weight:600; font-family:inherit; box-shadow:0 4px 24px rgba(90,26,128,0.35); }
+</style></head><body>
+  <div class="phone">
+    <div class="nav"><div class="back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#323248" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></div><h1>Planifier une course</h1></div>
+    <div class="content">
+      <p class="sec">Jour</p>
+      <div class="days">
+        <div class="day"><p>Aujourd'hui</p><span>lun. 18</span></div>
+        <div class="day on"><p>Demain</p><span>mar. 19</span></div>
+        <div class="day"><p>Choisir…</p><span>calendrier</span></div>
+      </div>
+      <p class="sec">Heure de prise en charge</p>
+      <div class="wheel">
+        <span class="band"></span>
+        <div class="col"><span>06</span><span>07</span><span class="sel">08</span><span>09</span><span>10</span></div>
+        <div class="col"><span>:</span><span>:</span><span class="sel">:</span><span>:</span><span>:</span></div>
+        <div class="col"><span>50</span><span>55</span><span class="sel">00</span><span>05</span><span>10</span></div>
+      </div>
+      <p class="note">Votre chauffeur sera recherché environ 15 minutes avant l'heure choisie. Vous serez notifiée dès l'attribution.</p>
+      <button class="cta">Planifier · demain 08 h 00</button>
+    </div>
+  </div>
+</body></html>

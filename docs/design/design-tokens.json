@@ -1,0 +1,205 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "$description": "Tokens de design Teko — palette violet→magenta, système complet pour React Native (apps client & chauffeur) et Next.js (admin web).",
+
+  "color": {
+    "brand": {
+      "50":  { "$value": "#F5E6FF", "$type": "color", "$description": "Violet très clair — fonds hover légers" },
+      "100": { "$value": "#E8C6FF", "$type": "color" },
+      "200": { "$value": "#D49FFF", "$type": "color" },
+      "300": { "$value": "#BB6EF0", "$type": "color" },
+      "400": { "$value": "#A040D8", "$type": "color" },
+      "500": { "$value": "#8C238A", "$type": "color", "$description": "Magenta de marque — CTA secondaire, accents" },
+      "600": { "$value": "#7A1F8A", "$type": "color" },
+      "700": { "$value": "#6A1E86", "$type": "color", "$description": "Violet intermédiaire logo" },
+      "800": { "$value": "#5A1A80", "$type": "color", "$description": "Violet profond logo — CTA principal dark" },
+      "900": { "$value": "#3D0F5C", "$type": "color", "$description": "Violet nuit — textes sur fond clair, dark mode surfaces" }
+    },
+
+    "gradient": {
+      "brand": {
+        "$value": "linear-gradient(135deg, #5A1A80 0%, #8C238A 100%)",
+        "$type": "color",
+        "$description": "Gradient de marque principal : violet profond → magenta. Utilisé sur les CTA principaux, icônes app, header."
+      },
+      "brandVertical": {
+        "$value": "linear-gradient(180deg, #5A1A80 0%, #8C238A 100%)",
+        "$type": "color"
+      },
+      "brandSubtle": {
+        "$value": "linear-gradient(135deg, #F5E6FF 0%, #F0D0F5 100%)",
+        "$type": "color",
+        "$description": "Gradient subtil pour fonds de cartes en thème clair"
+      }
+    },
+
+    "neutral": {
+      "0":   { "$value": "#FFFFFF", "$type": "color" },
+      "50":  { "$value": "#F9F9FB", "$type": "color", "$description": "Fond d'écran app — légèrement teinté" },
+      "100": { "$value": "#F0F0F5", "$type": "color", "$description": "Fond des inputs, séparateurs légers" },
+      "200": { "$value": "#E0E0EA", "$type": "color" },
+      "300": { "$value": "#C4C4D4", "$type": "color", "$description": "Bordures, séparateurs" },
+      "400": { "$value": "#9090A8", "$type": "color", "$description": "Placeholder, icônes inactives" },
+      "500": { "$value": "#6B6B80", "$type": "color", "$description": "Texte secondaire" },
+      "600": { "$value": "#4A4A60", "$type": "color" },
+      "700": { "$value": "#323248", "$type": "color", "$description": "Texte principal sur fond clair" },
+      "800": { "$value": "#1E1E30", "$type": "color", "$description": "Surface sombre, dark mode fond carte" },
+      "900": { "$value": "#0F0F1E", "$type": "color", "$description": "Fond dark mode écran" }
+    },
+
+    "semantic": {
+      "success": {
+        "light": { "$value": "#E6F9F0", "$type": "color" },
+        "default": { "$value": "#22C47A", "$type": "color", "$description": "Vert tropical — succès, chauffeur disponible, course confirmée" },
+        "dark": { "$value": "#15874F", "$type": "color" }
+      },
+      "warning": {
+        "light": { "$value": "#FFF8E6", "$type": "color" },
+        "default": { "$value": "#F5A623", "$type": "color", "$description": "Ambre — alerte data, solde en approche du seuil, évaluation moyenne" },
+        "dark": { "$value": "#B57308", "$type": "color" }
+      },
+      "error": {
+        "light": { "$value": "#FFF0F0", "$type": "color" },
+        "default": { "$value": "#E53E3E", "$type": "color", "$description": "Rouge — erreur, solde débiteur, course annulée, déconnexion" },
+        "dark": { "$value": "#9B1C1C", "$type": "color" }
+      },
+      "info": {
+        "light": { "$value": "#E6F0FF", "$type": "color" },
+        "default": { "$value": "#3B82F6", "$type": "color", "$description": "Bleu info — notifications, aide contextuelle" },
+        "dark": { "$value": "#1D4ED8", "$type": "color" }
+      }
+    },
+
+    "role": {
+      "driver": {
+        "accent": { "$value": "#00BFA5", "$type": "color", "$description": "Teal — couleur distinctive de l'app chauffeur. Différencie d'un coup d'œil l'icône et les badges chauffeur." },
+        "accentLight": { "$value": "#E0F7F4", "$type": "color" },
+        "accentDark": { "$value": "#007A6A", "$type": "color" }
+      },
+      "client": {
+        "accent": { "$value": "#8C238A", "$type": "color", "$description": "Magenta — couleur dominante de l'app client (gradient par défaut)." }
+      }
+    },
+
+    "map": {
+      "markerClient": { "$value": "#8C238A", "$type": "color", "$description": "Marqueur position passager" },
+      "markerDriver": { "$value": "#00BFA5", "$type": "color", "$description": "Marqueur véhicule chauffeur" },
+      "markerLandmark": { "$value": "#F5A623", "$type": "color", "$description": "Marqueur point de repère" },
+      "routeLine": { "$value": "#5A1A80", "$type": "color", "$description": "Tracé de l'itinéraire" },
+      "routeLineAlternate": { "$value": "#9090A8", "$type": "color" }
+    }
+  },
+
+  "typography": {
+    "fontFamily": {
+      "base": { "$value": "System, -apple-system, 'SF Pro Text', 'Roboto', 'Segoe UI', sans-serif", "$type": "fontFamily", "$description": "Police système pour sobriété data — zéro téléchargement" },
+      "mono": { "$value": "'SF Mono', 'Roboto Mono', 'Courier New', monospace", "$type": "fontFamily", "$description": "Montants, codes, soldes" },
+      "display": { "$value": "System, -apple-system, 'SF Pro Display', 'Roboto', sans-serif", "$type": "fontFamily", "$description": "Titres larges — même famille système, variation d'épaisseur" }
+    },
+
+    "fontSize": {
+      "xs":   { "$value": "11px", "$type": "dimension", "$description": "Labels maps, badges mini" },
+      "sm":   { "$value": "13px", "$type": "dimension", "$description": "Texte secondaire, captions" },
+      "base": { "$value": "15px", "$type": "dimension", "$description": "Corps de texte principal" },
+      "md":   { "$value": "17px", "$type": "dimension", "$description": "Boutons, champs, items liste" },
+      "lg":   { "$value": "20px", "$type": "dimension", "$description": "Titres de section, montants" },
+      "xl":   { "$value": "24px", "$type": "dimension", "$description": "Titres d'écran" },
+      "2xl":  { "$value": "28px", "$type": "dimension", "$description": "Solde journalier chauffeur" },
+      "3xl":  { "$value": "34px", "$type": "dimension", "$description": "Montant final, écrans de confirmation" }
+    },
+
+    "fontWeight": {
+      "regular": { "$value": "400", "$type": "fontWeight" },
+      "medium":  { "$value": "500", "$type": "fontWeight" },
+      "semibold": { "$value": "600", "$type": "fontWeight" },
+      "bold":    { "$value": "700", "$type": "fontWeight" },
+      "black":   { "$value": "900", "$type": "fontWeight", "$description": "Montant solde, chiffre-clé" }
+    },
+
+    "lineHeight": {
+      "tight":   { "$value": "1.2", "$type": "number" },
+      "snug":    { "$value": "1.35", "$type": "number" },
+      "normal":  { "$value": "1.5", "$type": "number" },
+      "relaxed": { "$value": "1.65", "$type": "number" }
+    },
+
+    "letterSpacing": {
+      "tight":  { "$value": "-0.3px", "$type": "dimension" },
+      "normal": { "$value": "0px", "$type": "dimension" },
+      "wide":   { "$value": "0.5px", "$type": "dimension" },
+      "wider":  { "$value": "1px", "$type": "dimension", "$description": "Étiquettes uppercase, labels catégorie" }
+    }
+  },
+
+  "spacing": {
+    "0":  { "$value": "0px", "$type": "dimension" },
+    "1":  { "$value": "4px", "$type": "dimension" },
+    "2":  { "$value": "8px", "$type": "dimension" },
+    "3":  { "$value": "12px", "$type": "dimension" },
+    "4":  { "$value": "16px", "$type": "dimension", "$description": "Padding horizontal de base des écrans" },
+    "5":  { "$value": "20px", "$type": "dimension" },
+    "6":  { "$value": "24px", "$type": "dimension", "$description": "Gap entre cartes, padding sections" },
+    "7":  { "$value": "28px", "$type": "dimension" },
+    "8":  { "$value": "32px", "$type": "dimension" },
+    "10": { "$value": "40px", "$type": "dimension", "$description": "Hauteur mini zone tactile" },
+    "12": { "$value": "48px", "$type": "dimension", "$description": "Hauteur bouton principal, hauteur input" },
+    "14": { "$value": "56px", "$type": "dimension" },
+    "16": { "$value": "64px", "$type": "dimension" },
+    "20": { "$value": "80px", "$type": "dimension", "$description": "Safe area bottom (nav bar)" },
+    "24": { "$value": "96px", "$type": "dimension" }
+  },
+
+  "borderRadius": {
+    "none": { "$value": "0px", "$type": "dimension" },
+    "xs":   { "$value": "4px", "$type": "dimension" },
+    "sm":   { "$value": "8px", "$type": "dimension" },
+    "md":   { "$value": "12px", "$type": "dimension", "$description": "Cartes, sheets" },
+    "lg":   { "$value": "16px", "$type": "dimension" },
+    "xl":   { "$value": "20px", "$type": "dimension", "$description": "Boutons principaux, cartes proéminentes" },
+    "2xl":  { "$value": "28px", "$type": "dimension" },
+    "full": { "$value": "9999px", "$type": "dimension", "$description": "Pills, badges, avatars, icônes app" }
+  },
+
+  "shadow": {
+    "xs":  { "$value": "0 1px 2px rgba(0,0,0,0.07)", "$type": "shadow", "$description": "Séparateur de carte léger" },
+    "sm":  { "$value": "0 2px 6px rgba(0,0,0,0.10)", "$type": "shadow", "$description": "Input focussé, badge" },
+    "md":  { "$value": "0 4px 16px rgba(0,0,0,0.12)", "$type": "shadow", "$description": "Carte standard, bottom sheet" },
+    "lg":  { "$value": "0 8px 32px rgba(0,0,0,0.16)", "$type": "shadow", "$description": "Sheet modal, widget flottant" },
+    "xl":  { "$value": "0 16px 48px rgba(0,0,0,0.22)", "$type": "shadow", "$description": "Dialog plein écran" },
+    "brand": { "$value": "0 4px 24px rgba(90,26,128,0.35)", "$type": "shadow", "$description": "Bouton CTA — halo violet" }
+  },
+
+  "animation": {
+    "duration": {
+      "instant": { "$value": "80ms", "$type": "duration" },
+      "fast":    { "$value": "150ms", "$type": "duration" },
+      "normal":  { "$value": "250ms", "$type": "duration" },
+      "slow":    { "$value": "400ms", "$type": "duration" },
+      "verySlow":{ "$value": "600ms", "$type": "duration", "$description": "Animations de chargement carte" }
+    },
+    "easing": {
+      "standard":  { "$value": "cubic-bezier(0.4, 0, 0.2, 1)", "$type": "cubicBezier" },
+      "decelerate":{ "$value": "cubic-bezier(0.0, 0, 0.2, 1)", "$type": "cubicBezier", "$description": "Entrée de bottom sheet" },
+      "accelerate":{ "$value": "cubic-bezier(0.4, 0, 1, 1)", "$type": "cubicBezier", "$description": "Sortie" },
+      "spring":    { "$value": "cubic-bezier(0.34, 1.56, 0.64, 1)", "$type": "cubicBezier", "$description": "Apparition de marqueur carte" }
+    }
+  },
+
+  "zIndex": {
+    "base":    { "$value": "0",    "$type": "number" },
+    "raised":  { "$value": "10",   "$type": "number" },
+    "overlay": { "$value": "100",  "$type": "number" },
+    "sheet":   { "$value": "200",  "$type": "number" },
+    "widget":  { "$value": "300",  "$type": "number", "$description": "Widget conso data flottant" },
+    "toast":   { "$value": "400",  "$type": "number" },
+    "modal":   { "$value": "500",  "$type": "number" }
+  },
+
+  "breakpoint": {
+    "sm":  { "$value": "375px", "$type": "dimension", "$description": "iPhone SE / Android entrée de gamme" },
+    "md":  { "$value": "390px", "$type": "dimension", "$description": "iPhone 14 standard" },
+    "lg":  { "$value": "430px", "$type": "dimension", "$description": "iPhone Pro Max / grands Android" },
+    "tablet": { "$value": "768px", "$type": "dimension" },
+    "desktop": { "$value": "1024px", "$type": "dimension", "$description": "Admin web" }
+  }
+}

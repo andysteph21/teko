@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>A-09 Rôles & permissions</title>
+<style>
+  body { margin:0; background:#F9F9FB; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; font-size:13px; }
+  .screen { width:1280px; height:800px; display:flex; overflow:hidden; }
+  .side { width:216px; background:#3D0F5C; color:#fff; display:flex; flex-direction:column; padding:18px 12px; box-sizing:border-box; flex:none; }
+  .brand { display:flex; align-items:center; gap:10px; padding:0 8px 18px; font-weight:900; font-size:17px; }
+  .brand .m { width:32px; height:32px; border-radius:9999px; border:2.5px solid #fff; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; font-size:13.5px; color:#D8CDE8; }
+  .item.on { background:rgba(255,255,255,0.14); color:#fff; font-weight:700; }
+  .badge { margin-left:auto; background:#F5A623; color:#3D0F5C; font-size:10.5px; font-weight:800; border-radius:9999px; padding:1px 7px; }
+  .lock-ico { margin-left:auto; opacity:0.7; font-size:11px; }
+  .who { margin-top:auto; padding:10px; background:rgba(255,255,255,0.08); border-radius:12px; font-size:12px; }
+  .who span { color:#00BFA5; font-weight:700; font-size:11px; text-transform:uppercase; }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .top { height:52px; background:#FFFFFF; border-bottom:1px solid #E3E1EC; display:flex; align-items:center; padding:0 20px; gap:12px; flex:none; }
+  .top h1 { font-size:16px; font-weight:700; margin:0; }
+  .tabs { display:flex; gap:6px; margin-left:8px; }
+  .tab { font-size:12.5px; font-weight:600; padding:6px 14px; border-radius:9999px; color:#6B6B80; background:#F0F0F5; }
+  .tab.on { background:#F5E6FF; color:#5A1A80; }
+  .content { flex:1; padding:16px 20px; overflow:hidden; display:flex; flex-direction:column; gap:12px; }
+  .panel { background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; overflow:hidden; }
+  .p-head { padding:12px 16px; border-bottom:1px solid #F0F0F5; font-weight:700; font-size:13.5px; }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; }
+  th { text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px; color:#6B6B80; background:#F9F9FB; padding:8px 16px; }
+  th.c, td.c { text-align:center; width:110px; }
+  td { padding:8px 16px; border-top:1px solid #F0F0F5; }
+  td .cap { font-weight:600; }
+  td .sub { font-size:11px; color:#6B6B80; display:block; }
+  .yes { color:#15874F; font-weight:900; font-size:14px; }
+  .no { color:#C4C4D4; font-weight:700; }
+  .part { font-size:10px; font-weight:800; background:#FFF8E6; color:#B57308; border-radius:9999px; padding:2px 8px; }
+  .role-h { font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.4px; border-radius:9999px; padding:3px 10px; }
+  .r-super { background:#3D0F5C; color:#fff; } .r-ops { background:#F5E6FF; color:#5A1A80; } .r-carto { background:#E0F7F4; color:#007A6A; } .r-fin { background:#FFF8E6; color:#B57308; }
+  .foot { display:flex; gap:12px; }
+  .note { flex:1.4; background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; padding:12px 16px; font-size:12px; color:#6B6B80; line-height:1.6; }
+  .note strong { color:#323248; }
+  .journal { flex:1; background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; overflow:hidden; }
+  .ev { display:flex; gap:8px; padding:8px 14px; border-top:1px solid #F0F0F5; font-size:11.5px; }
+  .ev:first-of-type { border-top:none; }
+  .ev .t { color:#9090A8; font-family:ui-monospace,Menlo,monospace; font-size:10.5px; flex:none; }
+</style></head><body>
+  <div class="screen">
+    <div class="side">
+      <div class="brand"><span class="m">T</span>Teko Admin</div>
+      <div class="item">Tableau de bord</div>
+      <div class="item">Validation KYC<span class="badge">12</span></div>
+      <div class="item">Cartographie<span class="badge">5</span></div>
+      <div class="item">Finance</div>
+      <div class="item">Utilisateurs</div>
+      <div class="item">Paramètres</div>
+      <div class="item on">Équipe &amp; rôles<span class="lock-ico">superadmin</span></div>
+      <div class="who"><strong>Serge O.</strong><br><span>Rôle · Superadmin</span></div>
+    </div>
+    <div class="main">
+      <div class="top"><h1>Équipe &amp; rôles</h1>
+        <div class="tabs"><span class="tab">Comptes</span><span class="tab on">Rôles &amp; permissions</span></div>
+      </div>
+      <div class="content">
+        <div class="panel">
+          <div class="p-head">Matrice des permissions — rôles fixes au MVP (enum <span style="font-family:ui-monospace,Menlo,monospace">admin_role</span> en base)</div>
+          <table>
+            <tr><th>Capacité</th><th class="c"><span class="role-h r-ops">Ops</span></th><th class="c"><span class="role-h r-carto">Carto</span></th><th class="c"><span class="role-h r-fin">Finance</span></th><th class="c"><span class="role-h r-super">Superadmin</span></th></tr>
+            <tr><td><span class="cap">Tableau de bord temps réel</span><span class="sub">A-02 · lecture</span></td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+            <tr><td><span class="cap">Valider / refuser un dossier KYC</span><span class="sub">A-03 · active ou bloque un chauffeur</span></td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+            <tr><td><span class="cap">Suspendre un utilisateur, gérer un litige</span><span class="sub">A-06 · motif obligatoire</span></td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+            <tr><td><span class="cap">Valider repères &amp; routes proposés</span><span class="sub">A-04 · impacte la carte de tous</span></td><td class="c no">—</td><td class="c yes">✓</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+            <tr><td><span class="cap">Tracer routes, éditer zones tarifaires</span><span class="sub">A-04 · l'activation d'une zone reste superadmin</span></td><td class="c no">—</td><td class="c yes">✓</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+            <tr><td><span class="cap">Consulter soldes, versements, statements</span><span class="sub">A-05 · lecture</span></td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+            <tr><td><span class="cap">Règlement manuel &amp; réconciliation Airtel</span><span class="sub">A-05 · écrit au grand livre via RPC</span></td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+            <tr><td><span class="cap">Modifier commission, frais, délais, zones actives</span><span class="sub">A-07 · double confirmation (guard_sensitive_config)</span></td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+            <tr><td><span class="cap">Gérer l'équipe admin et les rôles</span><span class="sub">A-08 · anti-élévation, dernier superadmin protégé</span></td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+            <tr><td><span class="cap">Journal d'audit</span><span class="sub">chaque rôle voit ses propres actions ; lecture globale superadmin</span></td><td class="c"><span class="part">Ses actions</span></td><td class="c"><span class="part">Ses actions</span></td><td class="c"><span class="part">Ses actions</span></td><td class="c yes">✓</td></tr>
+          </table>
+        </div>
+        <div class="foot">
+          <div class="note"><strong>Règles transverses.</strong> Les rôles sont exclusifs et fixes au MVP — les rôles personnalisés viendront avec une version ultérieure. Toute action d'écriture est journalisée avec l'auteur, l'objet et le motif. Les gardes sont appliquées <strong>en base</strong> (RLS + triggers), pas seulement dans l'interface : un écran ne suffit jamais à obtenir un droit.</div>
+          <div class="journal">
+            <div class="p-head">Journal — équipe &amp; rôles</div>
+            <div class="ev"><span class="t">17 août</span><span>Invitation envoyée à Paul N. (finance) — Serge O.</span></div>
+            <div class="ev"><span class="t">12 août</span><span>Marc E. : rôle ops → carto — Serge O., motif « split des consoles »</span></div>
+            <div class="ev"><span class="t">30 juil.</span><span>Compte de Léa T. désactivé (départ) — Serge O.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body></html>

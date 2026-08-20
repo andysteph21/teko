@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>A-10 Journal d'audit</title>
+<style>
+  body { margin:0; background:#F9F9FB; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; font-size:13px; }
+  .screen { width:1280px; height:800px; display:flex; overflow:hidden; }
+  .side { width:216px; background:#3D0F5C; color:#fff; display:flex; flex-direction:column; padding:18px 12px; box-sizing:border-box; flex:none; }
+  .brand { display:flex; align-items:center; gap:10px; padding:0 8px 18px; font-weight:900; font-size:17px; }
+  .brand .m { width:32px; height:32px; border-radius:9999px; border:2.5px solid #fff; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; font-size:13.5px; color:#D8CDE8; }
+  .item.on { background:rgba(255,255,255,0.14); color:#fff; font-weight:700; }
+  .badge { margin-left:auto; background:#F5A623; color:#3D0F5C; font-size:10.5px; font-weight:800; border-radius:9999px; padding:1px 7px; }
+  .lock-ico { margin-left:auto; opacity:0.7; font-size:11px; }
+  .who { margin-top:auto; padding:10px; background:rgba(255,255,255,0.08); border-radius:12px; font-size:12px; }
+  .who span { color:#00BFA5; font-weight:700; font-size:11px; text-transform:uppercase; }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .top { height:52px; background:#FFFFFF; border-bottom:1px solid #E3E1EC; display:flex; align-items:center; padding:0 20px; gap:12px; flex:none; }
+  .top h1 { font-size:16px; font-weight:700; margin:0; }
+  .immutable { font-size:11.5px; font-weight:700; color:#007A6A; background:#E0F7F4; border-radius:9999px; padding:5px 14px; }
+  .export { margin-left:auto; height:34px; border:none; border-radius:14px; background:#F5E6FF; color:#5A1A80; font-size:12px; font-weight:700; font-family:inherit; padding:0 16px; display:flex; align-items:center; gap:6px; }
+  .filters { display:flex; gap:8px; padding:12px 20px 0; align-items:center; flex-wrap:wrap; }
+  .search { width:280px; height:34px; border-radius:10px; background:#FFFFFF; border:1px solid #E3E1EC; display:flex; align-items:center; padding:0 12px; color:#9090A8; font-size:12.5px; }
+  .f { font-size:11.5px; font-weight:600; padding:6px 14px; border-radius:9999px; background:#FFFFFF; border:1px solid #E3E1EC; color:#6B6B80; }
+  .f.on { background:#F5E6FF; border-color:#8C238A; color:#5A1A80; }
+  .period { margin-left:auto; font-size:12px; color:#6B6B80; font-family:ui-monospace,Menlo,monospace; background:#FFFFFF; border:1px solid #E3E1EC; border-radius:10px; padding:7px 12px; }
+  .content { flex:1; padding:12px 20px 16px; overflow:hidden; }
+  .panel { background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; overflow:hidden; height:100%; box-sizing:border-box; }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; }
+  th { text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px; color:#6B6B80; background:#F9F9FB; padding:8px 14px; }
+  td { padding:9px 14px; border-top:1px solid #F0F0F5; vertical-align:top; }
+  .t { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:11px; color:#6B6B80; white-space:nowrap; }
+  .actor { display:flex; align-items:center; gap:8px; white-space:nowrap; }
+  .avatar { width:26px; height:26px; border-radius:9999px; background:#F5E6FF; color:#5A1A80; font-weight:700; font-size:10px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .role { font-size:9.5px; font-weight:800; text-transform:uppercase; border-radius:9999px; padding:2px 8px; }
+  .r-super { background:#3D0F5C; color:#fff; } .r-ops { background:#F5E6FF; color:#5A1A80; } .r-carto { background:#E0F7F4; color:#007A6A; } .r-fin { background:#FFF8E6; color:#B57308; } .r-sys { background:#F0F0F5; color:#6B6B80; }
+  .cat { font-size:10px; font-weight:800; text-transform:uppercase; border-radius:9999px; padding:2px 9px; white-space:nowrap; }
+  .c-param { background:#F5E6FF; color:#5A1A80; } .c-kyc { background:#E6F0FF; color:#1D4ED8; } .c-fin { background:#FFF8E6; color:#B57308; } .c-carto { background:#E0F7F4; color:#007A6A; } .c-team { background:#3D0F5C; color:#fff; } .c-user { background:#FFF0F0; color:#9B1C1C; }
+  .action b { font-weight:700; }
+  .action .obj { color:#6B6B80; }
+  .motif { color:#6B6B80; font-style:italic; max-width:230px; }
+  .expand { background:#FDFAFF; }
+  .expand td { border-top:none; padding-top:0; }
+  .diff { display:flex; gap:10px; align-items:center; background:#F9F9FB; border:1px solid #E3E1EC; border-radius:10px; padding:9px 14px; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:12px; width:fit-content; }
+  .old { color:#9B1C1C; text-decoration:line-through; }
+  .new { color:#15874F; font-weight:700; }
+  .meta { font-size:11px; color:#9090A8; margin-left:12px; font-family:system-ui,sans-serif; }
+</style></head><body>
+  <div class="screen">
+    <div class="side">
+      <div class="brand"><span class="m">T</span>Teko Admin</div>
+      <div class="item">Tableau de bord</div>
+      <div class="item">Validation KYC<span class="badge">12</span></div>
+      <div class="item">Cartographie<span class="badge">5</span></div>
+      <div class="item">Finance</div>
+      <div class="item">Utilisateurs</div>
+      <div class="item">Paramètres</div>
+      <div class="item">Équipe &amp; rôles<span class="lock-ico">superadmin</span></div>
+      <div class="item on">Journal d'audit</div>
+      <div class="who"><strong>Serge O.</strong><br><span>Rôle · Superadmin</span></div>
+    </div>
+    <div class="main">
+      <div class="top">
+        <h1>Journal d'audit</h1>
+        <span class="immutable">Append-only — aucune entrée modifiable ni supprimable</span>
+        <button class="export"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 4v11M7 10l5 5 5-5M4 19h16"/></svg>Exporter CSV</button>
+      </div>
+      <div class="filters">
+        <span class="search">Rechercher un acteur, un objet, une course, un montant…</span>
+        <span class="f on">Tout</span><span class="f">Paramètres</span><span class="f">Équipe</span><span class="f">KYC</span><span class="f">Finance</span><span class="f">Carto</span><span class="f">Utilisateurs</span><span class="f">Système</span>
+        <span class="period">12 août → 18 août</span>
+      </div>
+      <div class="content">
+        <div class="panel">
+          <table>
+            <tr><th style="width:120px">Horodatage</th><th style="width:150px">Acteur</th><th style="width:110px">Domaine</th><th>Action</th><th>Motif</th></tr>
+            <tr>
+              <td class="t">18 août 15:07:44</td>
+              <td><span class="actor"><span class="avatar">AK</span>Aline K. <span class="role r-ops">Ops</span></span></td>
+              <td><span class="cat c-kyc">KYC</span></td>
+              <td class="action"><b>Pièce validée</b> <span class="obj">— permis de conduire · dossier Steeve O.</span></td>
+              <td class="motif">—</td>
+            </tr>
+            <tr>
+              <td class="t">18 août 14:58:02</td>
+              <td><span class="actor"><span class="avatar" style="background:#F0F0F5;color:#6B6B80">SY</span>Système <span class="role r-sys">Auto</span></span></td>
+              <td><span class="cat c-fin">Finance</span></td>
+              <td class="action"><b>Chauffeur réactivé</b> <span class="obj">— M. N'Toutoume · règlement 3 000 F reçu (maybe_reactivate_driver)</span></td>
+              <td class="motif">automatique</td>
+            </tr>
+            <tr>
+              <td class="t">18 août 11:02:37</td>
+              <td><span class="actor"><span class="avatar">ME</span>Marc E. <span class="role r-carto">Carto</span></span></td>
+              <td><span class="cat c-carto">Carto</span></td>
+              <td class="action"><b>Repère validé</b> <span class="obj">— « Boulangerie d'Akébé » · proposé par Nadia O. · notification envoyée</span></td>
+              <td class="motif">photo conforme, pas de doublon</td>
+            </tr>
+            <tr>
+              <td class="t">17 août 18:44:19</td>
+              <td><span class="actor"><span class="avatar">DM</span>Diane M. <span class="role r-fin">Finance</span></span></td>
+              <td><span class="cat c-fin">Finance</span></td>
+              <td class="action"><b>Règlement manuel enregistré</b> <span class="obj">— Steeve O. · 8 450 F · justificatif dépôt Airtel joint</span></td>
+              <td class="motif">échec USSD répété, reçu vérifié</td>
+            </tr>
+            <tr>
+              <td class="t">17 août 09:15:51</td>
+              <td><span class="actor"><span class="avatar">SO</span>Serge O. <span class="role r-super">Super</span></span></td>
+              <td><span class="cat c-team">Équipe</span></td>
+              <td class="action"><b>Invitation envoyée</b> <span class="obj">— Paul N. · +241 06 12 77 03 · rôle finance</span></td>
+              <td class="motif">renfort clôture mensuelle</td>
+            </tr>
+            <tr>
+              <td class="t">16 août 21:03:12</td>
+              <td><span class="actor"><span class="avatar">AK</span>Aline K. <span class="role r-ops">Ops</span></span></td>
+              <td><span class="cat c-user">Utilisateurs</span></td>
+              <td class="action"><b>Litige clos</b> <span class="obj">— SOS course TK-2608-0139 · faux déclenchement confirmé par rappel</span></td>
+              <td class="motif">RAS après contact cliente</td>
+            </tr>
+            <tr class="sel">
+              <td class="t">12 août 10:20:05</td>
+              <td><span class="actor"><span class="avatar">SO</span>Serge O. <span class="role r-super">Super</span></span></td>
+              <td><span class="cat c-param">Paramètres</span></td>
+              <td class="action"><b>Commission modifiée</b> <span class="obj">— app_config · double confirmation</span></td>
+              <td class="motif">alignement business plan v2</td>
+            </tr>
+            <tr class="expand">
+              <td></td><td></td><td></td>
+              <td colspan="2">
+                <span class="diff"><span class="old">12 %</span> → <span class="new">15 %</span><span class="meta">app_config_history · effectif immédiatement, nouvelles courses uniquement · IP 41.158.xx.xx</span></span>
+              </td>
+            </tr>
+            <tr>
+              <td class="t">12 août 10:18:40</td>
+              <td><span class="actor"><span class="avatar">SO</span>Serge O. <span class="role r-super">Super</span></span></td>
+              <td><span class="cat c-team">Équipe</span></td>
+              <td class="action"><b>Rôle modifié</b> <span class="obj">— Marc E. · ops → carto</span></td>
+              <td class="motif">split des consoles</td>
+            </tr>
+            <tr>
+              <td class="t">9 août 04:00:03</td>
+              <td><span class="actor"><span class="avatar" style="background:#F0F0F5;color:#6B6B80">SY</span>Système <span class="role r-sys">Auto</span></span></td>
+              <td><span class="cat c-fin">Finance</span></td>
+              <td class="action"><b>Suspension automatique</b> <span class="obj">— Fabrice A. · solde −35 800 F non réglé à la clôture (daily_close)</span></td>
+              <td class="motif">automatique</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body></html>

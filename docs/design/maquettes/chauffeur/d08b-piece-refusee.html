@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>D-08b Pièce refusée</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .content { padding:36px 24px 0; flex:1; }
+  .art { width:96px; height:96px; border-radius:9999px; background:#FFF0F0; display:flex; align-items:center; justify-content:center; margin:0 auto 18px; }
+  h1 { font-size:24px; font-weight:700; letter-spacing:-0.3px; margin:0 0 8px; color:#3D0F5C; text-align:center; }
+  .sub { font-size:14px; line-height:1.5; color:#6B6B80; margin:0 0 20px; text-align:center; }
+  .status { background:#FFFFFF; border:1px solid #E0E0EA; border-radius:16px; padding:4px 16px; margin-bottom:14px; }
+  .line { display:flex; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid #F0F0F5; font-size:14px; }
+  .line:last-child { border-bottom:none; }
+  .dotp { width:22px; height:22px; border-radius:9999px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .st { margin-left:auto; font-size:11px; font-weight:700; }
+  .ok { color:#15874F; } .bad { color:#E53E3E; }
+  .refused { background:#FFF0F0; border:1.5px solid #E53E3E; border-radius:16px; padding:14px 16px; margin-bottom:16px; }
+  .refused h4 { font-size:14.5px; font-weight:700; margin:0 0 4px; color:#9B1C1C; }
+  .refused .motif { font-size:13px; line-height:1.5; color:#6B6B80; margin:0 0 12px; }
+  .refused .motif strong { color:#323248; }
+  .replace { height:44px; border:none; border-radius:20px; width:100%; background:#E53E3E; color:#fff; font-size:15px; font-weight:700; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .note { font-size:12.5px; color:#6B6B80; text-align:center; margin:0; line-height:1.5; }
+</style></head><body>
+  <div class="phone">
+    <div class="content">
+      <div class="art"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#E53E3E" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><circle cx="9" cy="12" r="2.2"/><path d="M14 10h4M14 14h4"/><path d="M4 4l16 17" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+      <h1>Une pièce à reprendre</h1>
+      <p class="sub">Le reste de votre dossier est bon — il ne manque que ça.</p>
+      <div class="refused">
+        <h4>Carte grise — refusée</h4>
+        <p class="motif">Motif de l'équipe Teko : <strong>« Photo illisible, reflet du flash sur la partie droite. Reprenez la photo à plat, en lumière naturelle. »</strong></p>
+        <button class="replace"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.2"/></svg>Remplacer la photo</button>
+      </div>
+      <div class="status">
+        <div class="line"><span class="dotp" style="background:#E6F9F0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#15874F" stroke-width="3"><path d="M4.5 12.5l5 5 10-11"/></svg></span>Identité<span class="st ok">Validée</span></div>
+        <div class="line"><span class="dotp" style="background:#E6F9F0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#15874F" stroke-width="3"><path d="M4.5 12.5l5 5 10-11"/></svg></span>Permis de conduire<span class="st ok">Validé</span></div>
+        <div class="line"><span class="dotp" style="background:#FFF0F0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#E53E3E" stroke-width="3"><path d="M6 6l12 12M18 6L6 18"/></svg></span>Carte grise<span class="st bad">À remplacer</span></div>
+        <div class="line"><span class="dotp" style="background:#E6F9F0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#15874F" stroke-width="3"><path d="M4.5 12.5l5 5 10-11"/></svg></span>Assurance<span class="st ok">Validée</span></div>
+        <div class="line"><span class="dotp" style="background:#E6F9F0"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#15874F" stroke-width="3"><path d="M4.5 12.5l5 5 10-11"/></svg></span>Numéro Airtel Money<span class="st ok">Vérifié</span></div>
+      </div>
+      <p class="note">Dès la nouvelle photo envoyée, l'équipe la vérifie en priorité — en général sous quelques heures.</p>
+    </div>
+  </div>
+</body></html>

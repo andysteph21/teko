@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>A-02 Tableau de bord</title>
+<style>
+  body { margin:0; background:#F9F9FB; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; font-size:13px; }
+  .screen { width:1280px; height:800px; display:flex; overflow:hidden; }
+  .side { width:216px; background:#3D0F5C; color:#fff; display:flex; flex-direction:column; padding:18px 12px; box-sizing:border-box; flex:none; }
+  .brand { display:flex; align-items:center; gap:10px; padding:0 8px 18px; font-weight:900; font-size:17px; }
+  .brand .m { width:32px; height:32px; border-radius:9999px; border:2.5px solid #fff; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .nav { display:flex; flex-direction:column; gap:2px; }
+  .item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; font-size:13.5px; font-weight:500; color:#D8CDE8; }
+  .item.on { background:rgba(255,255,255,0.14); color:#fff; font-weight:700; }
+  .badge { margin-left:auto; background:#F5A623; color:#3D0F5C; font-size:10.5px; font-weight:800; border-radius:9999px; padding:1px 7px; }
+  .who { margin-top:auto; padding:10px; background:rgba(255,255,255,0.08); border-radius:12px; font-size:12px; }
+  .who strong { display:block; font-size:12.5px; }
+  .who span { color:#00BFA5; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .top { height:52px; background:#FFFFFF; border-bottom:1px solid #E3E1EC; display:flex; align-items:center; padding:0 20px; gap:14px; flex:none; }
+  .top h1 { font-size:16px; font-weight:700; margin:0; }
+  .live { display:flex; align-items:center; gap:6px; font-size:12px; color:#15874F; font-weight:600; }
+  .live .dot { width:8px; height:8px; border-radius:9999px; background:#22C47A; }
+  .content { flex:1; padding:16px 20px; overflow:hidden; }
+  .kpis { display:flex; gap:12px; margin-bottom:14px; }
+  .kpi { flex:1; background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; padding:14px 16px; }
+  .kpi .lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#6B6B80; margin:0 0 4px; }
+  .kpi .v { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:24px; font-weight:900; margin:0; }
+  .kpi .d { font-size:11.5px; margin:2px 0 0; color:#15874F; font-weight:600; }
+  .cols { display:flex; gap:12px; height:520px; }
+  .mapcard { flex:1.6; background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
+  .card-h { padding:12px 16px; border-bottom:1px solid #F0F0F5; font-weight:700; font-size:13.5px; display:flex; align-items:center; }
+  .legend { margin-left:auto; display:flex; gap:12px; font-size:11px; color:#6B6B80; font-weight:500; }
+  .legend i { display:inline-block; width:9px; height:9px; border-radius:9999px; margin-right:4px; }
+  .feed { flex:1; background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; display:flex; flex-direction:column; overflow:hidden; }
+  .ev { display:flex; gap:10px; padding:10px 16px; border-bottom:1px solid #F0F0F5; font-size:12.5px; align-items:flex-start; }
+  .ev .t { color:#9090A8; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:11px; flex:none; padding-top:1px; }
+  .ev b { font-weight:600; }
+  .pill { font-size:10px; font-weight:800; border-radius:9999px; padding:2px 8px; margin-left:auto; flex:none; }
+  .p-ok { background:#E6F9F0; color:#15874F; } .p-warn { background:#FFF8E6; color:#B57308; } .p-err { background:#FFF0F0; color:#9B1C1C; }
+</style></head><body>
+  <div class="screen">
+    <div class="side">
+      <div class="brand"><span class="m">T</span>Teko Admin</div>
+      <div class="nav">
+        <div class="item on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg>Tableau de bord</div>
+        <div class="item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="10" cy="10" r="2.2"/><path d="M6 18c1-2.4 2.5-3.5 4-3.5s3 1.1 4 3.5M15 8h3"/></svg>Validation KYC<span class="badge">12</span></div>
+        <div class="item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 4L4 6v14l5-2 6 2 5-2V4l-5 2z"/><path d="M9 4v14M15 6v14"/></svg>Cartographie<span class="badge">5</span></div>
+        <div class="item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="7" width="18" height="12" rx="2"/><circle cx="12" cy="13" r="3"/></svg>Finance</div>
+        <div class="item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c1.2-2.8 3.3-4.2 5.5-4.2s4.3 1.4 5.5 4.2M16 8h5M16 12h5"/></svg>Utilisateurs</div>
+        <div class="item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Paramètres</div>
+      </div>
+      <div class="who"><strong>Aline K.</strong><span>Rôle · Ops</span></div>
+    </div>
+    <div class="main">
+      <div class="top"><h1>Tableau de bord</h1><span class="live"><span class="dot"></span>Temps réel · Libreville</span></div>
+      <div class="content">
+        <div class="kpis">
+          <div class="kpi"><p class="lbl">Courses en cours</p><p class="v">23</p><p class="d">+4 vs il y a 1 h</p></div>
+          <div class="kpi"><p class="lbl">Chauffeurs en ligne</p><p class="v">87</p><p class="d">sur 142 actifs</p></div>
+          <div class="kpi"><p class="lbl">Volume du jour</p><p class="v">412 500 F</p><p class="d">+12 % vs lundi dernier</p></div>
+          <div class="kpi"><p class="lbl">Temps d'attribution médian</p><p class="v">48 s</p><p class="d" style="color:#B57308">+9 s — zone Akébé tendue</p></div>
+        </div>
+        <div class="cols">
+          <div class="mapcard">
+            <div class="card-h">Carte en direct
+              <span class="legend"><span><i style="background:#8C238A"></i>Clients</span><span><i style="background:#00BFA5"></i>Chauffeurs</span><span><i style="background:#F5A623"></i>Repères</span><span><i style="background:#5A1A80"></i>Courses</span></span>
+            </div>
+            <svg style="flex:1" viewBox="0 0 700 440" role="img" aria-label="Carte temps réel de Libreville">
+              <rect width="700" height="440" fill="#F2F1F7"/>
+              <path d="M0 220 L700 160" stroke="#FFE3B3" stroke-width="16" stroke-linecap="round"/>
+              <path d="M0 220 L700 160" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+              <path d="M180 0 V440 M380 0 V440 M540 0 V440 M0 90 H700 M0 330 H700" stroke="#FFFFFF" stroke-width="6"/>
+              <ellipse cx="620" cy="380" rx="110" ry="70" fill="#DCEFE3"/>
+              <path d="M120 330 L180 330 L180 208 L380 190 L380 100" fill="none" stroke="#5A1A80" stroke-width="4" stroke-linecap="round"/>
+              <path d="M420 300 L540 290 L540 200" fill="none" stroke="#5A1A80" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+              <g fill="#00BFA5"><rect x="200" y="120" rx="4" width="22" height="13"/><rect x="450" y="250" rx="4" width="22" height="13"/><rect x="90" y="360" rx="4" width="22" height="13"/><rect x="600" y="140" rx="4" width="22" height="13"/><rect x="330" y="60" rx="4" width="22" height="13"/></g>
+              <g fill="#8C238A"><circle cx="120" cy="330" r="7"/><circle cx="420" cy="300" r="7"/><circle cx="250" cy="70" r="7"/></g>
+              <g fill="#F5A623"><path d="M380 98c-6-5-9-10-9-15a9 9 0 1 1 18 0c0 5-3 10-9 15z"/><path d="M540 198c-6-5-9-10-9-15a9 9 0 1 1 18 0c0 5-3 10-9 15z"/></g>
+              <text x="16" y="26" font-size="11" fill="#9090A8" font-family="system-ui">Mont-Bouët</text>
+              <text x="560" y="60" font-size="11" fill="#9090A8" font-family="system-ui">Nkembo</text>
+              <text x="60" y="420" font-size="11" fill="#9090A8" font-family="system-ui">Akébé</text>
+            </svg>
+          </div>
+          <div class="feed">
+            <div class="card-h">Activité récente</div>
+            <div class="ev"><span class="t">15:42</span><span><b>Course terminée</b> — Boris M. · 1 200 F · Airtel</span><span class="pill p-ok">OK</span></div>
+            <div class="ev"><span class="t">15:41</span><span><b>Nouveau dossier KYC</b> — Steeve O. (moto)</span><span class="pill p-warn">À traiter</span></div>
+            <div class="ev"><span class="t">15:38</span><span><b>Repère proposé</b> — « Boulangerie d'Akébé » par Nadia O.</span><span class="pill p-warn">À valider</span></div>
+            <div class="ev"><span class="t">15:31</span><span><b>Échec paiement Airtel</b> — course TK-2608-0142, replié en espèces</span><span class="pill p-err">Échec</span></div>
+            <div class="ev"><span class="t">15:24</span><span><b>Annulation client</b> — frais 300 F appliqués</span><span class="pill p-ok">OK</span></div>
+            <div class="ev"><span class="t">15:12</span><span><b>SOS déclenché puis levé</b> — course TK-2608-0139, RAS après rappel</span><span class="pill p-err">Vérifié</span></div>
+            <div class="ev"><span class="t">14:58</span><span><b>Chauffeur réactivé</b> — règlement de solde reçu (3 000 F)</span><span class="pill p-ok">Auto</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body></html>

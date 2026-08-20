@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>D-17 Historique des gains</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .header { background:#00BFA5; padding:22px 20px 16px; color:#fff; }
+  .header h1 { font-size:20px; font-weight:700; margin:0 0 10px; }
+  .stats { display:flex; gap:8px; }
+  .stat { flex:1; background:rgba(255,255,255,0.14); border-radius:12px; padding:10px 0; text-align:center; }
+  .stat .v { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:15px; font-weight:900; margin:0; }
+  .stat span { font-size:10px; opacity:0.85; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+  .content { flex:1; padding:14px 16px 0; }
+  .day { background:#FFFFFF; border:1px solid #E0E0EA; border-radius:16px; padding:14px 16px; margin-bottom:10px; }
+  .day-head { display:flex; align-items:center; margin-bottom:8px; }
+  .day-head h3 { font-size:14px; font-weight:700; margin:0; }
+  .day-head .net { margin-left:auto; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:15px; font-weight:900; color:#15874F; }
+  .meta { display:flex; gap:14px; font-size:12px; color:#6B6B80; }
+  .meta .mono { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-weight:600; color:#323248; }
+  .badge { margin-left:auto; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; border-radius:9999px; padding:3px 9px; }
+  .ok { background:#E6F9F0; color:#15874F; }
+  .pending { background:#FFF8E6; color:#B57308; }
+</style></head><body>
+  <div class="phone">
+    <div class="header">
+      <h1>Mes gains</h1>
+      <div class="stats">
+        <div class="stat"><p class="v">86 400 F</p><span>Semaine</span></div>
+        <div class="stat"><p class="v">54</p><span>Courses</span></div>
+        <div class="stat"><p class="v">★ 4,8</p><span>Note</span></div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="day">
+        <div class="day-head"><h3>Aujourd'hui · lun. 18 août</h3><span class="net">+13 520 F</span></div>
+        <div class="meta"><span><span class="mono">9</span> courses</span><span>commission <span class="mono">−1 980 F</span></span><span class="badge pending">Journée en cours</span></div>
+      </div>
+      <div class="day">
+        <div class="day-head"><h3>Dimanche 17 août</h3><span class="net">+11 240 F</span></div>
+        <div class="meta"><span><span class="mono">7</span> courses</span><span>versé par Airtel</span><span class="badge ok">Réglée</span></div>
+      </div>
+      <div class="day">
+        <div class="day-head"><h3>Samedi 16 août</h3><span class="net">+18 960 F</span></div>
+        <div class="meta"><span><span class="mono">12</span> courses</span><span>versé par Airtel</span><span class="badge ok">Réglée</span></div>
+      </div>
+      <div class="day">
+        <div class="day-head"><h3>Vendredi 15 août</h3><span class="net">+15 780 F</span></div>
+        <div class="meta"><span><span class="mono">10</span> courses</span><span>versé par Airtel</span><span class="badge ok">Réglée</span></div>
+      </div>
+    </div>
+  </div>
+</body></html>

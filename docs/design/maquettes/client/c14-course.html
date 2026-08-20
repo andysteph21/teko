@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>C-14 Course en cours</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F2F1F7; position:relative; overflow:hidden; }
+  .map { position:absolute; inset:0; }
+  .widget { position:absolute; bottom:256px; left:16px; background:#FFFFFF; border-radius:9999px; box-shadow:0 8px 32px rgba(0,0,0,0.16); display:flex; align-items:center; gap:8px; padding:7px 13px 7px 7px; }
+  .widget .ring { width:28px; height:28px; border-radius:9999px; background:#F5E6FF; color:#5A1A80; display:flex; align-items:center; justify-content:center; }
+  .widget .qty { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:12px; font-weight:700; }
+  .widget .cap { font-size:9px; color:#6B6B80; margin-top:-2px; }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:#FFFFFF; border-radius:20px 20px 0 0; box-shadow:0 -4px 24px rgba(0,0,0,0.14); padding:8px 20px 20px; }
+  .handle { width:36px; height:4px; border-radius:9999px; background:#E0E0EA; margin:0 auto 12px; }
+  .head { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+  h1 { font-size:18px; font-weight:700; margin:0; color:#3D0F5C; }
+  .badge { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:13px; font-weight:700; background:#E6F9F0; color:#15874F; border-radius:9999px; padding:5px 12px; }
+  .dest { font-size:13px; color:#6B6B80; margin:0 0 14px; }
+  .drv { display:flex; align-items:center; gap:10px; padding-bottom:14px; }
+  .avatar { width:38px; height:38px; border-radius:9999px; background:#F5E6FF; color:#5A1A80; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .drv p { font-size:13px; margin:0; font-weight:600; }
+  .drv span { font-size:12px; color:#6B6B80; font-weight:400; }
+  .actions { display:flex; gap:10px; }
+  .share { flex:1; height:48px; border:none; border-radius:20px; background:#F5E6FF; color:#5A1A80; font-size:15px; font-weight:600; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .sos { width:64px; height:48px; border:none; border-radius:20px; background:#E53E3E; color:#fff; font-size:15px; font-weight:800; font-family:inherit; letter-spacing:0.5px; }
+</style></head><body>
+  <div class="phone">
+    <svg class="map" viewBox="0 0 360 800" role="img" aria-label="Course en cours vers le lycée Léon Mba">
+      <rect width="360" height="800" fill="#F2F1F7"/>
+      <rect x="30" y="90" width="120" height="120" rx="4" fill="#E9E7F1"/>
+      <rect x="230" y="330" width="110" height="120" rx="4" fill="#E9E7F1"/>
+      <path d="M0 300 L360 270" stroke="#FFE3B3" stroke-width="16" stroke-linecap="round"/>
+      <path d="M0 300 L360 270" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+      <path d="M180 0 V540 M0 140 H360 M0 470 H360" stroke="#FFFFFF" stroke-width="6"/>
+      <path d="M60 470 L180 470 L180 292 L300 282 L300 160" fill="none" stroke="#C4C4D4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M60 470 L180 470 L180 340" fill="none" stroke="#5A1A80" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(165,330)"><rect rx="5" width="30" height="17" fill="#00BFA5"/><rect x="6" y="3" width="12" height="11" rx="2" fill="#E0F7F4"/></g>
+      <path d="M300 158c-7-6-11-12-11-19a11 11 0 1 1 22 0c0 7-4 13-11 19z" fill="#F5A623"/>
+      <text x="240" y="122" font-size="9" fill="#6B6B80" font-family="system-ui">Lycée Léon Mba</text>
+    </svg>
+    <div class="widget"><span class="ring"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 18v-6M10 18V9M16 18V4"/></svg></span>
+      <span><span class="qty">15 Mo</span><br><span class="cap">ce mois</span></span></div>
+    <div class="sheet">
+      <div class="handle"></div>
+      <div class="head"><h1>En course</h1><span class="badge">Arrivée 14 h 46</span></div>
+      <p class="dest">Vers <strong>Lycée Léon Mba</strong> · 1 500 FCFA · Espèces</p>
+      <div class="drv"><div class="avatar">BM</div><p>Boris M. <span>· Toyota Corolla · GA-482-LBV</span></p></div>
+      <div class="actions">
+        <button class="share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></svg>Partager le trajet</button>
+        <button class="sos">SOS</button>
+      </div>
+    </div>
+  </div>
+</body></html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>C-25 Données & mode éco</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .nav { padding:22px 16px 0; display:flex; align-items:center; gap:12px; }
+  .back { width:40px; height:40px; border-radius:9999px; background:#F0F0F5; display:flex; align-items:center; justify-content:center; }
+  .nav h1 { font-size:20px; font-weight:700; margin:0; color:#3D0F5C; }
+  .content { padding:20px 20px 0; flex:1; }
+  .conso { background:#FFFFFF; border:1px solid #E0E0EA; border-radius:16px; padding:18px; margin-bottom:14px; }
+  .conso .lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6B6B80; margin:0 0 6px; }
+  .qty { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:28px; font-weight:900; margin:0; }
+  .qty small { font-size:14px; font-weight:600; color:#6B6B80; }
+  .bar { height:8px; border-radius:9999px; background:#F0F0F5; margin:12px 0 6px; overflow:hidden; }
+  .bar span { display:block; height:100%; width:13%; border-radius:9999px; background:linear-gradient(90deg,#5A1A80,#8C238A); }
+  .bar-note { font-size:12px; color:#6B6B80; margin:0; }
+  .group { background:#FFFFFF; border:1px solid #E0E0EA; border-radius:16px; overflow:hidden; margin-bottom:14px; }
+  .row { display:flex; align-items:center; gap:12px; padding:14px; border-bottom:1px solid #F0F0F5; }
+  .row:last-child { border-bottom:none; }
+  .row h4 { font-size:15px; font-weight:600; margin:0; }
+  .row p { font-size:12px; color:#6B6B80; margin:1px 0 0; }
+  .toggle { margin-left:auto; width:46px; height:28px; border-radius:9999px; background:#E0E0EA; position:relative; flex:none; }
+  .toggle::after { content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:9999px; background:#FFFFFF; box-shadow:0 1px 2px rgba(0,0,0,0.15); }
+  .toggle.on { background:#22C47A; }
+  .toggle.on::after { left:auto; right:3px; }
+  .what { font-size:12.5px; line-height:1.55; color:#6B6B80; background:#F0F0F5; border-radius:12px; padding:12px 14px; }
+  .what strong { color:#323248; }
+</style></head><body>
+  <div class="phone">
+    <div class="nav"><div class="back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#323248" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></div><h1>Données &amp; mode éco</h1></div>
+    <div class="content">
+      <div class="conso">
+        <p class="lbl">Consommation Teko — août</p>
+        <p class="qty">13 Mo <small>/ budget 100 Mo</small></p>
+        <div class="bar"><span></span></div>
+        <p class="bar-note">Le widget passe en alerte à 50 Mo, en critique à 80 Mo.</p>
+      </div>
+      <div class="group">
+        <div class="row"><div><h4>Mode éco</h4><p>Réduit la consommation d'environ 70 %</p></div><span class="toggle"></span></div>
+        <div class="row"><div><h4>Automatique sous 2G</h4><p>S'active seul quand le réseau est lent</p></div><span class="toggle on"></span></div>
+        <div class="row"><div><h4>Widget de consommation</h4><p>Visible sur les écrans carte</p></div><span class="toggle on"></span></div>
+      </div>
+      <p class="what">En mode éco : carte simplifiée sans tuiles, <strong>photos remplacées par des initiales</strong>, animations coupées, position rafraîchie toutes les 5 s au lieu de 1 s. Votre course fonctionne exactement pareil.</p>
+    </div>
+  </div>
+</body></html>

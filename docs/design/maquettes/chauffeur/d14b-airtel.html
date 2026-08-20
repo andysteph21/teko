@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>D-14b Paiement Airtel en attente</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .content { padding:36px 24px 0; flex:1; text-align:center; }
+  .check { width:60px; height:60px; border-radius:9999px; background:#E6F9F0; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; }
+  h1 { font-size:24px; font-weight:700; letter-spacing:-0.3px; margin:0 0 4px; color:#3D0F5C; }
+  .sub { font-size:13px; color:#6B6B80; margin:0 0 22px; }
+  .waiting { background:#FFFFFF; border:1.5px solid #00BFA5; border-radius:16px; padding:18px; margin-bottom:12px; text-align:left; box-shadow:0 2px 6px rgba(0,0,0,0.10); }
+  .w-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .logo { width:36px; height:36px; border-radius:9999px; background:#E53E3E; color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .w-head h3 { font-size:15px; font-weight:700; margin:0; }
+  .pulse { display:flex; gap:6px; margin:2px 0 8px; }
+  .pulse span { width:8px; height:8px; border-radius:9999px; background:#E0F7F4; }
+  .pulse span:nth-child(2){ background:#00BFA5; } .pulse span:nth-child(3){ background:#007A6A; }
+  .waiting p { font-size:13.5px; line-height:1.5; color:#6B6B80; margin:0; }
+  .waiting p strong { color:#323248; }
+  .amt-line { display:flex; justify-content:space-between; align-items:baseline; border-top:1px solid #F0F0F5; margin-top:12px; padding-top:12px; }
+  .amt-line span { font-size:13px; color:#6B6B80; }
+  .amt-line .mono { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:20px; font-weight:900; }
+  .next { background:#E6F9F0; border-radius:12px; padding:12px 14px; font-size:12.5px; line-height:1.5; color:#15874F; text-align:left; margin-bottom:14px; }
+  .next strong { display:block; }
+  .cash-switch { height:44px; border:none; border-radius:20px; width:100%; background:#F0F0F5; color:#4A4A60; font-size:14px; font-weight:600; font-family:inherit; }
+  .hint { font-size:11.5px; color:#9090A8; margin:10px 0 0; }
+</style></head><body>
+  <div class="phone">
+    <div class="content">
+      <div class="check"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C47A" stroke-width="2.6"><path d="M4.5 12.5l5 5 10-11"/></svg></div>
+      <h1>Course terminée</h1>
+      <p class="sub">Nadia · Marché du Mont-Bouët → Pharmacie de Nkembo · 12 min</p>
+      <div class="waiting">
+        <div class="w-head"><span class="logo">AM</span><h3>Paiement Airtel Money en cours</h3></div>
+        <div class="pulse"><span></span><span></span><span></span></div>
+        <p>Nadia confirme sur son téléphone avec son <strong>code secret Airtel</strong>. Rien à faire de votre côté — l'écran se mettra à jour tout seul.</p>
+        <div class="amt-line"><span>Montant de la course</span><span class="mono">1 200 FCFA</span></div>
+      </div>
+      <div class="next"><strong>Dès la confirmation :</strong> votre part nette de +1 020 FCFA est créditée au solde du jour, et vous repassez disponible automatiquement.</div>
+      <button class="cash-switch">Le paiement bloque ? Basculer en espèces</button>
+      <p class="hint">La bascule en espèces annule la demande Airtel — à n'utiliser qu'avec l'accord du passager.</p>
+    </div>
+  </div>
+</body></html>

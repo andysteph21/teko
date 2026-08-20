@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>D-08 Vérification en cours</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 28px; box-sizing:border-box; }
+  .art { width:110px; height:110px; border-radius:9999px; background:#E0F7F4; display:flex; align-items:center; justify-content:center; margin-bottom:22px; }
+  h1 { font-size:24px; font-weight:700; letter-spacing:-0.3px; margin:0 0 8px; color:#3D0F5C; text-align:center; }
+  p.body { font-size:15px; line-height:1.5; color:#6B6B80; margin:0 0 22px; text-align:center; max-width:30ch; }
+  .status { width:100%; background:#FFFFFF; border:1px solid #E0E0EA; border-radius:16px; padding:8px 16px; margin-bottom:22px; }
+  .line { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #F0F0F5; font-size:14px; }
+  .line:last-child { border-bottom:none; }
+  .ok { color:#15874F; } .wait { color:#B57308; }
+  .dotp { width:20px; height:20px; border-radius:9999px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .tip { font-size:12.5px; color:#6B6B80; text-align:center; margin:0; line-height:1.5; }
+</style></head><body>
+  <div class="phone">
+    <div class="art">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00BFA5" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
+    </div>
+    <h1>Dossier en vérification</h1>
+    <p class="body">L'équipe Teko examine vos documents. Réponse sous 48 h — vous serez prévenu par SMS et notification.</p>
+    <div class="status">
+      <div class="line"><span class="dotp" style="background:#E6F9F0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#15874F" stroke-width="3"><path d="M4.5 12.5l5 5 10-11"/></svg></span>Identité<span class="ok" style="margin-left:auto;font-size:12px;font-weight:600">Validée</span></div>
+      <div class="line"><span class="dotp" style="background:#FFF8E6"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#B57308" stroke-width="2.6"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg></span>Documents véhicule<span class="wait" style="margin-left:auto;font-size:12px;font-weight:600">En cours</span></div>
+      <div class="line"><span class="dotp" style="background:#FFF8E6"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#B57308" stroke-width="2.6"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg></span>Numéro Airtel Money<span class="wait" style="margin-left:auto;font-size:12px;font-weight:600">En cours</span></div>
+    </div>
+    <p class="tip">Un document illisible ? Vous pourrez le remplacer directement depuis cette page si l'équipe le signale.</p>
+  </div>
+</body></html>

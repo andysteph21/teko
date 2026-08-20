@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>D-12 Saisie du PIN</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .content { padding:40px 24px 0; flex:1; text-align:center; }
+  .avatar { width:72px; height:72px; border-radius:9999px; background:#F5E6FF; color:#5A1A80; font-weight:700; font-size:26px; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; }
+  h1 { font-size:24px; font-weight:700; letter-spacing:-0.3px; margin:0 0 6px; color:#3D0F5C; }
+  .sub { font-size:14px; line-height:1.5; color:#6B6B80; margin:0 0 30px; }
+  .otp { display:flex; gap:12px; justify-content:center; margin-bottom:16px; }
+  .otp span { width:56px; height:64px; border-radius:16px; background:#F0F0F5; border:1.5px solid transparent; display:flex; align-items:center; justify-content:center; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:30px; font-weight:900; }
+  .otp .active { background:#FFFFFF; border-color:#00BFA5; box-shadow:0 2px 6px rgba(0,0,0,0.10); }
+  .hint { font-size:13px; color:#6B6B80; margin:0; }
+  .keys { background:#E0E0EA; padding:8px 6px 22px; display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .key { height:52px; background:#FFFFFF; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:500; box-shadow:0 1px 2px rgba(0,0,0,0.07); }
+  .key.blank { background:transparent; box-shadow:none; }
+</style></head><body>
+  <div class="phone">
+    <div class="content">
+      <div class="avatar">N</div>
+      <h1>Code de Nadia</h1>
+      <p class="sub">Demandez-lui son code à 4 chiffres.<br>La course démarre dès qu'il est confirmé.</p>
+      <div class="otp"><span>4</span><span>7</span><span class="active"></span><span></span></div>
+      <p class="hint">Le passager voit ce code en grand sur son écran.</p>
+    </div>
+    <div class="keys">
+      <div class="key">1</div><div class="key">2</div><div class="key">3</div>
+      <div class="key">4</div><div class="key">5</div><div class="key">6</div>
+      <div class="key">7</div><div class="key">8</div><div class="key">9</div>
+      <div class="key blank"></div><div class="key">0</div><div class="key"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#323248" stroke-width="2"><path d="M20 6H9L4 12l5 6h11a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z"/><path d="M12 10l4 4M16 10l-4 4"/></svg></div>
+    </div>
+  </div>
+</body></html>

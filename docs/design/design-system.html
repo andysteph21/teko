@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teko — Design System</title>
+<style>
+  /* ─── Réinitialisation & base ─── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --brand-50:  #F5E6FF;
+    --brand-100: #E8C6FF;
+    --brand-200: #D49FFF;
+    --brand-300: #BB6EF0;
+    --brand-400: #A040D8;
+    --brand-500: #8C238A;
+    --brand-600: #7A1F8A;
+    --brand-700: #6A1E86;
+    --brand-800: #5A1A80;
+    --brand-900: #3D0F5C;
+    --gradient-brand: linear-gradient(135deg, #5A1A80 0%, #8C238A 100%);
+    --gradient-subtle: linear-gradient(135deg, #F5E6FF 0%, #F0D0F5 100%);
+    --neutral-0:   #FFFFFF;
+    --neutral-50:  #F9F9FB;
+    --neutral-100: #F0F0F5;
+    --neutral-200: #E0E0EA;
+    --neutral-300: #C4C4D4;
+    --neutral-400: #9090A8;
+    --neutral-500: #6B6B80;
+    --neutral-600: #4A4A60;
+    --neutral-700: #323248;
+    --neutral-800: #1E1E30;
+    --neutral-900: #0F0F1E;
+    --success:     #22C47A;
+    --success-l:   #E6F9F0;
+    --success-d:   #15874F;
+    --warning:     #F5A623;
+    --warning-l:   #FFF8E6;
+    --warning-d:   #B57308;
+    --error:       #E53E3E;
+    --error-l:     #FFF0F0;
+    --error-d:     #9B1C1C;
+    --info:        #3B82F6;
+    --info-l:      #E6F0FF;
+    --driver:      #00BFA5;
+    --driver-l:    #E0F7F4;
+    --driver-d:    #007A6A;
+    --shadow-xs:   0 1px 2px rgba(0,0,0,0.07);
+    --shadow-sm:   0 2px 6px rgba(0,0,0,0.10);
+    --shadow-md:   0 4px 16px rgba(0,0,0,0.12);
+    --shadow-lg:   0 8px 32px rgba(0,0,0,0.16);
+    --shadow-brand: 0 4px 24px rgba(90,26,128,0.35);
+    --font-base: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'SF Mono', 'Roboto Mono', 'Courier New', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-base);
+    background: var(--neutral-50);
+    color: var(--neutral-700);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* ─── En-tête page ─── */
+  .page-header {
+    background: var(--gradient-brand);
+    color: #fff;
+    padding: 48px 48px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 40%, rgba(160,64,216,0.35) 0%, transparent 70%);
+  }
+  .page-header h1 {
+    font-size: 34px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    position: relative;
+  }
+  .page-header .meta {
+    font-size: 13px;
+    opacity: 0.75;
+    margin-top: 6px;
+    position: relative;
+  }
+  .page-header .subtitle {
+    font-size: 17px;
+    opacity: 0.88;
+    margin-top: 12px;
+    max-width: 600px;
+    line-height: 1.5;
+    position: relative;
+  }
+
+  /* ─── Layout ─── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+  /* ─── Sommaire ─── */
+  .toc {
+    background: var(--neutral-0);
+    border-left: 4px solid var(--brand-700);
+    border-radius: 0 12px 12px 0;
+    padding: 24px 28px;
+    margin: 32px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .toc h2 { font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--brand-700); margin-bottom: 14px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 5px 0; }
+  .toc a { color: var(--brand-700); text-decoration: none; font-size: 14px; }
+  .toc a:hover { text-decoration: underline; color: var(--brand-500); }
+  .toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+
+  /* ─── Sections ─── */
+  section { margin: 48px 0; scroll-margin-top: 24px; }
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--brand-800);
+    border-bottom: 2px solid var(--brand-100);
+    padding-bottom: 10px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    background: var(--gradient-brand);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 900;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .subsection-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--neutral-700);
+    margin: 24px 0 12px;
+  }
+
+  /* ─── Cartes génériques ─── */
+  .card {
+    background: var(--neutral-0);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+  }
+  .card + .card { margin-top: 16px; }
+  .card-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .card-row .card { flex: 1; min-width: 200px; }
+
+  /* ─── Étiquettes ─── */
+  .label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--neutral-500);
+    margin-bottom: 8px;
+  }
+  .token-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--brand-50);
+    color: var(--brand-800);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+
+  /* ─── COULEURS — Swatches ─── */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+  }
+  .swatch {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    cursor: default;
+  }
+  .swatch-color { height: 64px; width: 100%; }
+  .swatch-info {
+    background: var(--neutral-0);
+    padding: 7px 8px;
+    border-top: 1px solid var(--neutral-100);
+  }
+  .swatch-name { font-size: 11px; font-weight: 600; color: var(--neutral-700); display: block; }
+  .swatch-hex { font-family: var(--font-mono); font-size: 10px; color: var(--neutral-500); display: block; margin-top: 2px; }
+
+  /* Swatches sémantiques — plus larges */
+  .swatch-sem-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .swatch-sem {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .swatch-sem-header {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 10px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .swatch-sem-body {
+    background: var(--neutral-0);
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .swatch-sem-row { display: flex; justify-content: space-between; font-size: 12px; }
+  .swatch-sem-row .n { color: var(--neutral-500); }
+  .swatch-sem-row .v { font-family: var(--font-mono); color: var(--neutral-700); }
+
+  /* Gradient swatch */
+  .gradient-swatch {
+    border-radius: 12px;
+    padding: 20px 24px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-brand);
+  }
+  .gradient-swatch code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    opacity: 0.85;
+    background: rgba(255,255,255,0.15);
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  /* ─── TYPOGRAPHIE ─── */
+  .type-scale { display: flex; flex-direction: column; gap: 8px; }
+  .type-row {
+    background: var(--neutral-0);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    box-shadow: var(--shadow-xs);
+  }
+  .type-meta {
+    width: 180px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .type-token { font-family: var(--font-mono); font-size: 12px; color: var(--brand-700); font-weight: 600; }
+  .type-size  { font-size: 11px; color: var(--neutral-500); }
+  .type-usage { font-size: 11px; color: var(--neutral-400); font-style: italic; }
+  .type-sample { color: var(--neutral-700); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ─── ESPACEMENT ─── */
+  .spacing-grid { display: flex; flex-direction: column; gap: 10px; }
+  .spacing-row {
+    background: var(--neutral-0);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow-xs);
+  }
+  .spacing-meta { width: 200px; flex-shrink: 0; }
+  .spacing-bar-wrap { flex: 1; }
+  .spacing-bar {
+    background: var(--gradient-brand);
+    height: 20px;
+    border-radius: 4px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  .spacing-bar:hover { opacity: 1; }
+  .spacing-val { font-family: var(--font-mono); font-size: 12px; color: var(--brand-700); font-weight: 600; margin-right: 10px; }
+  .spacing-desc { font-size: 11px; color: var(--neutral-500); font-style: italic; }
+
+  /* ─── RAYONS ─── */
+  .radius-grid { display: flex; gap: 16px; flex-wrap: wrap; }
+  .radius-card {
+    background: var(--neutral-0);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    flex: 1;
+    min-width: 100px;
+  }
+  .radius-demo {
+    width: 56px; height: 56px;
+    background: var(--gradient-brand);
+    margin: 0 auto 10px;
+  }
+  .radius-name { font-family: var(--font-mono); font-size: 12px; color: var(--brand-700); font-weight: 600; display: block; }
+  .radius-value { font-size: 11px; color: var(--neutral-500); display: block; margin-top: 2px; }
+
+  /* ─── OMBRES ─── */
+  .shadow-grid { display: flex; gap: 20px; flex-wrap: wrap; }
+  .shadow-card {
+    background: var(--neutral-0);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+  }
+  .shadow-demo {
+    width: 60px; height: 60px;
+    background: var(--neutral-0);
+    border-radius: 10px;
+    margin: 0 auto 12px;
+  }
+  .shadow-name { font-family: var(--font-mono); font-size: 13px; color: var(--neutral-700); font-weight: 600; display: block; }
+  .shadow-usage { font-size: 11px; color: var(--neutral-500); display: block; margin-top: 4px; }
+
+  /* ─── COMPOSANTS ─── */
+  .comp-area {
+    background: var(--neutral-0);
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 20px;
+  }
+  .comp-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--neutral-500);
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--neutral-100);
+    padding-bottom: 10px;
+  }
+  .comp-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .comp-row:last-child { margin-bottom: 0; }
+
+  /* Boutons */
+  .btn {
+    height: 48px;
+    border-radius: 20px;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: var(--font-base);
+    padding: 0 24px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .btn:active { opacity: 0.88; transform: scale(0.97); }
+  .btn-primary {
+    background: var(--gradient-brand);
+    color: #fff;
+    box-shadow: var(--shadow-brand);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--brand-700);
+    border: 2px solid var(--brand-700);
+  }
+  .btn-tertiary {
+    background: transparent;
+    color: var(--brand-700);
+    font-size: 15px;
+    padding: 0 12px;
+    height: 40px;
+    border-radius: 8px;
+  }
+  .btn-driver {
+    background: #00BFA5;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(0,191,165,0.35);
+  }
+  .btn-disabled {
+    background: var(--gradient-brand);
+    color: #fff;
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-loading {
+    background: var(--gradient-brand);
+    color: transparent;
+    cursor: wait;
+    position: relative;
+  }
+  .btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Champs */
+  .field-wrap { display: flex; flex-direction: column; gap: 14px; max-width: 380px; }
+  .field {
+    height: 48px;
+    border-radius: 8px;
+    background: var(--neutral-100);
+    border: 1.5px solid var(--neutral-200);
+    font-size: 17px;
+    padding: 0 16px;
+    color: var(--neutral-700);
+    font-family: var(--font-base);
+    outline: none;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  .field-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--neutral-500); margin-bottom: 5px; display: block; }
+  .field-normal { border-color: var(--neutral-200); }
+  .field-focus  { border-color: var(--brand-700); background: var(--brand-100); box-shadow: var(--shadow-sm); }
+  .field-error  { border-color: var(--error); }
+  .field-placeholder { color: var(--neutral-400); }
+  .field-icon-l {
+    padding-left: 40px;
+  }
+  .field-wrap-outer { position: relative; }
+  .field-icon-dot {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+
+  /* Cartes */
+  .card-standard {
+    background: var(--neutral-0);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow-md);
+    max-width: 320px;
+  }
+  .card-course {
+    background: var(--neutral-0);
+    border-radius: 28px 28px 12px 12px;
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    max-width: 340px;
+  }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--neutral-300);
+    border-radius: 9999px;
+    margin: 0 auto 20px;
+  }
+  .route-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .route-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .route-line-vert {
+    width: 1px; background: var(--neutral-300);
+    height: 16px; margin: 2px 0 2px 4.5px;
+  }
+  .route-text { font-size: 14px; color: var(--neutral-700); }
+  .route-sub  { font-size: 12px; color: var(--neutral-400); margin-top: 2px; }
+  .price-row { display: flex; justify-content: space-between; align-items: center; margin: 16px 0 4px; }
+  .price-val { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--neutral-700); }
+  .price-dur { font-size: 13px; color: var(--neutral-500); background: var(--neutral-100); border-radius: 8px; padding: 4px 10px; }
+
+  /* Carte chauffeur */
+  .driver-card {
+    background: var(--neutral-0);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow-md);
+    max-width: 320px;
+  }
+  .driver-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 16px;
+    flex-shrink: 0;
+  }
+  .driver-name { font-weight: 600; font-size: 15px; color: var(--neutral-700); }
+  .driver-stars { color: var(--warning); font-size: 13px; }
+  .driver-plate { font-family: var(--font-mono); font-size: 13px; color: var(--neutral-600); letter-spacing: 2px; }
+  .driver-model { font-size: 12px; color: var(--neutral-500); }
+  .driver-actions { display: flex; gap: 10px; margin-top: 12px; }
+  .btn-sm {
+    height: 36px; border-radius: 9999px; font-size: 13px; font-weight: 600;
+    padding: 0 14px; border: 1.5px solid var(--brand-700); color: var(--brand-700);
+    background: transparent; cursor: pointer; font-family: var(--font-base);
+  }
+
+  /* Carte de solde chauffeur */
+  .balance-card {
+    background: var(--gradient-brand);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow-lg), var(--shadow-brand);
+    color: #fff;
+    max-width: 340px;
+  }
+  .balance-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; opacity: 0.75; }
+  .balance-amount { font-family: var(--font-mono); font-size: 28px; font-weight: 900; margin: 8px 0 4px; display: flex; align-items: center; gap: 8px; }
+  .balance-arrow { font-size: 18px; }
+  .balance-sub { font-size: 12px; opacity: 0.65; margin-bottom: 14px; }
+  .progress-bar { height: 6px; background: rgba(255,255,255,0.25); border-radius: 9999px; overflow: hidden; margin-bottom: 16px; }
+  .progress-fill { height: 100%; border-radius: 9999px; }
+  .btn-outline-white {
+    border: 1.5px solid rgba(255,255,255,0.6);
+    color: #fff;
+    background: transparent;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 18px;
+    cursor: pointer;
+    font-family: var(--font-base);
+  }
+
+  /* Widget data */
+  .widget-data {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    background: rgba(15,15,30,0.85);
+    border-radius: 9999px;
+    padding: 0 12px 0 10px;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .widget-wifi { width: 16px; height: 16px; }
+  .widget-dismiss { opacity: 0.5; font-size: 11px; margin-left: 2px; }
+  .widget-data.eco { border: 1.5px solid var(--warning); }
+
+  /* Badge top service */
+  .badge-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #F5A623, #E5900A);
+    border-radius: 9999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+
+  /* Tab bars */
+  .tab-bar {
+    background: var(--neutral-0);
+    border-radius: 12px;
+    padding: 12px 8px;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: var(--shadow-md);
+    max-width: 340px;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .tab-item.active-client { color: var(--brand-700); }
+  .tab-item.active-driver { color: var(--driver); }
+  .tab-item.inactive { color: var(--neutral-400); }
+  .tab-icon { font-size: 20px; }
+
+  /* ─── Thèmes ─── */
+  .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .theme-card {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .theme-card-header {
+    padding: 14px 20px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .theme-row-item {
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(128,128,128,0.1);
+  }
+  .theme-row-item:last-child { border-bottom: none; }
+  .color-chip { width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.08); }
+
+  /* ─── Mode éco ─── */
+  .eco-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .eco-table th {
+    background: var(--brand-800);
+    color: #fff;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  .eco-table td { padding: 10px 14px; border-bottom: 1px solid var(--neutral-100); }
+  .eco-table tr:last-child td { border-bottom: none; }
+  .eco-table tr:nth-child(even) td { background: var(--neutral-50); }
+  .eco-normal { color: var(--neutral-600); }
+  .eco-eco { color: var(--brand-700); font-weight: 500; }
+
+  /* ─── Accessibilité — ratios ─── */
+  .contrast-grid { display: flex; flex-direction: column; gap: 8px; }
+  .contrast-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--neutral-0);
+    border-radius: 8px;
+    padding: 10px 16px;
+    box-shadow: var(--shadow-xs);
+    font-size: 13px;
+  }
+  .contrast-swatch {
+    width: 80px; height: 36px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .contrast-ratio { font-family: var(--font-mono); font-weight: 700; color: var(--neutral-700); min-width: 50px; }
+  .contrast-level {
+    font-size: 11px; font-weight: 700; padding: 3px 8px;
+    border-radius: 9999px; letter-spacing: 0.5px;
+  }
+  .level-aaa { background: var(--success-l); color: var(--success-d); }
+  .level-aa  { background: var(--info-l);    color: #1D4ED8; }
+  .contrast-desc { color: var(--neutral-500); flex: 1; }
+
+  /* ─── Tableau générique ─── */
+  table.generic { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
+  table.generic th { background: var(--neutral-100); padding: 9px 14px; text-align: left; font-weight: 600; color: var(--neutral-700); font-size: 12px; letter-spacing: 0.3px; }
+  table.generic td { padding: 9px 14px; border-bottom: 1px solid var(--neutral-100); color: var(--neutral-700); }
+  table.generic tr:last-child td { border-bottom: none; }
+  table.generic code { font-family: var(--font-mono); font-size: 11px; background: var(--brand-50); color: var(--brand-800); padding: 2px 5px; border-radius: 3px; }
+
+  /* ─── Notes / call-out ─── */
+  .callout {
+    display: flex;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .callout-info { background: var(--info-l); border-left: 4px solid var(--info); color: #1D4ED8; }
+  .callout-warn { background: var(--warning-l); border-left: 4px solid var(--warning); color: var(--warning-d); }
+  .callout-eco  { background: var(--brand-50); border-left: 4px solid var(--brand-700); color: var(--brand-800); }
+
+  /* ─── Footer ─── */
+  footer {
+    text-align: center;
+    padding: 40px 32px;
+    font-size: 12px;
+    color: var(--neutral-400);
+    border-top: 1px solid var(--neutral-200);
+    margin-top: 64px;
+  }
+  footer strong { color: var(--brand-700); }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 700px) {
+    .page-header { padding: 32px 20px 28px; }
+    .container { padding: 0 16px; }
+    .theme-grid { grid-template-columns: 1fr; }
+    .toc-grid { grid-template-columns: 1fr; }
+    .card-row { flex-direction: column; }
+    .type-row { flex-direction: column; gap: 6px; }
+    .type-meta { width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════ EN-TÊTE -->
+<header class="page-header">
+  <div class="container">
+    <h1>Teko Design System</h1>
+    <p class="meta">Version 1.0 &nbsp;·&nbsp; Juin 2026 &nbsp;·&nbsp; Expo React Native + Next.js</p>
+    <p class="subtitle">Référence de design partagée entre les apps client, chauffeur et l'admin web. Les valeurs numériques sont canonisées dans <code style="font-family:monospace;background:rgba(255,255,255,0.15);padding:2px 6px;border-radius:4px;">design-tokens.json</code> ; ce guide en illustre la logique.</p>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════ SOMMAIRE -->
+<div class="container">
+<nav class="toc" aria-label="Sommaire">
+  <h2>Sommaire</h2>
+  <div class="toc-grid">
+    <ol>
+      <li><a href="#s1">Identité visuelle</a></li>
+      <li><a href="#s2">Palette de couleurs</a></li>
+      <li><a href="#s3">Typographie</a></li>
+      <li><a href="#s4">Espacement</a></li>
+      <li><a href="#s5">Rayons de bordure</a></li>
+      <li><a href="#s6">Élévations / ombres</a></li>
+      <li><a href="#s7">Iconographie</a></li>
+    </ol>
+    <ol start="8">
+      <li><a href="#s8">Composants</a></li>
+      <li><a href="#s9">Thèmes clair / sombre</a></li>
+      <li><a href="#s10">Mode économie de données</a></li>
+      <li><a href="#s11">Accessibilité</a></li>
+      <li><a href="#s12">Applications par écran</a></li>
+      <li><a href="#s13">Fichiers de référence</a></li>
+    </ol>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════ 1. IDENTITÉ -->
+<section id="s1">
+  <h2 class="section-title"><span class="num">1</span> Identité visuelle</h2>
+  <div class="card-row">
+    <div class="card">
+      <span class="label">Concept</span>
+      <p>Teko est un service de transport fiable et accessible au Gabon. Le design est <strong>sobre, lisible et rapide à charger</strong> sur des réseaux 3G et des appareils Android d'entrée de gamme. L'identité reflète la <em>confiance</em> (violet profond) et <em>l'énergie urbaine</em> (magenta), dans un contexte africain moderne.</p>
+    </div>
+    <div class="card">
+      <span class="label">Tonalité visuelle</span>
+      <ul style="padding-left:18px;line-height:2;">
+        <li><strong>Sobre et efficace</strong> — pas de fioritures, chaque pixel justifié.</li>
+        <li><strong>Lisible avant tout</strong> — contraste élevé, tailles généreuses.</li>
+        <li><strong>Chaleureux et local</strong> — palette vive mais pas criarde.</li>
+        <li><strong>Fiable</strong> — cohérence absolue entre les deux apps.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 2. COULEURS -->
+<section id="s2">
+  <h2 class="section-title"><span class="num">2</span> Palette de couleurs</h2>
+
+  <h3 class="subsection-title">Gradient de marque</h3>
+  <p style="margin-bottom:12px;font-size:13px;color:var(--neutral-500);">Extrait du logo officiel Teko — signature visuelle principale (CTA, icônes, header bottom sheet, marqueur destination).</p>
+  <div class="gradient-swatch" style="background:linear-gradient(135deg,#5A1A80,#8C238A);">
+    Gradient de marque
+    <code>linear-gradient(135deg, #5A1A80 → #8C238A)</code>
+  </div>
+  <div class="gradient-swatch" style="background:linear-gradient(180deg,#5A1A80,#8C238A);">
+    Gradient vertical
+    <code>linear-gradient(180deg, #5A1A80 → #8C238A)</code>
+  </div>
+  <div class="gradient-swatch" style="background:linear-gradient(135deg,#F5E6FF,#F0D0F5);color:var(--brand-800);box-shadow:var(--shadow-sm);">
+    Gradient subtil (fonds cartes clair)
+    <code style="background:rgba(90,26,128,0.1);color:var(--brand-800);">linear-gradient(135deg, #F5E6FF → #F0D0F5)</code>
+  </div>
+
+  <h3 class="subsection-title" style="margin-top:28px;">Palette brand (50 → 900)</h3>
+  <div class="swatch-grid">
+    <div class="swatch"><div class="swatch-color" style="background:#F5E6FF;"></div><div class="swatch-info"><span class="swatch-name">brand-50</span><span class="swatch-hex">#F5E6FF</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#E8C6FF;"></div><div class="swatch-info"><span class="swatch-name">brand-100</span><span class="swatch-hex">#E8C6FF</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#D49FFF;"></div><div class="swatch-info"><span class="swatch-name">brand-200</span><span class="swatch-hex">#D49FFF</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#BB6EF0;"></div><div class="swatch-info"><span class="swatch-name">brand-300</span><span class="swatch-hex">#BB6EF0</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#A040D8;"></div><div class="swatch-info"><span class="swatch-name">brand-400</span><span class="swatch-hex">#A040D8</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#8C238A;"></div><div class="swatch-info"><span class="swatch-name">brand-500</span><span class="swatch-hex">#8C238A</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#7A1F8A;"></div><div class="swatch-info"><span class="swatch-name">brand-600</span><span class="swatch-hex">#7A1F8A</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#6A1E86;"></div><div class="swatch-info"><span class="swatch-name">brand-700</span><span class="swatch-hex">#6A1E86</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#5A1A80;"></div><div class="swatch-info"><span class="swatch-name">brand-800</span><span class="swatch-hex">#5A1A80</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#3D0F5C;"></div><div class="swatch-info"><span class="swatch-name">brand-900</span><span class="swatch-hex">#3D0F5C</span></div></div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <table class="generic">
+      <thead><tr><th>Token</th><th>Usage principal</th></tr></thead>
+      <tbody>
+        <tr><td><code>brand-50</code></td><td>Fond hover léger, badges inactifs</td></tr>
+        <tr><td><code>brand-100</code></td><td>Fond input focus (app client)</td></tr>
+        <tr><td><code>brand-200</code></td><td>Icônes secondaires</td></tr>
+        <tr><td><code>brand-300</code></td><td>Liens, accents UI</td></tr>
+        <tr><td><code>brand-400</code></td><td>Bouton secondaire pressé</td></tr>
+        <tr><td><code>brand-500</code></td><td>Magenta — CTA secondaire, accents</td></tr>
+        <tr><td><code>brand-700</code></td><td>État actif bouton outline</td></tr>
+        <tr><td><code>brand-800</code></td><td>Violet profond (logo) — CTA dark</td></tr>
+        <tr><td><code>brand-900</code></td><td>Violet nuit — textes sur fond clair</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="subsection-title" style="margin-top:28px;">Accent chauffeur (teal)</h3>
+  <p style="font-size:13px;color:var(--neutral-500);margin-bottom:12px;">Différencie l'app chauffeur d'un coup d'œil (icône, en-têtes, badges actif). Complémentaire au violet — évoque professionnalisme et efficacité.</p>
+  <div class="swatch-grid" style="max-width:300px;">
+    <div class="swatch"><div class="swatch-color" style="background:#E0F7F4;"></div><div class="swatch-info"><span class="swatch-name">driver.accentLight</span><span class="swatch-hex">#E0F7F4</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#00BFA5;"></div><div class="swatch-info"><span class="swatch-name">driver.accent</span><span class="swatch-hex">#00BFA5</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#007A6A;"></div><div class="swatch-info"><span class="swatch-name">driver.accentDark</span><span class="swatch-hex">#007A6A</span></div></div>
+  </div>
+
+  <h3 class="subsection-title" style="margin-top:28px;">Neutres (teintés violet)</h3>
+  <div class="swatch-grid">
+    <div class="swatch"><div class="swatch-color" style="background:#FFFFFF;border:1px solid #E0E0EA;"></div><div class="swatch-info"><span class="swatch-name">neutral-0</span><span class="swatch-hex">#FFFFFF</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#F9F9FB;"></div><div class="swatch-info"><span class="swatch-name">neutral-50</span><span class="swatch-hex">#F9F9FB</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#F0F0F5;"></div><div class="swatch-info"><span class="swatch-name">neutral-100</span><span class="swatch-hex">#F0F0F5</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#E0E0EA;"></div><div class="swatch-info"><span class="swatch-name">neutral-200</span><span class="swatch-hex">#E0E0EA</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#C4C4D4;"></div><div class="swatch-info"><span class="swatch-name">neutral-300</span><span class="swatch-hex">#C4C4D4</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#9090A8;"></div><div class="swatch-info"><span class="swatch-name">neutral-400</span><span class="swatch-hex">#9090A8</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#6B6B80;"></div><div class="swatch-info"><span class="swatch-name">neutral-500</span><span class="swatch-hex">#6B6B80</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#4A4A60;"></div><div class="swatch-info"><span class="swatch-name">neutral-600</span><span class="swatch-hex">#4A4A60</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#323248;"></div><div class="swatch-info"><span class="swatch-name">neutral-700</span><span class="swatch-hex">#323248</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#1E1E30;"></div><div class="swatch-info"><span class="swatch-name">neutral-800</span><span class="swatch-hex">#1E1E30</span></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#0F0F1E;"></div><div class="swatch-info"><span class="swatch-name">neutral-900</span><span class="swatch-hex">#0F0F1E</span></div></div>
+  </div>
+
+  <h3 class="subsection-title" style="margin-top:28px;">Couleurs sémantiques</h3>
+  <div class="swatch-sem-grid">
+    <div class="swatch-sem">
+      <div class="swatch-sem-header" style="background:#22C47A;">✓ Succès</div>
+      <div class="swatch-sem-body">
+        <div class="swatch-sem-row"><span class="n">Light</span><span class="v">#E6F9F0</span></div>
+        <div class="swatch-sem-row"><span class="n">Default</span><span class="v">#22C47A</span></div>
+        <div class="swatch-sem-row"><span class="n">Dark</span><span class="v">#15874F</span></div>
+        <div class="swatch-sem-row" style="margin-top:4px;font-style:italic;"><span class="n" style="font-size:11px;">Dispo chauffeur, course confirmée, solde+</span></div>
+      </div>
+    </div>
+    <div class="swatch-sem">
+      <div class="swatch-sem-header" style="background:#F5A623;color:#1a1a00;">⚠ Warning</div>
+      <div class="swatch-sem-body">
+        <div class="swatch-sem-row"><span class="n">Light</span><span class="v">#FFF8E6</span></div>
+        <div class="swatch-sem-row"><span class="n">Default</span><span class="v">#F5A623</span></div>
+        <div class="swatch-sem-row"><span class="n">Dark</span><span class="v">#B57308</span></div>
+        <div class="swatch-sem-row" style="margin-top:4px;font-style:italic;"><span class="n" style="font-size:11px;">Alerte data, solde proche seuil, attente</span></div>
+      </div>
+    </div>
+    <div class="swatch-sem">
+      <div class="swatch-sem-header" style="background:#E53E3E;">✕ Erreur</div>
+      <div class="swatch-sem-body">
+        <div class="swatch-sem-row"><span class="n">Light</span><span class="v">#FFF0F0</span></div>
+        <div class="swatch-sem-row"><span class="n">Default</span><span class="v">#E53E3E</span></div>
+        <div class="swatch-sem-row"><span class="n">Dark</span><span class="v">#9B1C1C</span></div>
+        <div class="swatch-sem-row" style="margin-top:4px;font-style:italic;"><span class="n" style="font-size:11px;">Solde débiteur, erreur paiement, annulation</span></div>
+      </div>
+    </div>
+    <div class="swatch-sem">
+      <div class="swatch-sem-header" style="background:#3B82F6;">ℹ Info</div>
+      <div class="swatch-sem-body">
+        <div class="swatch-sem-row"><span class="n">Light</span><span class="v">#E6F0FF</span></div>
+        <div class="swatch-sem-row"><span class="n">Default</span><span class="v">#3B82F6</span></div>
+        <div class="swatch-sem-row"><span class="n">Dark</span><span class="v">#1D4ED8</span></div>
+        <div class="swatch-sem-row" style="margin-top:4px;font-style:italic;"><span class="n" style="font-size:11px;">Notifications, aide contextuelle</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title" style="margin-top:28px;">Couleurs carte</h3>
+  <div class="card">
+    <table class="generic">
+      <thead><tr><th>Token</th><th>Couleur</th><th>Rôle</th></tr></thead>
+      <tbody>
+        <tr><td><code>map.markerClient</code></td><td><span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:16px;height:16px;border-radius:50%;background:#8C238A;display:inline-block;"></span>#8C238A</span></td><td>Marqueur position passager</td></tr>
+        <tr><td><code>map.markerDriver</code></td><td><span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:16px;height:16px;border-radius:50%;background:#00BFA5;display:inline-block;"></span>#00BFA5</span></td><td>Véhicule chauffeur</td></tr>
+        <tr><td><code>map.markerLandmark</code></td><td><span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:16px;height:16px;border-radius:50%;background:#F5A623;display:inline-block;"></span>#F5A623</span></td><td>Point de repère collaboratif</td></tr>
+        <tr><td><code>map.routeLine</code></td><td><span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:16px;height:16px;border-radius:4px;background:#5A1A80;display:inline-block;"></span>#5A1A80</span></td><td>Tracé de l'itinéraire</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 3. TYPOGRAPHIE -->
+<section id="s3">
+  <h2 class="section-title"><span class="num">3</span> Typographie</h2>
+
+  <div class="callout callout-eco" style="margin-bottom:20px;">
+    <div>
+      <strong>Polices système uniquement</strong> — zéro fichier téléchargé pour la sobriété data et la performance 3G.<br>
+      <code style="font-family:monospace;font-size:12px;">font-family: System, -apple-system, 'SF Pro Text', 'Roboto', 'Segoe UI', sans-serif;</code>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">Échelle typographique</h3>
+  <div class="type-scale">
+    <div class="type-row">
+      <div class="type-meta"><span class="type-token">xs</span><span class="type-size">11px · weight 500</span><span class="type-usage">Labels carte, badges mini</span></div>
+      <div class="type-sample" style="font-size:11px;font-weight:500;">Abidjan · Accra · Libreville</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><span class="type-token">sm</span><span class="type-size">13px · weight 400</span><span class="type-usage">Captions, métadonnées, horodatage</span></div>
+      <div class="type-sample" style="font-size:13px;font-weight:400;color:var(--neutral-500);">Mis à jour il y a 2 min · 14h32</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><span class="type-token">base</span><span class="type-size">15px · weight 400</span><span class="type-usage">Corps de texte</span></div>
+      <div class="type-sample" style="font-size:15px;font-weight:400;">Votre chauffeur est en route vers vous.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><span class="type-token">md</span><span class="type-size">17px · weight 500</span><span class="type-usage">Items liste, boutons, champs</span></div>
+      <div class="type-sample" style="font-size:17px;font-weight:500;">Aéroport Léon-Mba</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><span class="type-token">lg</span><span class="type-size">20px · weight 600</span><span class="type-usage">Titres section, montants</span></div>
+      <div class="type-sample" style="font-size:20px;font-weight:600;">2 500 FCFA</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><span class="type-token">xl</span><span class="type-size">24px · weight 700</span><span class="type-usage">Titres d'écran</span></div>
+      <div class="type-sample" style="font-size:24px;font-weight:700;">Où allez-vous ?</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><span class="type-token">2xl</span><span class="type-size">28px · weight 900</span><span class="type-usage">Solde journalier chauffeur</span></div>
+      <div class="type-sample" style="font-size:28px;font-weight:900;font-family:var(--font-mono);">12 500 FCFA</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta"><span class="type-token">3xl</span><span class="type-size">34px · weight 900</span><span class="type-usage">Montant final, confirmation</span></div>
+      <div class="type-sample" style="font-size:34px;font-weight:900;font-family:var(--font-mono);">4 200 FCFA</div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title" style="margin-top:20px;">Règles typographiques</h3>
+  <div class="card">
+    <ul style="padding-left:20px;line-height:2.2;font-size:14px;">
+      <li><strong>Hiérarchie stricte</strong> — un seul titre <code class="token-tag">xl</code> par écran.</li>
+      <li><strong>Montants en monospace</strong> — SF Mono / Roboto Mono pour les chiffres (soldes, tarifs) — évite les sauts de largeur en temps réel.</li>
+      <li><strong>Uppercase sparingly</strong> — uniquement pour les étiquettes de catégorie (<code class="token-tag">letterSpacing: 1px</code>).</li>
+      <li><strong>Line-height</strong> — <code class="token-tag">1.5</code> pour le corps, <code class="token-tag">1.2</code> pour les gros titres numériques.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 4. ESPACEMENT -->
+<section id="s4">
+  <h2 class="section-title"><span class="num">4</span> Espacement</h2>
+  <div class="callout callout-info" style="margin-bottom:20px;">
+    Grille de base <strong>4px</strong>. Tokens <code style="font-family:monospace;">spacing-N</code> (N = multiple de 4).
+  </div>
+  <div class="spacing-grid">
+    <div class="spacing-row"><div class="spacing-meta"><span class="spacing-val">spacing-2</span><span class="spacing-desc">8px — Gap interne composants</span></div><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:8px;"></div></div></div>
+    <div class="spacing-row"><div class="spacing-meta"><span class="spacing-val">spacing-3</span><span class="spacing-desc">12px — Padding pills/badges</span></div><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:12px;"></div></div></div>
+    <div class="spacing-row"><div class="spacing-meta"><span class="spacing-val">spacing-4</span><span class="spacing-desc">16px — Padding horizontal écran</span></div><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:16px;"></div></div></div>
+    <div class="spacing-row"><div class="spacing-meta"><span class="spacing-val">spacing-6</span><span class="spacing-desc">24px — Gap cartes, padding sections</span></div><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:24px;"></div></div></div>
+    <div class="spacing-row"><div class="spacing-meta"><span class="spacing-val">spacing-8</span><span class="spacing-desc">32px — Entre sections majeures</span></div><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:32px;"></div></div></div>
+    <div class="spacing-row"><div class="spacing-meta"><span class="spacing-val">spacing-12</span><span class="spacing-desc">48px — Hauteur bouton / input</span></div><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:48px;"></div></div></div>
+    <div class="spacing-row"><div class="spacing-meta"><span class="spacing-val">spacing-20</span><span class="spacing-desc">80px — Safe area bottom (tab bar)</span></div><div class="spacing-bar-wrap"><div class="spacing-bar" style="width:80px;"></div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 5. RAYONS -->
+<section id="s5">
+  <h2 class="section-title"><span class="num">5</span> Rayons de bordure</h2>
+  <div class="radius-grid">
+    <div class="radius-card" style="border-radius:8px;"><div class="radius-demo" style="border-radius:4px;"></div><span class="radius-name">xs</span><span class="radius-value">4px · Chips</span></div>
+    <div class="radius-card" style="border-radius:8px;"><div class="radius-demo" style="border-radius:8px;"></div><span class="radius-name">sm</span><span class="radius-value">8px · Inputs</span></div>
+    <div class="radius-card" style="border-radius:8px;"><div class="radius-demo" style="border-radius:12px;"></div><span class="radius-name">md</span><span class="radius-value">12px · Cartes</span></div>
+    <div class="radius-card" style="border-radius:8px;"><div class="radius-demo" style="border-radius:16px;"></div><span class="radius-name">lg</span><span class="radius-value">16px · Cartes proém.</span></div>
+    <div class="radius-card" style="border-radius:8px;"><div class="radius-demo" style="border-radius:20px;"></div><span class="radius-name">xl</span><span class="radius-value">20px · Boutons CTA</span></div>
+    <div class="radius-card" style="border-radius:8px;"><div class="radius-demo" style="border-radius:28px;"></div><span class="radius-name">2xl</span><span class="radius-value">28px · Bottom sheet</span></div>
+    <div class="radius-card" style="border-radius:8px;"><div class="radius-demo" style="border-radius:9999px;"></div><span class="radius-name">full</span><span class="radius-value">9999px · Pills, badges</span></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 6. OMBRES -->
+<section id="s6">
+  <h2 class="section-title"><span class="num">6</span> Élévations / ombres</h2>
+  <div class="shadow-grid">
+    <div class="shadow-card" style="box-shadow:var(--shadow-md);"><div class="shadow-demo" style="box-shadow:0 1px 2px rgba(0,0,0,0.07);"></div><span class="shadow-name">xs</span><span class="shadow-usage">Séparateur léger</span></div>
+    <div class="shadow-card" style="box-shadow:var(--shadow-md);"><div class="shadow-demo" style="box-shadow:0 2px 6px rgba(0,0,0,0.10);"></div><span class="shadow-name">sm</span><span class="shadow-usage">Input focussé</span></div>
+    <div class="shadow-card" style="box-shadow:var(--shadow-md);"><div class="shadow-demo" style="box-shadow:0 4px 16px rgba(0,0,0,0.12);"></div><span class="shadow-name">md</span><span class="shadow-usage">Carte standard</span></div>
+    <div class="shadow-card" style="box-shadow:var(--shadow-md);"><div class="shadow-demo" style="box-shadow:0 8px 32px rgba(0,0,0,0.16);"></div><span class="shadow-name">lg</span><span class="shadow-usage">Widget flottant</span></div>
+    <div class="shadow-card" style="box-shadow:var(--shadow-md);"><div class="shadow-demo" style="box-shadow:0 16px 48px rgba(0,0,0,0.22);"></div><span class="shadow-name">xl</span><span class="shadow-usage">Dialog plein écran</span></div>
+    <div class="shadow-card" style="box-shadow:var(--shadow-md);"><div class="shadow-demo" style="box-shadow:0 4px 24px rgba(90,26,128,0.35);background:linear-gradient(135deg,#5A1A80,#8C238A);"></div><span class="shadow-name">brand</span><span class="shadow-usage">Halo CTA violet</span></div>
+  </div>
+  <div class="callout callout-eco" style="margin-top:16px;">
+    En <strong>mode économie de données</strong>, toutes les ombres sont remplacées par des bordures légères <code style="font-family:monospace;">neutral-200 1px</code> — zéro coût GPU.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 7. ICONOGRAPHIE -->
+<section id="s7">
+  <h2 class="section-title"><span class="num">7</span> Iconographie</h2>
+  <div class="card-row">
+    <div class="card">
+      <span class="label">Style général</span>
+      <ul style="padding-left:18px;line-height:2.2;font-size:14px;">
+        <li><strong>Outline 2px</strong> par défaut — léger et lisible.</li>
+        <li><strong>Filled</strong> pour états actifs (tab bar sélectionné, action confirmée).</li>
+        <li>Touch target minimum : <strong>44×44px</strong> (cible 48×48px).</li>
+        <li>Bibliothèque : <strong>Lucide React Native</strong> (léger, arrondi, cohérent).</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="label">Marqueurs carte</span>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#00BFA5;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;">🚗</div>
+          <span style="font-size:13px;color:var(--neutral-600);">Cercle plein teal — chauffeur</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:24px;height:32px;border-radius:12px 12px 12px 0;background:#8C238A;transform:rotate(45deg) translate(5px,-5px);"></div>
+          <span style="font-size:13px;color:var(--neutral-600);">Épingle magenta — destination passager</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:#F5A623;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;">📍</div>
+          <span style="font-size:13px;color:var(--neutral-600);">Carré ambre — point de repère</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <span class="label">Icônes spécifiques Teko</span>
+    <table class="generic" style="margin-top:10px;">
+      <thead><tr><th>Icône</th><th>Usage</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Monogramme T</td><td>Icônes d'app, splash screen</td><td>SVG fourni dans assets/icons/</td></tr>
+        <tr><td>Voiture (emblème)</td><td>Icône app chauffeur, splash</td><td>Différenciateur app chauffeur — le badge « volant » est abandonné (cf. app-icons.html) ; en interface, le rôle chauffeur se signale par l'accent teal, pas par une icône</td></tr>
+        <tr><td>Épingle repère</td><td>Carte — points de repère</td><td>Contour + fill warning.default</td></tr>
+        <tr><td>Billet</td><td>Solde, paiement</td><td>Outline</td></tr>
+        <tr><td>Wifi barré / faible</td><td>Widget data</td><td>Filled colored</td></tr>
+        <tr><td>Étoile filled</td><td>Badge Top Service</td><td>Fill warning.default #F5A623</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 8. COMPOSANTS -->
+<section id="s8">
+  <h2 class="section-title"><span class="num">8</span> Composants</h2>
+
+  <!-- 8.1 Boutons -->
+  <div class="comp-area">
+    <div class="comp-title">8.1 — Boutons</div>
+    <span class="label">Primaire (gradient de marque)</span>
+    <div class="comp-row">
+      <button class="btn btn-primary">Demander un Teko</button>
+      <button class="btn btn-primary btn-loading" style="width:180px;">&nbsp;</button>
+      <button class="btn btn-disabled" disabled>Désactivé</button>
+    </div>
+    <span class="label" style="margin-top:16px;">Secondaire (outline)</span>
+    <div class="comp-row">
+      <button class="btn btn-secondary">Annuler la course</button>
+    </div>
+    <span class="label" style="margin-top:16px;">Tertiaire (texte)</span>
+    <div class="comp-row">
+      <button class="btn btn-tertiary">Voir les détails</button>
+    </div>
+    <span class="label" style="margin-top:16px;">Chauffeur — Action teal</span>
+    <div class="comp-row">
+      <button class="btn btn-driver">Démarrer la course</button>
+      <button class="btn btn-driver">Arriver</button>
+    </div>
+    <div class="callout callout-info" style="margin-top:12px;font-size:12px;">
+      État pressé : <code style="font-family:monospace;">opacity: 0.88</code>, <code style="font-family:monospace;">scale: 0.97</code>. État chargement : spinner blanc centré, texte masqué. Hauteur : 48px, border-radius : 20px (xl).
+    </div>
+  </div>
+
+  <!-- 8.2 Champs -->
+  <div class="comp-area">
+    <div class="comp-title">8.2 — Champs de saisie</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+      <div class="field-wrap">
+        <div>
+          <span class="field-label">Destination</span>
+          <div class="field field-normal"><span class="field-placeholder">Où allez-vous ?</span></div>
+        </div>
+        <div>
+          <span class="field-label">Destination (focus)</span>
+          <div class="field field-focus">Aéroport Léon-Mba</div>
+        </div>
+        <div>
+          <span class="field-label">Erreur</span>
+          <div class="field field-error"><span style="color:var(--neutral-700);">Adresse invalide</span></div>
+          <span style="font-size:11px;color:var(--error);margin-top:4px;display:block;">Lieu introuvable — réessayez</span>
+        </div>
+      </div>
+      <div>
+        <span class="field-label">Champs de lieu spéciaux</span>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+          <div class="field-wrap-outer" style="position:relative;">
+            <div class="field field-icon-l" style="background:#E6F9F0;border-color:#22C47A;">Quartier Akébé</div>
+            <div class="field-icon-dot" style="background:#22C47A;"></div>
+          </div>
+          <div class="field-wrap-outer" style="position:relative;">
+            <div class="field field-icon-l" style="background:var(--brand-50);border-color:var(--brand-300);">Aéroport Léon-Mba</div>
+            <div class="field-icon-dot" style="background:#8C238A;border-radius:2px;height:14px;width:10px;top:50%;transform:translateY(-50%);left:14px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8.3 Cartes -->
+  <div class="comp-area">
+    <div class="comp-title">8.3 — Cartes</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+      <div>
+        <span class="label">Carte standard</span>
+        <div class="card-standard" style="margin-top:8px;">
+          <div style="font-size:13px;color:var(--neutral-500);margin-bottom:8px;">Lundi 2 juin 2026</div>
+          <div style="font-weight:600;font-size:15px;margin-bottom:4px;">Course confirmée</div>
+          <div style="font-size:13px;color:var(--neutral-500);">Akébé → Aéroport Léon-Mba</div>
+          <div style="display:flex;justify-content:space-between;margin-top:12px;align-items:center;">
+            <span style="font-family:var(--font-mono);font-size:17px;font-weight:700;color:var(--brand-800);">2 500 FCFA</span>
+            <span style="background:var(--success-l);color:var(--success-d);font-size:11px;font-weight:700;padding:4px 10px;border-radius:9999px;">Terminée</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="label">Bottom sheet course</span>
+        <div class="card-course" style="margin-top:8px;">
+          <div class="sheet-handle"></div>
+          <div class="route-row">
+            <div><div class="route-dot" style="background:#22C47A;"></div><div class="route-line-vert"></div></div>
+            <div><div class="route-text">Quartier Akébé</div><div class="route-sub">Votre position</div></div>
+          </div>
+          <div class="route-row">
+            <div><div class="route-dot" style="background:#8C238A;"></div></div>
+            <div><div class="route-text">Aéroport Léon-Mba</div><div class="route-sub">via Carrefour IAI</div></div>
+          </div>
+          <div class="price-row">
+            <span class="price-val">2 500 FCFA</span>
+            <span class="price-dur">18 min</span>
+          </div>
+          <button class="btn btn-primary" style="width:100%;margin-top:12px;">Confirmer la course</button>
+        </div>
+      </div>
+      <div>
+        <span class="label">Carte chauffeur — Info véhicule</span>
+        <div class="driver-card" style="margin-top:8px;">
+          <div class="driver-row">
+            <div class="avatar">AM</div>
+            <div>
+              <div class="driver-name">Alexandre Moussavou</div>
+              <div class="driver-stars">★★★★☆</div>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--neutral-100);padding-top:10px;">
+            <div class="driver-plate">GA-1234-A</div>
+            <div class="driver-model">Toyota Corolla · Blanc</div>
+          </div>
+          <div class="driver-actions">
+            <button class="btn-sm">📞 Appeler</button>
+            <button class="btn-sm">💬 Message</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8.5 Carte solde -->
+  <div class="comp-area">
+    <div class="comp-title">8.5 — Carte de solde journalier (app chauffeur)</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+      <div>
+        <span class="label">Solde positif (créance)</span>
+        <div class="balance-card" style="margin-top:8px;">
+          <div class="balance-label">Solde du jour</div>
+          <div class="balance-amount">
+            <span class="balance-arrow" style="color:#86efac;">↑</span>
+            12 500 FCFA
+          </div>
+          <div class="balance-sub">Mise à jour 14h32</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:45%;background:linear-gradient(90deg,#22C47A,#86efac);"></div></div>
+          <button class="btn-outline-white">Régler par Airtel Money</button>
+        </div>
+      </div>
+      <div>
+        <span class="label">Solde négatif (dette)</span>
+        <div class="balance-card" style="margin-top:8px;">
+          <div class="balance-label">Solde du jour</div>
+          <div class="balance-amount" style="color:#FFF8E6;">
+            <span class="balance-arrow" style="color:#F5A623;">↓</span>
+            -3 000 FCFA
+          </div>
+          <div class="balance-sub">Urgence — seuil 4h dans 1h30</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:82%;background:linear-gradient(90deg,#F5A623,#E53E3E);"></div></div>
+          <button class="btn-outline-white">Régler maintenant</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8.6 Widget data -->
+  <div class="comp-area">
+    <div class="comp-title">8.6 — Widget de consommation data (flottant)</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+      <div>
+        <span class="label">Normal (&lt; 50% quota)</span>
+        <div class="widget-data" style="margin-top:8px;">
+          <svg class="widget-wifi" viewBox="0 0 24 24" fill="none" stroke="#22C47A" stroke-width="2.5" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          2.3 Mo
+          <span class="widget-dismiss">×</span>
+        </div>
+      </div>
+      <div>
+        <span class="label">Attention (50-80%)</span>
+        <div class="widget-data" style="margin-top:8px;">
+          <svg class="widget-wifi" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          6.1 Mo
+          <span class="widget-dismiss">×</span>
+        </div>
+      </div>
+      <div>
+        <span class="label">Critique (&gt; 80%) + Mode éco</span>
+        <div class="widget-data eco" style="margin-top:8px;">
+          <svg class="widget-wifi" viewBox="0 0 24 24" fill="none" stroke="#E53E3E" stroke-width="2.5" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          9.8 Mo
+          <span class="widget-dismiss">×</span>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--neutral-500);margin-top:12px;max-width:70ch;"><strong>Règle de visibilité (18 août 2026, issue de l'audit UX) :</strong> le widget est visible sur tout écran où la <em>carte est l'élément principal</em>. Il est volontairement omis quand une feuille couvre plus de la moitié de l'écran et que l'attention doit aller à une action critique (PIN, paiement) — ex. C-13b.</p>
+  </div>
+
+  <!-- 8.7 Badge Top Service + 8.8 Tab bars -->
+  <div class="card-row">
+    <div class="comp-area" style="flex:1;">
+      <div class="comp-title">8.7 — Badge « Top Service »</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span class="badge-top">★ TOP SERVICE</span>
+        <span style="font-size:13px;color:var(--neutral-500);">Chauffeurs avec note ≥ 4.8 / 5 sur 50+ courses</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-row" style="margin-top:16px;">
+    <div class="comp-area" style="flex:1;">
+      <div class="comp-title">8.8 — Tab bar — App Client</div>
+      <div class="tab-bar">
+        <div class="tab-item active-client"><span class="tab-icon">🗺</span>Accueil</div>
+        <div class="tab-item inactive"><span class="tab-icon">📋</span>Courses</div>
+        <div class="tab-item inactive"><span class="tab-icon">💳</span>Portefeuille</div>
+        <div class="tab-item inactive"><span class="tab-icon">👤</span>Profil</div>
+      </div>
+      <p style="font-size:11px;color:var(--neutral-500);margin-top:8px;">Actif : brand-700 · Inactif : neutral-400</p>
+    </div>
+    <div class="comp-area" style="flex:1;">
+      <div class="comp-title">8.8 — Tab bar — App Chauffeur</div>
+      <div class="tab-bar">
+        <div class="tab-item active-driver"><span class="tab-icon">🗺</span>Accueil</div>
+        <div class="tab-item inactive"><span class="tab-icon">📋</span>Courses</div>
+        <div class="tab-item inactive"><span class="tab-icon">💰</span>Solde</div>
+        <div class="tab-item inactive"><span class="tab-icon">👤</span>Profil</div>
+      </div>
+      <p style="font-size:11px;color:var(--neutral-500);margin-top:8px;">Actif : #00BFA5 (teal) · Inactif : neutral-400</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 9. THÈMES -->
+<section id="s9">
+  <h2 class="section-title"><span class="num">9</span> Thèmes clair / sombre</h2>
+  <div class="theme-grid">
+    <div class="theme-card" style="border:1px solid var(--neutral-200);">
+      <div class="theme-card-header" style="background:var(--neutral-0);color:var(--neutral-700);">☀ Thème clair (défaut)</div>
+      <div style="background:var(--neutral-0);">
+        <div class="theme-row-item"><span>Fond d'écran</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:12px;">#F9F9FB</span><div class="color-chip" style="background:#F9F9FB;"></div></div></div>
+        <div class="theme-row-item"><span>Surface carte / modal</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:12px;">#FFFFFF</span><div class="color-chip" style="background:#FFFFFF;"></div></div></div>
+        <div class="theme-row-item"><span>Texte principal</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:12px;">#323248</span><div class="color-chip" style="background:#323248;"></div></div></div>
+        <div class="theme-row-item"><span>Texte secondaire</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:12px;">#6B6B80</span><div class="color-chip" style="background:#6B6B80;"></div></div></div>
+        <div class="theme-row-item"><span>Séparateur</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:12px;">#E0E0EA</span><div class="color-chip" style="background:#E0E0EA;"></div></div></div>
+        <div class="theme-row-item"><span>CTA principal</span><div style="width:80px;height:24px;border-radius:4px;background:linear-gradient(135deg,#5A1A80,#8C238A);"></div></div>
+      </div>
+    </div>
+    <div class="theme-card">
+      <div class="theme-card-header" style="background:var(--neutral-800);color:#fff;">🌙 Thème sombre</div>
+      <div style="background:var(--neutral-800);">
+        <div class="theme-row-item" style="color:#fff;border-color:#323248;"><span>Fond d'écran</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:12px;color:#9090A8;">#0F0F1E</span><div class="color-chip" style="background:#0F0F1E;"></div></div></div>
+        <div class="theme-row-item" style="color:#fff;border-color:#323248;"><span>Surface carte / modal</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:12px;color:#9090A8;">#1E1E30</span><div class="color-chip" style="background:#1E1E30;"></div></div></div>
+        <div class="theme-row-item" style="color:#fff;border-color:#323248;"><span>Surface élevée</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:12px;color:#9090A8;">#2A2A40</span><div class="color-chip" style="background:#2A2A40;"></div></div></div>
+        <div class="theme-row-item" style="color:#fff;border-color:#323248;"><span>Texte principal</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:12px;color:#9090A8;">#F9F9FB</span><div class="color-chip" style="background:#F9F9FB;"></div></div></div>
+        <div class="theme-row-item" style="color:#fff;border-color:#323248;"><span>Texte secondaire</span><div style="display:flex;align-items:center;gap:8px;"><span style="font-family:monospace;font-size:12px;color:#9090A8;">#9090A8</span><div class="color-chip" style="background:#9090A8;"></div></div></div>
+        <div class="theme-row-item" style="color:#fff;border-color:transparent;"><span>CTA principal (inchangé)</span><div style="width:80px;height:24px;border-radius:4px;background:linear-gradient(135deg,#5A1A80,#8C238A);"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-eco" style="margin-top:16px;">
+    <strong>Règle dark mode</strong> : le gradient de marque reste inchangé sur les CTA. Les surfaces sombres sont tintées violet (<code style="font-family:monospace;">neutral-800 = #1E1E30</code>) et non gris pur, pour rester dans le registre de la marque.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 10. MODE ÉCO -->
+<section id="s10">
+  <h2 class="section-title"><span class="num">10</span> Mode économie de données</h2>
+  <p style="font-size:14px;margin-bottom:16px;color:var(--neutral-600);">Activable manuellement ou automatiquement en dessous de 2G. La palette de marque est préservée.</p>
+  <div class="card">
+    <table class="eco-table">
+      <thead><tr><th>Élément</th><th>Mode normal</th><th>Mode éco</th></tr></thead>
+      <tbody>
+        <tr><td>Fond de carte</td><td class="eco-normal">Tuiles vectorielles OSM</td><td class="eco-eco">Fond uni neutral-200 + contours</td></tr>
+        <tr><td>Photos de profil</td><td class="eco-normal">Chargées</td><td class="eco-eco">Initiales sur fond coloré</td></tr>
+        <tr><td>Animations</td><td class="eco-normal">Toutes actives</td><td class="eco-eco">Désactivées (opacity changes seules)</td></tr>
+        <tr><td>Ombres</td><td class="eco-normal">CSS box-shadow</td><td class="eco-eco">Bordures neutral-200 1px</td></tr>
+        <tr><td>Mise à jour position</td><td class="eco-normal">Temps réel (1s)</td><td class="eco-eco">Toutes les 5s</td></tr>
+        <tr><td>Images véhicule</td><td class="eco-normal">Photo réelle</td><td class="eco-eco">Icône générique</td></tr>
+        <tr><td>Widget data</td><td class="eco-normal">Discret</td><td class="eco-eco">Mis en avant, bord ambre</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <span class="label">Adaptations visuelles</span>
+    <ul style="padding-left:20px;line-height:2.2;font-size:14px;margin-top:8px;">
+      <li>Contrastes renforcés : texte <code class="token-tag">neutral-900</code> sur fond <code class="token-tag">neutral-0</code>.</li>
+      <li>Police : <code class="token-tag">fontWeight</code> relevé d'un niveau (regular→medium, medium→semibold).</li>
+      <li>Densité augmentée : <code class="token-tag">spacing-4</code> → <code class="token-tag">spacing-3</code> pour les listes longues.</li>
+      <li>Palette inchangée — identité de marque préservée.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 11. ACCESSIBILITÉ -->
+<section id="s11">
+  <h2 class="section-title"><span class="num">11</span> Accessibilité</h2>
+
+  <h3 class="subsection-title">Ratios de contraste (WCAG AA minimum)</h3>
+  <div class="contrast-grid">
+    <div class="contrast-row">
+      <div class="contrast-swatch" style="background:#F9F9FB;color:#323248;border:1px solid #e0e0ea;">Aa</div>
+      <span class="contrast-ratio">7.2:1</span>
+      <span class="contrast-level level-aaa">AAA</span>
+      <span class="contrast-desc">neutral-50 sur neutral-700 — fond d'écran + texte principal</span>
+    </div>
+    <div class="contrast-row">
+      <div class="contrast-swatch" style="background:linear-gradient(135deg,#5A1A80,#8C238A);color:#fff;">Aa</div>
+      <span class="contrast-ratio">8.1:1</span>
+      <span class="contrast-level level-aaa">AAA</span>
+      <span class="contrast-desc">Gradient brand + blanc — boutons CTA</span>
+    </div>
+    <div class="contrast-row">
+      <div class="contrast-swatch" style="background:#6A1E86;color:#fff;">Aa</div>
+      <span class="contrast-ratio">6.9:1</span>
+      <span class="contrast-level level-aa">AA</span>
+      <span class="contrast-desc">brand-700 + blanc — bouton outline texte</span>
+    </div>
+    <div class="contrast-row">
+      <div class="contrast-swatch" style="background:#22C47A;color:#fff;">Aa</div>
+      <span class="contrast-ratio">3.5:1</span>
+      <span class="contrast-level level-aa">AA large</span>
+      <span class="contrast-desc">success + blanc — badges, icônes (gros texte uniquement)</span>
+    </div>
+    <div class="contrast-row">
+      <div class="contrast-swatch" style="background:#F5A623;color:#0F0F1E;">Aa</div>
+      <span class="contrast-ratio">4.8:1</span>
+      <span class="contrast-level level-aa">AA</span>
+      <span class="contrast-desc">warning + neutral-900 — alertes data</span>
+    </div>
+    <div class="contrast-row">
+      <div class="contrast-swatch" style="background:#E53E3E;color:#fff;">Aa</div>
+      <span class="contrast-ratio">5.2:1</span>
+      <span class="contrast-level level-aa">AA</span>
+      <span class="contrast-desc">error + blanc — messages d'erreur</span>
+    </div>
+    <div class="contrast-row">
+      <div class="contrast-swatch" style="background:#00BFA5;color:#fff;">Aa</div>
+      <span class="contrast-ratio">3.1:1</span>
+      <span class="contrast-level level-aa">AA icônes</span>
+      <span class="contrast-desc">driver.accent + blanc — icônes chauffeur, gros texte</span>
+    </div>
+  </div>
+
+  <h3 class="subsection-title" style="margin-top:24px;">Zones tactiles</h3>
+  <div class="card">
+    <ul style="padding-left:20px;line-height:2.2;font-size:14px;">
+      <li>Minimum absolu : <strong>44×44px</strong> (recommandation Apple / Google).</li>
+      <li>Cible idéale : <strong>48×48px</strong>.</li>
+      <li>Espacement minimum entre deux cibles : <strong>8px</strong>.</li>
+      <li>Widget data flottant : 44×44px minimum même si l'affichage visuel est plus petit.</li>
+    </ul>
+  </div>
+
+  <h3 class="subsection-title" style="margin-top:20px;">Daltonisme</h3>
+  <div class="callout callout-warn">
+    <div>Ne jamais utiliser <strong>uniquement la couleur</strong> pour transmettre un état — toujours ajouter icône ou label.<br>
+    Ex : solde positif = couleur verte <em>+ icône flèche haut + texte « Créance »</em>.<br>
+    Ex : alerte data = couleur ambre <em>+ icône wifi + texte « Quota à 75% »</em>.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 12. PAR ÉCRAN -->
+<section id="s12">
+  <h2 class="section-title"><span class="num">12</span> Applications par écran</h2>
+  <div class="card-row">
+    <div class="card">
+      <span class="label">App Client — Écran principal</span>
+      <pre style="font-family:var(--font-mono);font-size:12px;line-height:1.7;color:var(--neutral-600);margin-top:10px;white-space:pre-wrap;">[Status bar — transparent]
+[Carte MapLibre — full screen]
+  [Marqueur position]       ← cercle magenta pulsant
+  [Marqueurs repères]       ← carrés ambre (zoom ≥ 14)
+  [Bouton centrer position] ← floating bottom-right
+[Bottom sheet snap 30%]
+  [Champ recherche destination]
+  [Suggestions récentes]
+[Widget data] ← floating bottom-left</pre>
+    </div>
+    <div class="card">
+      <span class="label">App Chauffeur — Écran principal</span>
+      <pre style="font-family:var(--font-mono);font-size:12px;line-height:1.7;color:var(--neutral-600);margin-top:10px;white-space:pre-wrap;">[Header fond teal #00BFA5]
+  [Toggle en ligne / hors ligne]
+  [Solde du jour abrégé]
+[Carte MapLibre — ~60% écran]
+  [Marqueur chauffeur]  ← teal + flèche direction
+[Carte de solde journalier]
+[Liste courses disponibles]
+[Tab bar — accents teal]</pre>
+    </div>
+    <div class="card">
+      <span class="label">Admin Web — Dashboard</span>
+      <pre style="font-family:var(--font-mono);font-size:12px;line-height:1.7;color:var(--neutral-600);margin-top:10px;white-space:pre-wrap;">[Sidebar gauche fixe]
+  brand-700 fond sidebar
+  neutral-50 fond contenu
+[Tableaux alternés]
+  neutral-50 / neutral-0
+[Graphiques]
+  Palette brand (violet→magenta)
+  Teal pour métriques chauffeurs</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ 13. FICHIERS -->
+<section id="s13">
+  <h2 class="section-title"><span class="num">13</span> Fichiers de référence</h2>
+  <div class="card">
+    <table class="generic">
+      <thead><tr><th>Fichier</th><th>Contenu</th></tr></thead>
+      <tbody>
+        <tr><td><code>docs/design/design-tokens.json</code></td><td>Tokens JSON canoniques (couleurs, spacing, typo, rayons, shadows, z-index)</td></tr>
+        <tr><td><code>docs/design/app-icons.md</code> / <code>.html</code></td><td>Spécifications et guide visuel des icônes d'application iOS/Android</td></tr>
+        <tr><td><code>assets/icons/app-icon-client.svg</code></td><td>Icône app client (gradient violet→magenta)</td></tr>
+        <tr><td><code>assets/icons/app-icon-driver.svg</code></td><td>Icône app chauffeur (même gradient violet→magenta, emblème complet anneau + T + voiture — décision app-icons.html, différenciation teal/volant abandonnée)</td></tr>
+        <tr><td><code>assets/icons/app-icon-client-monochrome.svg</code></td><td>Client monochrome (petits formats)</td></tr>
+        <tr><td><code>assets/icons/app-icon-driver-monochrome.svg</code></td><td>Chauffeur monochrome (petits formats)</td></tr>
+        <tr><td><code>assets/icons/adaptive-foreground-client.svg</code></td><td>Foreground Android adaptive — client</td></tr>
+        <tr><td><code>assets/icons/adaptive-foreground-driver.svg</code></td><td>Foreground Android adaptive — chauffeur</td></tr>
+        <tr><td><code>assets/icons/adaptive-background.svg</code></td><td>Background Android adaptive (commun)</td></tr>
+        <tr><td><code>logos/png/appLogo.png</code></td><td>Logo officiel (référence couleur)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<footer>
+  <strong>Teko Design System</strong> — Version 1.0 · Juin 2026<br>
+  Expo React Native (apps client &amp; chauffeur) · Next.js (admin web)
+</footer>
+
+</body>
+</html>

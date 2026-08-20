@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>A-04 Console cartographie</title>
+<style>
+  body { margin:0; background:#F9F9FB; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; font-size:13px; }
+  .screen { width:1280px; height:800px; display:flex; overflow:hidden; }
+  .side { width:216px; background:#3D0F5C; color:#fff; display:flex; flex-direction:column; padding:18px 12px; box-sizing:border-box; flex:none; }
+  .brand { display:flex; align-items:center; gap:10px; padding:0 8px 18px; font-weight:900; font-size:17px; }
+  .brand .m { width:32px; height:32px; border-radius:9999px; border:2.5px solid #fff; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; font-size:13.5px; color:#D8CDE8; }
+  .item.on { background:rgba(255,255,255,0.14); color:#fff; font-weight:700; }
+  .badge { margin-left:auto; background:#F5A623; color:#3D0F5C; font-size:10.5px; font-weight:800; border-radius:9999px; padding:1px 7px; }
+  .who { margin-top:auto; padding:10px; background:rgba(255,255,255,0.08); border-radius:12px; font-size:12px; }
+  .who span { color:#00BFA5; font-weight:700; font-size:11px; text-transform:uppercase; }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .top { height:52px; background:#FFFFFF; border-bottom:1px solid #E3E1EC; display:flex; align-items:center; padding:0 20px; gap:16px; flex:none; }
+  .top h1 { font-size:16px; font-weight:700; margin:0; }
+  .tabs { display:flex; gap:6px; margin-left:8px; }
+  .tab { font-size:12.5px; font-weight:600; padding:6px 14px; border-radius:9999px; color:#6B6B80; background:#F0F0F5; }
+  .tab.on { background:#F5E6FF; color:#5A1A80; }
+  .content { flex:1; display:flex; overflow:hidden; }
+  .mapzone { flex:1.5; position:relative; }
+  .props { width:360px; border-left:1px solid #E3E1EC; background:#FFFFFF; display:flex; flex-direction:column; overflow:hidden; flex:none; }
+  .p-head { padding:13px 16px; border-bottom:1px solid #F0F0F5; font-weight:700; font-size:13.5px; }
+  .prop { padding:12px 16px; border-bottom:1px solid #F0F0F5; }
+  .prop-h { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+  .prop-h h4 { font-size:13.5px; font-weight:700; margin:0; }
+  .type { font-size:10px; font-weight:800; text-transform:uppercase; border-radius:9999px; padding:2px 8px; }
+  .t-lm { background:#FFF8E6; color:#B57308; } .t-road { background:#E0F7F4; color:#007A6A; }
+  .prop p { font-size:11.5px; color:#6B6B80; margin:2px 0 8px; line-height:1.45; }
+  .prop .acts { display:flex; gap:6px; }
+  .btn { height:32px; border:none; border-radius:12px; font-size:12px; font-weight:700; font-family:inherit; padding:0 14px; }
+  .b-ok { background:#E6F9F0; color:#15874F; }
+  .b-no { background:#FFF0F0; color:#9B1C1C; }
+  .b-edit { background:#F0F0F5; color:#4A4A60; }
+</style></head><body>
+  <div class="screen">
+    <div class="side">
+      <div class="brand"><span class="m">T</span>Teko Admin</div>
+      <div class="item">Tableau de bord</div>
+      <div class="item">Validation KYC<span class="badge">12</span></div>
+      <div class="item on">Cartographie<span class="badge">5</span></div>
+      <div class="item">Finance</div>
+      <div class="item">Utilisateurs</div>
+      <div class="item">Paramètres</div>
+      <div class="who"><strong>Marc E.</strong><br><span>Rôle · Carto</span></div>
+    </div>
+    <div class="main">
+      <div class="top"><h1>Cartographie</h1>
+        <div class="tabs"><span class="tab on">Propositions</span><span class="tab">Édition routes</span><span class="tab">Repères</span><span class="tab">Zones tarifaires</span></div>
+      </div>
+      <div class="content">
+        <div class="mapzone">
+          <svg style="position:absolute;inset:0" viewBox="0 0 704 748" role="img" aria-label="Éditeur de carte : propositions en attente surlignées">
+            <rect width="704" height="748" fill="#F2F1F7"/>
+            <path d="M0 300 L704 240" stroke="#FFE3B3" stroke-width="16" stroke-linecap="round"/>
+            <path d="M0 300 L704 240" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+            <path d="M200 0 V748 M420 0 V748 M0 120 H704 M0 480 H704 M0 640 H704" stroke="#FFFFFF" stroke-width="6"/>
+            <path d="M420 480 C 480 520 560 540 640 536" fill="none" stroke="#00BFA5" stroke-width="6" stroke-dasharray="10 7" stroke-linecap="round"/>
+            <text x="480" y="568" font-size="11" fill="#007A6A" font-family="system-ui" font-weight="700">Route proposée — 14 traces GPS</text>
+            <circle cx="256" cy="576" r="26" fill="#F5A623" opacity="0.2"/>
+            <path d="M256 588c-8-7-13-14-13-22a13 13 0 1 1 26 0c0 8-5 15-13 22z" fill="#F5A623"/>
+            <text x="212" y="622" font-size="11" fill="#B57308" font-family="system-ui" font-weight="700">« Boulangerie d'Akébé »</text>
+            <g fill="#F5A623" opacity="0.75">
+              <path d="M300 236c-6-5-9-10-9-15a9 9 0 1 1 18 0c0 5-3 10-9 15z"/>
+              <path d="M540 196c-6-5-9-10-9-15a9 9 0 1 1 18 0c0 5-3 10-9 15z"/>
+              <path d="M140 456c-6-5-9-10-9-15a9 9 0 1 1 18 0c0 5-3 10-9 15z"/>
+            </g>
+            <rect x="16" y="16" rx="10" width="200" height="30" fill="#FFFFFF" stroke="#E3E1EC"/>
+            <text x="30" y="35" font-size="12" fill="#6B6B80" font-family="system-ui">Rechercher un lieu, une zone…</text>
+          </svg>
+        </div>
+        <div class="props">
+          <div class="p-head">5 propositions en attente</div>
+          <div class="prop">
+            <div class="prop-h"><h4>Boulangerie d'Akébé</h4><span class="type t-lm">Repère</span></div>
+            <p>Proposé par Nadia O. (cliente, 2 repères validés) · photo jointe · catégorie Commerce · à 40 m d'un repère existant : vérifier le doublon.</p>
+            <div class="acts"><button class="btn b-ok">Valider</button><button class="btn b-edit">Ajuster la position</button><button class="btn b-no">Refuser</button></div>
+          </div>
+          <div class="prop">
+            <div class="prop-h"><h4>Liaison Akébé → PK8</h4><span class="type t-road">Route</span></div>
+            <p>Détectée depuis 14 traces GPS anonymisées (9 chauffeurs distincts, 3 semaines). Largeur estimée : 1 voie. Impact : −7 min sur les trajets Akébé-Est.</p>
+            <div class="acts"><button class="btn b-ok">Intégrer au graphe</button><button class="btn b-edit">Tracer manuellement</button><button class="btn b-no">Rejeter</button></div>
+          </div>
+          <div class="prop">
+            <div class="prop-h"><h4>École de Nzeng-Ayong</h4><span class="type t-lm">Repère</span></div>
+            <p>Proposé par Boris M. (chauffeur) · sans photo · nom à vérifier sur le terrain ou par photo à demander.</p>
+            <div class="acts"><button class="btn b-ok">Valider</button><button class="btn b-edit">Demander une photo</button><button class="btn b-no">Refuser</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body></html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>C-13b Chauffeur arrivé</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F2F1F7; position:relative; overflow:hidden; }
+  .map { position:absolute; inset:0; }
+  .sos-fab { position:absolute; top:22px; right:16px; width:48px; height:48px; border-radius:9999px; background:#E53E3E; color:#fff; font-size:13px; font-weight:900; letter-spacing:0.5px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 32px rgba(229,62,62,0.4); }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:#FFFFFF; border-radius:20px 20px 0 0; box-shadow:0 -4px 24px rgba(0,0,0,0.14); padding:8px 20px 20px; }
+  .handle { width:36px; height:4px; border-radius:9999px; background:#E0E0EA; margin:0 auto 12px; }
+  .arrived { display:flex; align-items:center; gap:10px; background:#E6F9F0; border-radius:12px; padding:11px 14px; margin-bottom:14px; }
+  .arrived p { margin:0; font-size:14px; font-weight:700; color:#15874F; }
+  .arrived span { font-size:12px; color:#6B6B80; font-weight:400; display:block; }
+  .pin-zone { text-align:center; padding:6px 0 10px; background:#F9F9FB; border-radius:16px; margin-bottom:14px; }
+  .pin-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6B6B80; margin:10px 0 2px; }
+  .pin { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:56px; font-weight:900; letter-spacing:14px; color:#3D0F5C; margin:0 0 0 14px; line-height:1.15; }
+  .pin-help { font-size:12.5px; color:#6B6B80; margin:2px 0 10px; }
+  .drv { display:flex; align-items:center; gap:12px; }
+  .avatar { width:42px; height:42px; border-radius:9999px; background:#F5E6FF; color:#5A1A80; font-weight:700; font-size:15px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .drv h4 { font-size:14px; font-weight:600; margin:0; }
+  .drv p { font-size:12px; color:#6B6B80; margin:1px 0 0; }
+  .plate { margin-left:auto; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:13px; font-weight:700; background:#F0F0F5; border-radius:8px; padding:4px 8px; }
+  .call { width:42px; height:42px; border-radius:9999px; background:#E6F9F0; display:flex; align-items:center; justify-content:center; flex:none; margin-left:8px; }
+  .cancel { display:block; text-align:center; font-size:13px; font-weight:600; color:#E53E3E; margin:14px auto 0; }
+</style></head><body>
+  <div class="phone">
+    <svg class="map" viewBox="0 0 360 800" role="img" aria-label="La voiture de Boris est au point de rencontre">
+      <rect width="360" height="800" fill="#F2F1F7"/>
+      <path d="M0 270 L360 240" stroke="#FFE3B3" stroke-width="16" stroke-linecap="round"/>
+      <path d="M0 270 L360 240" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+      <path d="M185 0 V460 M0 130 H360" stroke="#FFFFFF" stroke-width="6"/>
+      <circle cx="248" cy="252" r="30" fill="#22C47A" opacity="0.15"/>
+      <path d="M248 264c-9-8-14-15-14-23a14 14 0 1 1 28 0c0 8-5 15-14 23z" fill="#F5A623"/>
+      <g transform="translate(206,238)"><rect rx="5" width="30" height="17" fill="#00BFA5"/><rect x="6" y="3" width="12" height="11" rx="2" fill="#E0F7F4"/></g>
+      <text x="196" y="292" font-size="9" fill="#6B6B80" font-family="system-ui">Pharmacie du Gros-Bouquet</text>
+    </svg>
+    <div class="sos-fab">SOS</div>
+    <div class="sheet">
+      <div class="handle"></div>
+      <div class="arrived">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C47A" stroke-width="2.6"><path d="M4.5 12.5l5 5 10-11"/></svg>
+        <p>Boris est arrivé<span>Toyota Corolla grise, au point de rencontre</span></p>
+      </div>
+      <div class="pin-zone">
+        <p class="pin-label">Donnez ce code au chauffeur</p>
+        <p class="pin">4729</p>
+        <p class="pin-help">La course démarre quand Boris le saisit.</p>
+      </div>
+      <div class="drv">
+        <div class="avatar">BM</div>
+        <div><h4>Boris M. · ★ 4,8</h4><p>Pharmacie du Gros-Bouquet</p></div>
+        <span class="plate">GA-482-LBV</span>
+        <div class="call"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#15874F" stroke-width="2.2"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></div>
+      </div>
+      <a class="cancel">Annuler la course · frais possibles</a>
+    </div>
+  </div>
+</body></html>

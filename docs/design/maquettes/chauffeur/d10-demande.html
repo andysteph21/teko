@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>D-10 Demande de course</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F2F1F7; position:relative; overflow:hidden; }
+  .map { position:absolute; inset:0; filter:saturate(0.7); }
+  .scrim { position:absolute; inset:0; background:rgba(15,15,30,0.45); }
+  .modal { position:absolute; left:14px; right:14px; bottom:18px; background:#FFFFFF; border-radius:20px; box-shadow:0 16px 48px rgba(0,0,0,0.22); padding:0 18px 18px; overflow:hidden; }
+  .count { height:6px; background:#F0F0F5; margin:0 -18px 14px; position:relative; }
+  .count span { position:absolute; inset:0; width:62%; background:#00BFA5; }
+  .head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  h1 { font-size:17px; font-weight:700; margin:0; color:#3D0F5C; }
+  .timer { margin-left:auto; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:17px; font-weight:900; color:#007A6A; background:#E0F7F4; border-radius:9999px; padding:4px 12px; }
+  .route { display:flex; gap:12px; margin-bottom:12px; }
+  .dotcol { display:flex; flex-direction:column; align-items:center; padding-top:5px; }
+  .dot { width:8px; height:8px; border-radius:9999px; }
+  .vline { width:2px; flex:1; min-height:16px; background:#E0E0EA; margin:2px 0; }
+  .route h4 { font-size:14px; font-weight:600; margin:0 0 2px; }
+  .route p { font-size:11.5px; color:#6B6B80; margin:0 0 8px; }
+  .stats { display:flex; gap:8px; margin-bottom:14px; }
+  .stat { flex:1; background:#F9F9FB; border-radius:12px; padding:9px 0; text-align:center; }
+  .stat .v { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:15px; font-weight:700; margin:0; }
+  .stat span { font-size:10px; color:#6B6B80; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+  .actions { display:flex; gap:10px; }
+  .refuse { width:100px; height:48px; border:none; border-radius:20px; background:#F0F0F5; color:#4A4A60; font-size:15px; font-weight:600; font-family:inherit; }
+  .accept { flex:1; height:48px; border:none; border-radius:20px; background:linear-gradient(135deg,#5A1A80 0%,#8C238A 100%); color:#fff; font-size:16px; font-weight:700; font-family:inherit; box-shadow:0 4px 24px rgba(90,26,128,0.35); }
+</style></head><body>
+  <div class="phone">
+    <svg class="map" viewBox="0 0 360 800"><rect width="360" height="800" fill="#F2F1F7"/><path d="M0 300 L360 270" stroke="#FFE3B3" stroke-width="16" stroke-linecap="round"/><path d="M0 300 L360 270" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/><path d="M180 0 V800 M0 140 H360 M0 470 H360" stroke="#FFFFFF" stroke-width="6"/><g transform="translate(163,376)"><rect rx="5" width="34" height="19" fill="#00BFA5"/></g><path d="M96 288c-7-6-11-12-11-19a11 11 0 1 1 22 0c0 7-4 13-11 19z" fill="#F5A623"/></svg>
+    <div class="scrim"></div>
+    <div class="modal">
+      <div class="count"><span></span></div>
+      <div class="head"><h1>Nouvelle demande · Éco</h1><span class="timer">12 s</span></div>
+      <div class="route">
+        <div class="dotcol"><span class="dot" style="background:#8C238A"></span><span class="vline"></span><span class="dot" style="background:#F5A623"></span></div>
+        <div style="flex:1">
+          <h4>Marché du Mont-Bouët</h4><p>Prise en charge · à 4 min · Nadia · ★ 4,9</p>
+          <h4>Pharmacie de Nkembo</h4><p>Destination · course 12 min</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><p class="v">1 200 F</p><span>Course</span></div>
+        <div class="stat"><p class="v">−180 F</p><span>Commission</span></div>
+        <div class="stat"><p class="v" style="color:#15874F">1 020 F</p><span>Net</span></div>
+      </div>
+      <div class="actions">
+        <button class="refuse">Refuser</button>
+        <button class="accept">Accepter la course</button>
+      </div>
+    </div>
+  </div>
+</body></html>

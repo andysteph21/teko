@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>C-12 Recherche chauffeur</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F2F1F7; position:relative; overflow:hidden; }
+  .map { position:absolute; inset:0; }
+  .widget { position:absolute; bottom:306px; left:16px; background:#FFFFFF; border-radius:9999px; box-shadow:0 8px 32px rgba(0,0,0,0.16); display:flex; align-items:center; gap:8px; padding:7px 13px 7px 7px; }
+  .widget .ring { width:28px; height:28px; border-radius:9999px; background:#F5E6FF; color:#5A1A80; display:flex; align-items:center; justify-content:center; }
+  .widget .qty { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:12px; font-weight:700; }
+  .widget .cap { font-size:9px; color:#6B6B80; margin-top:-2px; }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:#FFFFFF; border-radius:20px 20px 0 0; box-shadow:0 -4px 24px rgba(0,0,0,0.14); padding:8px 20px 22px; text-align:center; }
+  .handle { width:36px; height:4px; border-radius:9999px; background:#E0E0EA; margin:0 auto 16px; }
+  .dots { display:flex; gap:8px; justify-content:center; margin-bottom:14px; }
+  .dots span { width:10px; height:10px; border-radius:9999px; background:#E8C6FF; }
+  .dots span:nth-child(2) { background:#A040D8; }
+  .dots span:nth-child(3) { background:#8C238A; }
+  h1 { font-size:20px; font-weight:700; margin:0 0 4px; color:#3D0F5C; }
+  .sub { font-size:14px; color:#6B6B80; margin:0 0 4px; }
+  .sub .mono { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-weight:700; color:#323248; }
+  .avg { font-size:12px; color:#9090A8; margin:0 0 16px; }
+  .free { font-size:13px; color:#15874F; background:#E6F9F0; border-radius:12px; padding:9px 14px; margin:0 0 14px; }
+  .cancel { height:48px; border:none; border-radius:20px; width:100%; background:#FFF0F0; color:#E53E3E; font-size:17px; font-weight:600; font-family:inherit; }
+</style></head><body>
+  <div class="phone">
+    <svg class="map" viewBox="0 0 360 800" role="img" aria-label="Recherche d'un chauffeur autour du point de rencontre">
+      <rect width="360" height="800" fill="#F2F1F7"/>
+      <rect x="30" y="80" width="120" height="130" rx="4" fill="#E9E7F1"/>
+      <rect x="225" y="60" width="115" height="120" rx="4" fill="#E9E7F1"/>
+      <path d="M0 270 L360 240" stroke="#FFE3B3" stroke-width="16" stroke-linecap="round"/>
+      <path d="M0 270 L360 240" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+      <path d="M185 0 V520 M0 130 H360 M0 450 H360" stroke="#FFFFFF" stroke-width="6"/>
+      <circle cx="180" cy="300" r="150" fill="#8C238A" opacity="0.05"/>
+      <circle cx="180" cy="300" r="104" fill="#8C238A" opacity="0.08"/>
+      <circle cx="180" cy="300" r="60" fill="#8C238A" opacity="0.12"/>
+      <circle cx="180" cy="300" r="150" fill="none" stroke="#8C238A" stroke-width="1.2" opacity="0.35"/>
+      <circle cx="180" cy="300" r="104" fill="none" stroke="#8C238A" stroke-width="1.2" opacity="0.5"/>
+      <path d="M180 312c-9-8-14-15-14-23a14 14 0 1 1 28 0c0 8-5 15-14 23z" fill="#F5A623"/>
+      <circle cx="180" cy="288" r="5.5" fill="#FFF8E6"/>
+      <g opacity="0.85">
+        <rect x="76" y="196" rx="4" width="22" height="13" fill="#00BFA5"/>
+        <rect x="262" y="382" rx="4" width="22" height="13" fill="#00BFA5"/>
+      </g>
+    </svg>
+    <div class="widget"><span class="ring"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 18v-6M10 18V9M16 18V4"/></svg></span>
+      <span><span class="qty">13 Mo</span><br><span class="cap">ce mois</span></span></div>
+    <div class="sheet">
+      <div class="handle"></div>
+      <div class="dots"><span></span><span></span><span></span></div>
+      <h1>Recherche d'un chauffeur…</h1>
+      <p class="sub">Éco · <span class="mono">1 500 FCFA</span> · Pharmacie du Gros-Bouquet</p>
+      <p class="avg">En général, moins de 2 minutes.</p>
+      <p class="free">Annulation gratuite tant qu'aucun chauffeur n'est attribué.</p>
+      <button class="cancel">Annuler la demande</button>
+    </div>
+  </div>
+</body></html>

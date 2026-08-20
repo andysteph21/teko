@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>C-08 Recherche destination</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .header { padding:22px 16px 14px; background:#FFFFFF; box-shadow:0 1px 2px rgba(0,0,0,0.07); display:flex; gap:12px; }
+  .back { width:40px; height:40px; border-radius:9999px; background:#F0F0F5; display:flex; align-items:center; justify-content:center; flex:none; margin-top:14px; }
+  .fields { flex:1; display:flex; flex-direction:column; gap:8px; }
+  .dotcol { display:flex; flex-direction:column; align-items:center; padding:26px 0 22px; }
+  .dot { width:8px; height:8px; border-radius:9999px; }
+  .vline { width:2px; flex:1; background:#E0E0EA; margin:4px 0; }
+  .input { height:44px; border-radius:12px; background:#F0F0F5; border:1.5px solid transparent; display:flex; align-items:center; padding:0 12px; font-size:15px; gap:8px; }
+  .input.active { background:#FFFFFF; border-color:#8C238A; box-shadow:0 2px 6px rgba(0,0,0,0.10); }
+  .muted { color:#6B6B80; } .caret { width:2px; height:20px; background:#8C238A; }
+  .list { flex:1; padding:6px 16px 0; overflow:hidden; }
+  .sec { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6B6B80; margin:14px 0 4px; }
+  .row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid #F0F0F5; }
+  .lm-ico { width:36px; height:36px; border-radius:9999px; background:#FFF8E6; display:flex; align-items:center; justify-content:center; flex:none; }
+  .row h4 { font-size:15px; font-weight:600; margin:0; }
+  .row h4 mark { background:none; color:#8C238A; }
+  .row p { font-size:12px; color:#6B6B80; margin:1px 0 0; }
+  .dist { margin-left:auto; font-size:12px; color:#9090A8; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; }
+  .keys { background:#E0E0EA; padding:8px 4px 20px; display:flex; flex-direction:column; gap:6px; }
+  .krow { display:flex; justify-content:center; gap:4px; }
+  .key { width:30px; height:40px; background:#FFFFFF; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:15px; box-shadow:0 1px 2px rgba(0,0,0,0.07); }
+  .key.wide { width:64px; font-size:12px; color:#6B6B80; }
+  .key.space { width:150px; }
+</style></head><body>
+  <div class="phone">
+    <div class="header">
+      <div class="back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#323248" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></div>
+      <div class="dotcol"><span class="dot" style="background:#8C238A"></span><span class="vline"></span><span class="dot" style="background:#F5A623"></span></div>
+      <div class="fields">
+        <div class="input"><span class="muted">Ma position · près de Pharmacie du Gros-Bouquet</span></div>
+        <div class="input active">phar<span class="caret"></span></div>
+      </div>
+    </div>
+    <div class="list">
+      <p class="sec">Repères proches</p>
+      <div class="row"><div class="lm-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B57308" stroke-width="2.2"><path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
+        <div><h4><mark>Phar</mark>macie du Gros-Bouquet</h4><p>Repère validé · Libreville centre</p></div><span class="dist">350 m</span></div>
+      <div class="row"><div class="lm-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B57308" stroke-width="2.2"><path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
+        <div><h4><mark>Phar</mark>macie de Nkembo</h4><p>Repère validé · Nkembo</p></div><span class="dist">1,2 km</span></div>
+      <div class="row"><div class="lm-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B57308" stroke-width="2.2"><path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
+        <div><h4><mark>Phar</mark>macie d'Akébé-Plaine</h4><p>Repère validé · Akébé</p></div><span class="dist">2,8 km</span></div>
+      <div class="row" style="border-bottom:none"><div class="lm-ico" style="background:#F0F0F5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B80" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></div>
+        <div><h4>Proposer « phar… »</h4><p>Nouveau repère — vérifié par l'équipe Teko</p></div></div>
+    </div>
+    <div class="keys">
+      <div class="krow"><span class="key">a</span><span class="key">z</span><span class="key">e</span><span class="key">r</span><span class="key">t</span><span class="key">y</span><span class="key">u</span><span class="key">i</span><span class="key">o</span><span class="key">p</span></div>
+      <div class="krow"><span class="key">q</span><span class="key">s</span><span class="key">d</span><span class="key">f</span><span class="key">g</span><span class="key">h</span><span class="key">j</span><span class="key">k</span><span class="key">l</span><span class="key">m</span></div>
+      <div class="krow"><span class="key wide">maj</span><span class="key">w</span><span class="key">x</span><span class="key">c</span><span class="key">v</span><span class="key">b</span><span class="key">n</span><span class="key wide">⌫</span></div>
+      <div class="krow"><span class="key wide">123</span><span class="key space"></span><span class="key wide">ok</span></div>
+    </div>
+  </div>
+</body></html>

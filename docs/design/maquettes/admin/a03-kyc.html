@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>A-03 Validation KYC</title>
+<style>
+  body { margin:0; background:#F9F9FB; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; font-size:13px; }
+  .screen { width:1280px; height:800px; display:flex; overflow:hidden; }
+  .side { width:216px; background:#3D0F5C; color:#fff; display:flex; flex-direction:column; padding:18px 12px; box-sizing:border-box; flex:none; }
+  .brand { display:flex; align-items:center; gap:10px; padding:0 8px 18px; font-weight:900; font-size:17px; }
+  .brand .m { width:32px; height:32px; border-radius:9999px; border:2.5px solid #fff; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; font-size:13.5px; color:#D8CDE8; }
+  .item.on { background:rgba(255,255,255,0.14); color:#fff; font-weight:700; }
+  .badge { margin-left:auto; background:#F5A623; color:#3D0F5C; font-size:10.5px; font-weight:800; border-radius:9999px; padding:1px 7px; }
+  .who { margin-top:auto; padding:10px; background:rgba(255,255,255,0.08); border-radius:12px; font-size:12px; }
+  .who span { color:#00BFA5; font-weight:700; font-size:11px; text-transform:uppercase; }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .top { height:52px; background:#FFFFFF; border-bottom:1px solid #E3E1EC; display:flex; align-items:center; padding:0 20px; gap:14px; flex:none; }
+  .top h1 { font-size:16px; font-weight:700; margin:0; }
+  .top .count { font-size:12px; color:#6B6B80; }
+  .content { flex:1; display:flex; gap:12px; padding:16px 20px; overflow:hidden; }
+  .queue { width:330px; display:flex; flex-direction:column; gap:8px; flex:none; }
+  .q-item { background:#FFFFFF; border:1px solid #E3E1EC; border-radius:12px; padding:11px 14px; display:flex; align-items:center; gap:10px; }
+  .q-item.on { border-color:#8C238A; background:#FDFAFF; }
+  .avatar { width:36px; height:36px; border-radius:9999px; background:#E0F7F4; color:#007A6A; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .q-item h4 { font-size:13.5px; font-weight:600; margin:0; }
+  .q-item p { font-size:11.5px; color:#6B6B80; margin:1px 0 0; }
+  .age { margin-left:auto; font-size:11px; color:#B57308; font-weight:700; font-family:ui-monospace,Menlo,monospace; }
+  .detail { flex:1; background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; display:flex; flex-direction:column; overflow:hidden; }
+  .d-head { padding:14px 18px; border-bottom:1px solid #F0F0F5; display:flex; align-items:center; gap:12px; }
+  .d-head h2 { font-size:16px; font-weight:700; margin:0; }
+  .d-head p { font-size:12px; color:#6B6B80; margin:1px 0 0; }
+  .d-body { flex:1; padding:14px 18px; display:flex; gap:14px; }
+  .docs { flex:1.3; display:flex; flex-direction:column; gap:8px; }
+  .doc { border:1px solid #E3E1EC; border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:10px; }
+  .thumb { width:52px; height:36px; border-radius:6px; background:#F0F0F5; display:flex; align-items:center; justify-content:center; flex:none; font-size:9px; color:#9090A8; }
+  .doc h4 { font-size:13px; font-weight:600; margin:0; }
+  .doc p { font-size:11px; color:#6B6B80; margin:1px 0 0; }
+  .st { margin-left:auto; font-size:10px; font-weight:800; text-transform:uppercase; border-radius:9999px; padding:2px 9px; flex:none; }
+  .ok { background:#E6F9F0; color:#15874F; } .todo { background:#FFF8E6; color:#B57308; }
+  .meta { flex:1; display:flex; flex-direction:column; gap:8px; }
+  .meta-card { border:1px solid #E3E1EC; border-radius:12px; padding:11px 13px; }
+  .meta-card .lbl { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#6B6B80; margin:0 0 5px; }
+  .meta-card p { margin:2px 0; font-size:12.5px; }
+  .mono { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-weight:600; }
+  .cat-pick { display:flex; gap:6px; margin-top:6px; }
+  .cat { flex:1; border:1.5px solid #E3E1EC; border-radius:9999px; text-align:center; padding:5px 0; font-size:12px; font-weight:600; }
+  .cat.on { border-color:#00BFA5; background:#E0F7F4; color:#007A6A; }
+  .d-foot { border-top:1px solid #F0F0F5; padding:12px 18px; display:flex; gap:10px; align-items:center; }
+  .motif { flex:1; height:38px; border-radius:10px; background:#F0F0F5; display:flex; align-items:center; padding:0 12px; color:#9090A8; font-size:12.5px; }
+  .refuse { height:40px; border:none; border-radius:16px; background:#FFF0F0; color:#E53E3E; font-size:13px; font-weight:700; font-family:inherit; padding:0 18px; }
+  .approve { height:40px; border:none; border-radius:16px; background:linear-gradient(135deg,#5A1A80 0%,#8C238A 100%); color:#fff; font-size:13px; font-weight:700; font-family:inherit; padding:0 20px; box-shadow:0 4px 24px rgba(90,26,128,0.35); }
+</style></head><body>
+  <div class="screen">
+    <div class="side">
+      <div class="brand"><span class="m">T</span>Teko Admin</div>
+      <div class="item">Tableau de bord</div>
+      <div class="item on">Validation KYC<span class="badge">12</span></div>
+      <div class="item">Cartographie<span class="badge">5</span></div>
+      <div class="item">Finance</div>
+      <div class="item">Utilisateurs</div>
+      <div class="item">Paramètres</div>
+      <div class="who"><strong>Aline K.</strong><br><span>Rôle · Ops</span></div>
+    </div>
+    <div class="main">
+      <div class="top"><h1>Validation KYC</h1><span class="count">12 dossiers en attente · engagement 48 h</span></div>
+      <div class="content">
+        <div class="queue">
+          <div class="q-item on"><span class="avatar">SO</span><div><h4>Steeve O.</h4><p>Moto-taxi · 2 pièces à examiner</p></div><span class="age">4 h</span></div>
+          <div class="q-item"><span class="avatar">MN</span><div><h4>Marielle N.</h4><p>Voiture · dossier complet</p></div><span class="age">9 h</span></div>
+          <div class="q-item"><span class="avatar">JP</span><div><h4>Jean-Paul B.</h4><p>Voiture · assurance manquante</p></div><span class="age">31 h</span></div>
+          <div class="q-item"><span class="avatar">FA</span><div><h4>Fabrice A.</h4><p>Moto-taxi · re-soumission permis</p></div><span class="age">44 h</span></div>
+        </div>
+        <div class="detail">
+          <div class="d-head">
+            <span class="avatar" style="width:44px;height:44px;font-size:15px">SO</span>
+            <div><h2>Steeve O. — moto-taxi</h2><p>+241 06 44 78 12 · déposé aujourd'hui 11 h 40 · Yamaha Crux · <span class="mono">GA-217-LBV</span></p></div>
+          </div>
+          <div class="d-body">
+            <div class="docs">
+              <div class="doc"><span class="thumb">IMG</span><div><h4>Permis de conduire A</h4><p>permis_steeve.jpg · net, date visible</p></div><span class="st ok">Conforme</span></div>
+              <div class="doc"><span class="thumb">IMG</span><div><h4>Pièce d'identité</h4><p>cni_recto.jpg · à examiner</p></div><span class="st todo">À examiner</span></div>
+              <div class="doc"><span class="thumb">IMG</span><div><h4>Carte grise moto</h4><p>carte_grise.jpg · à examiner</p></div><span class="st todo">À examiner</span></div>
+              <div class="doc"><span class="thumb">IMG</span><div><h4>Assurance</h4><p>expire 02/2027 · lisible</p></div><span class="st ok">Conforme</span></div>
+            </div>
+            <div class="meta">
+              <div class="meta-card"><p class="lbl">Numéro Airtel Money</p><p class="mono">+241 06 44 78 12</p><p style="color:#15874F;font-weight:600">Mini-versement 1 F confirmé ✓</p></div>
+              <div class="meta-card"><p class="lbl">Catégorie attribuée</p>
+                <div class="cat-pick"><span class="cat">Éco</span><span class="cat on">Moto-taxi</span><span class="cat">Confort</span></div>
+              </div>
+              <div class="meta-card"><p class="lbl">Journal</p><p>Dossier créé · 11 h 40</p><p>Permis validé par Aline K. · 14 h 05</p></div>
+            </div>
+          </div>
+          <div class="d-foot">
+            <div class="motif">Motif de refus (obligatoire si refus) — visible par le chauffeur</div>
+            <button class="refuse">Refuser la pièce</button>
+            <button class="approve">Tout valider — activer le chauffeur</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body></html>

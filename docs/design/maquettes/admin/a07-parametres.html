@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>A-07 Paramètres</title>
+<style>
+  body { margin:0; background:#F9F9FB; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; font-size:13px; }
+  .screen { width:1280px; height:800px; display:flex; overflow:hidden; }
+  .side { width:216px; background:#3D0F5C; color:#fff; display:flex; flex-direction:column; padding:18px 12px; box-sizing:border-box; flex:none; }
+  .brand { display:flex; align-items:center; gap:10px; padding:0 8px 18px; font-weight:900; font-size:17px; }
+  .brand .m { width:32px; height:32px; border-radius:9999px; border:2.5px solid #fff; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; font-size:13.5px; color:#D8CDE8; }
+  .item.on { background:rgba(255,255,255,0.14); color:#fff; font-weight:700; }
+  .badge { margin-left:auto; background:#F5A623; color:#3D0F5C; font-size:10.5px; font-weight:800; border-radius:9999px; padding:1px 7px; }
+  .who { margin-top:auto; padding:10px; background:rgba(255,255,255,0.08); border-radius:12px; font-size:12px; }
+  .who span { color:#00BFA5; font-weight:700; font-size:11px; text-transform:uppercase; }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .top { height:52px; background:#FFFFFF; border-bottom:1px solid #E3E1EC; display:flex; align-items:center; padding:0 20px; gap:12px; flex:none; }
+  .top h1 { font-size:16px; font-weight:700; margin:0; }
+  .lock { margin-left:auto; font-size:11.5px; font-weight:700; color:#5A1A80; background:#F5E6FF; border-radius:9999px; padding:5px 14px; }
+  .content { flex:1; padding:16px 20px; overflow:hidden; display:flex; gap:12px; }
+  .col { flex:1; display:flex; flex-direction:column; gap:12px; }
+  .panel { background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; padding:14px 18px; }
+  .panel h2 { font-size:13.5px; font-weight:700; margin:0 0 12px; }
+  .row { display:flex; align-items:center; gap:12px; padding:9px 0; border-top:1px solid #F0F0F5; }
+  .row:first-of-type { border-top:none; }
+  .row .lbl { flex:1; }
+  .row .lbl h4 { font-size:13px; font-weight:600; margin:0; }
+  .row .lbl p { font-size:11px; color:#6B6B80; margin:1px 0 0; line-height:1.45; }
+  .val { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-weight:800; font-size:14px; background:#F0F0F5; border-radius:10px; padding:6px 12px; flex:none; }
+  .unit { font-size:11px; color:#6B6B80; flex:none; }
+  .seg { display:flex; gap:4px; flex:none; }
+  .seg span { font-size:11.5px; font-weight:700; padding:5px 12px; border-radius:9999px; background:#F0F0F5; color:#6B6B80; }
+  .seg .on { background:#F5E6FF; color:#5A1A80; }
+  .hist { font-size:11.5px; color:#6B6B80; line-height:1.6; }
+  .hist .mono { font-family:ui-monospace,Menlo,monospace; font-weight:700; color:#323248; }
+  .save-bar { display:flex; align-items:center; gap:12px; background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; padding:12px 18px; }
+  .save-bar p { flex:1; font-size:12px; color:#6B6B80; margin:0; line-height:1.5; }
+  .save { height:40px; border:none; border-radius:16px; background:linear-gradient(135deg,#5A1A80 0%,#8C238A 100%); color:#fff; font-size:13px; font-weight:700; font-family:inherit; padding:0 22px; box-shadow:0 4px 24px rgba(90,26,128,0.35); }
+  .zone { display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid #F0F0F5; }
+  .zone .dot { width:10px; height:10px; border-radius:9999px; flex:none; }
+  .zone h4 { font-size:13px; font-weight:600; margin:0; flex:1; }
+  .st { font-size:10px; font-weight:800; text-transform:uppercase; border-radius:9999px; padding:2px 9px; }
+  .s-on { background:#E6F9F0; color:#15874F; } .s-off { background:#F0F0F5; color:#6B6B80; }
+</style></head><body>
+  <div class="screen">
+    <div class="side">
+      <div class="brand"><span class="m">T</span>Teko Admin</div>
+      <div class="item">Tableau de bord</div>
+      <div class="item">Validation KYC<span class="badge">12</span></div>
+      <div class="item">Cartographie<span class="badge">5</span></div>
+      <div class="item">Finance</div>
+      <div class="item">Utilisateurs</div>
+      <div class="item on">Paramètres</div>
+      <div class="who"><strong>Serge O.</strong><br><span>Rôle · Superadmin</span></div>
+    </div>
+    <div class="main">
+      <div class="top"><h1>Paramètres de la plateforme</h1><span class="lock">Modification réservée au superadmin · double confirmation</span></div>
+      <div class="content">
+        <div class="col">
+          <div class="panel">
+            <h2>Économie</h2>
+            <div class="row"><div class="lbl"><h4>Commission Teko</h4><p>Prélevée sur chaque course · <span style="font-family:ui-monospace,Menlo,monospace">get_commission / set_commission</span></p></div><span class="val">15</span><span class="unit">%</span></div>
+            <div class="row"><div class="lbl"><h4>Frais d'annulation — formule</h4><p>Fixe, pourcentage de l'estimation, ou le plus élevé des deux. Le client voit toujours le montant calculé avant de confirmer.</p></div>
+              <span class="seg"><span>Fixe</span><span>%</span><span class="on">Max des deux</span></span></div>
+            <div class="row"><div class="lbl"><h4>· Montant fixe</h4></div><span class="val">300</span><span class="unit">FCFA</span></div>
+            <div class="row"><div class="lbl"><h4>· Pourcentage</h4><p>Appliqué à l'estimation de la course</p></div><span class="val">20</span><span class="unit">%</span></div>
+            <div class="row"><div class="lbl"><h4>Part chauffeur des frais d'annulation</h4><p>Versée si le chauffeur était déjà en route</p></div><span class="val">70</span><span class="unit">%</span></div>
+          </div>
+          <div class="panel">
+            <h2>Courses</h2>
+            <div class="row"><div class="lbl"><h4>Délai d'acceptation chauffeur</h4><p>Avant cascade au chauffeur suivant</p></div><span class="val">12</span><span class="unit">s</span></div>
+            <div class="row"><div class="lbl"><h4>Attente passager absent</h4><p>Avant annulation sans pénalité chauffeur</p></div><span class="val">5</span><span class="unit">min</span></div>
+            <div class="row"><div class="lbl"><h4>Seuil d'urgence du solde</h4><p>Passage de l'app chauffeur en état « urgence »</p></div><span class="val">4</span><span class="unit">h avant clôture</span></div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="panel">
+            <h2>Zones de service</h2>
+            <div class="zone"><span class="dot" style="background:#22C47A"></span><h4>Libreville centre</h4><span class="st s-on">Active</span></div>
+            <div class="zone"><span class="dot" style="background:#22C47A"></span><h4>Akébé — Nzeng-Ayong</h4><span class="st s-on">Active</span></div>
+            <div class="zone"><span class="dot" style="background:#C4C4D4"></span><h4>Owendo</h4><span class="st s-off">Préparation carte</span></div>
+            <div class="zone"><span class="dot" style="background:#C4C4D4"></span><h4>Akanda</h4><span class="st s-off">Étude</span></div>
+          </div>
+          <div class="panel">
+            <h2>Historique des changements</h2>
+            <p class="hist">
+              <span class="mono">12 août</span> · Commission 12 % → <b>15 %</b> — Serge O. (superadmin), motif : « alignement business plan v2 »<br>
+              <span class="mono">5 août</span> · Frais d'annulation : formule <b>Max des deux</b> activée — Serge O.<br>
+              <span class="mono">28 juil.</span> · Zone <b>Akébé — Nzeng-Ayong</b> activée — Marc E. (carto)<br>
+              <span class="mono">21 juil.</span> · Délai d'acceptation 15 s → <b>12 s</b> — Serge O.
+            </p>
+          </div>
+          <div class="save-bar">
+            <p>Tout changement est historisé (<span style="font-family:ui-monospace,Menlo,monospace">app_config_history</span>) et prend effet immédiatement sur les estimations et les nouvelles courses — jamais sur les courses en cours.</p>
+            <button class="save">Enregistrer les modifications</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body></html>

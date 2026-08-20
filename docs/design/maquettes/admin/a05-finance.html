@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>A-05 Console finance</title>
+<style>
+  body { margin:0; background:#F9F9FB; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; font-size:13px; }
+  .screen { width:1280px; height:800px; display:flex; overflow:hidden; }
+  .side { width:216px; background:#3D0F5C; color:#fff; display:flex; flex-direction:column; padding:18px 12px; box-sizing:border-box; flex:none; }
+  .brand { display:flex; align-items:center; gap:10px; padding:0 8px 18px; font-weight:900; font-size:17px; }
+  .brand .m { width:32px; height:32px; border-radius:9999px; border:2.5px solid #fff; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; font-size:13.5px; color:#D8CDE8; }
+  .item.on { background:rgba(255,255,255,0.14); color:#fff; font-weight:700; }
+  .badge { margin-left:auto; background:#F5A623; color:#3D0F5C; font-size:10.5px; font-weight:800; border-radius:9999px; padding:1px 7px; }
+  .who { margin-top:auto; padding:10px; background:rgba(255,255,255,0.08); border-radius:12px; font-size:12px; }
+  .who span { color:#00BFA5; font-weight:700; font-size:11px; text-transform:uppercase; }
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .top { height:52px; background:#FFFFFF; border-bottom:1px solid #E3E1EC; display:flex; align-items:center; padding:0 20px; gap:12px; flex:none; }
+  .top h1 { font-size:16px; font-weight:700; margin:0; }
+  .day { font-size:12px; color:#6B6B80; }
+  .close-chip { margin-left:auto; font-size:12px; font-weight:700; color:#B57308; background:#FFF8E6; border-radius:9999px; padding:5px 14px; font-family:ui-monospace,Menlo,monospace; }
+  .content { flex:1; padding:14px 20px; overflow:hidden; }
+  .kpis { display:flex; gap:12px; margin-bottom:12px; }
+  .kpi { flex:1; background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; padding:12px 16px; }
+  .kpi .lbl { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#6B6B80; margin:0 0 3px; }
+  .kpi .v { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:20px; font-weight:900; margin:0; }
+  .neg { color:#E53E3E; } .pos { color:#15874F; }
+  .panel { background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; overflow:hidden; margin-bottom:12px; }
+  .p-head { padding:11px 16px; border-bottom:1px solid #F0F0F5; font-weight:700; font-size:13.5px; display:flex; align-items:center; }
+  .filters { margin-left:auto; display:flex; gap:6px; }
+  .f { font-size:11.5px; font-weight:600; padding:4px 12px; border-radius:9999px; background:#F0F0F5; color:#6B6B80; }
+  .f.on { background:#FFF0F0; color:#9B1C1C; }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; }
+  th { text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px; color:#6B6B80; background:#F9F9FB; padding:8px 16px; }
+  td { padding:9px 16px; border-top:1px solid #F0F0F5; }
+  .mono { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-weight:700; }
+  .st { font-size:10px; font-weight:800; text-transform:uppercase; border-radius:9999px; padding:2px 9px; }
+  .s-late { background:#FFF0F0; color:#9B1C1C; } .s-pend { background:#FFF8E6; color:#B57308; } .s-ok { background:#E6F9F0; color:#15874F; }
+  .act { font-size:11.5px; font-weight:700; color:#5A1A80; }
+</style></head><body>
+  <div class="screen">
+    <div class="side">
+      <div class="brand"><span class="m">T</span>Teko Admin</div>
+      <div class="item">Tableau de bord</div>
+      <div class="item">Validation KYC<span class="badge">12</span></div>
+      <div class="item">Cartographie<span class="badge">5</span></div>
+      <div class="item on">Finance</div>
+      <div class="item">Utilisateurs</div>
+      <div class="item">Paramètres</div>
+      <div class="who"><strong>Diane M.</strong><br><span>Rôle · Finance</span></div>
+    </div>
+    <div class="main">
+      <div class="top"><h1>Finance</h1><span class="day">Journée du lundi 18 août (04 h → 04 h, Africa/Libreville)</span><span class="close-chip">Clôture dans 12 h 18</span></div>
+      <div class="content">
+        <div class="kpis">
+          <div class="kpi"><p class="lbl">Commissions du jour</p><p class="v">61 900 F</p></div>
+          <div class="kpi"><p class="lbl">À verser aux chauffeurs</p><p class="v pos">238 400 F</p></div>
+          <div class="kpi"><p class="lbl">Dû par les chauffeurs</p><p class="v neg">47 300 F</p></div>
+          <div class="kpi"><p class="lbl">Paiements Airtel échoués</p><p class="v">3 <span style="font-size:12px;color:#6B6B80;font-weight:600">à réconcilier</span></p></div>
+        </div>
+        <div class="panel">
+          <div class="p-head">Soldes chauffeurs
+            <span class="filters"><span class="f on">Arriérés (4)</span><span class="f">Débiteurs</span><span class="f">Créditeurs</span><span class="f">Suspendus (2)</span></span>
+          </div>
+          <table>
+            <tr><th>Chauffeur</th><th>Solde</th><th>Ancienneté dette</th><th>Statut</th><th>Dernier règlement</th><th></th></tr>
+            <tr><td>Boris Mba · Éco</td><td class="mono neg">−3 000 F</td><td>1 jour (report dim.)</td><td><span class="st s-pend">Urgence 04 h</span></td><td>sam. 16 · Airtel</td><td><span class="act">Relancer</span></td></tr>
+            <tr><td>Steeve O. · Moto</td><td class="mono neg">−8 450 F</td><td>3 jours</td><td><span class="st s-late">Suspendu (auto)</span></td><td>mer. 13 · Airtel</td><td><span class="act">Règlement manuel + preuve</span></td></tr>
+            <tr><td>Marielle N. · Confort</td><td class="mono pos">+21 300 F</td><td>—</td><td><span class="st s-ok">Versement ce soir</span></td><td>dim. 17 · Airtel</td><td><span class="act">Détail</span></td></tr>
+            <tr><td>Fabrice A. · Moto</td><td class="mono neg">−35 800 F</td><td>9 jours</td><td><span class="st s-late">Suspendu · litige</span></td><td>sam. 9 · espèces + preuve</td><td><span class="act">Ouvrir le dossier</span></td></tr>
+          </table>
+        </div>
+        <div class="panel">
+          <div class="p-head">Réconciliation Airtel — 3 transactions ambiguës (statut TA)</div>
+          <table>
+            <tr><th>Réf. Airtel</th><th>Course</th><th>Montant</th><th>Émis</th><th>Statut</th><th></th></tr>
+            <tr><td class="mono">MP2608…4471</td><td>TK-2608-0147 · Nadia O.</td><td class="mono">1 500 F</td><td>14 h 47</td><td><span class="st s-ok">Confirmé après enquiry</span></td><td><span class="act">Clore</span></td></tr>
+            <tr><td class="mono">MP2608…4102</td><td>TK-2608-0142 · client #0492</td><td class="mono">2 500 F</td><td>15 h 28</td><td><span class="st s-pend">Ambigu — replié espèces</span></td><td><span class="act">Vérifier double débit</span></td></tr>
+            <tr><td class="mono">DP2608…0088</td><td>Versement M. N'Toutoume</td><td class="mono">12 750 F</td><td>04 h 02</td><td><span class="st s-pend">En attente opérateur</span></td><td><span class="act">Relancer l'enquiry</span></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body></html>

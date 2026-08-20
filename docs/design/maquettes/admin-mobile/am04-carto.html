@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>AM-04 Cartographie mobile</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; font-size:13px; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .appbar { background:#3D0F5C; color:#fff; padding:16px; flex:none; }
+  .appbar h1 { font-size:17px; font-weight:800; margin:0 0 2px; }
+  .appbar p { font-size:11.5px; opacity:0.8; margin:0; }
+  .list { flex:1; padding:12px 16px 0; overflow:hidden; }
+  .prop { background:#FFFFFF; border:1px solid #E3E1EC; border-radius:14px; margin-bottom:10px; overflow:hidden; }
+  .map { height:110px; position:relative; }
+  .prop-b { padding:10px 14px 12px; }
+  .prop-h { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+  .prop-h h4 { font-size:14px; font-weight:800; margin:0; }
+  .type { margin-left:auto; font-size:9.5px; font-weight:800; text-transform:uppercase; border-radius:9999px; padding:3px 9px; flex:none; }
+  .t-lm { background:#FFF8E6; color:#B57308; } .t-road { background:#E0F7F4; color:#007A6A; }
+  .prop p { font-size:11.5px; color:#6B6B80; margin:2px 0 10px; line-height:1.45; }
+  .acts { display:flex; gap:6px; }
+  .btn { height:38px; border:none; border-radius:14px; font-size:12px; font-weight:800; font-family:inherit; padding:0 14px; flex:1; }
+  .b-ok { background:#E6F9F0; color:#15874F; }
+  .b-no { background:#FFF0F0; color:#9B1C1C; }
+  .b-edit { background:#F0F0F5; color:#4A4A60; }
+  .note { font-size:11px; color:#9090A8; text-align:center; margin:0 0 8px; }
+  .tabs { display:flex; background:#FFFFFF; border-top:1px solid #E0E0EA; padding:8px 0 16px; flex:none; }
+  .tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#9090A8; position:relative; }
+  .tab.on { color:#5A1A80; }
+  .tab .b { position:absolute; top:-3px; right:16px; min-width:16px; height:16px; border-radius:9999px; background:#F5A623; color:#3D0F5C; font-size:9.5px; font-weight:900; display:flex; align-items:center; justify-content:center; padding:0 4px; }
+</style></head><body>
+  <div class="phone">
+    <div class="appbar"><h1>Cartographie</h1><p>5 propositions · l'édition fine des routes se fait sur ordinateur</p></div>
+    <div class="list">
+      <div class="prop">
+        <svg class="map" viewBox="0 0 328 110" style="width:100%"><rect width="328" height="110" fill="#F2F1F7"/><path d="M0 60 L328 44" stroke="#FFE3B3" stroke-width="10"/><path d="M0 60 L328 44" stroke="#FFFFFF" stroke-width="6"/><path d="M110 0 V110 M230 0 V110" stroke="#FFFFFF" stroke-width="5"/><circle cx="164" cy="62" r="18" fill="#F5A623" opacity="0.2"/><path d="M164 70c-7-6-11-12-11-19a11 11 0 1 1 22 0c0 7-4 13-11 19z" fill="#F5A623"/></svg>
+        <div class="prop-b">
+          <div class="prop-h"><h4>Boulangerie d'Akébé</h4><span class="type t-lm">Repère</span></div>
+          <p>Nadia O. (cliente, 2 validés) · photo jointe · à 40 m d'un repère existant — vérifier le doublon.</p>
+          <div class="acts"><button class="btn b-ok">Valider</button><button class="btn b-edit">Ajuster</button><button class="btn b-no">Refuser</button></div>
+        </div>
+      </div>
+      <div class="prop">
+        <svg class="map" viewBox="0 0 328 110" style="width:100%"><rect width="328" height="110" fill="#F2F1F7"/><path d="M0 40 H328 M90 0 V110" stroke="#FFFFFF" stroke-width="5"/><path d="M90 40 C 150 70 230 85 310 82" fill="none" stroke="#00BFA5" stroke-width="5" stroke-dasharray="9 6"/></svg>
+        <div class="prop-b">
+          <div class="prop-h"><h4>Liaison Akébé → PK8</h4><span class="type t-road">Route</span></div>
+          <p>14 traces GPS · 9 chauffeurs · 3 semaines · impact estimé −7 min sur Akébé-Est.</p>
+          <div class="acts"><button class="btn b-ok">Intégrer</button><button class="btn b-edit">Sur ordinateur…</button><button class="btn b-no">Rejeter</button></div>
+        </div>
+      </div>
+      <p class="note">« Ajuster la position » et le tracé manuel ouvrent l'éditeur complet (recommandé sur ordinateur).</p>
+    </div>
+    <div class="tabs">
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg>Accueil</div>
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="10" cy="10" r="2.2"/><path d="M6 18c1-2.4 2.5-3.5 4-3.5s3 1.1 4 3.5M15 8h3"/></svg>KYC<span class="b">12</span></div>
+      <div class="tab on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 4L4 6v14l5-2 6 2 5-2V4l-5 2z"/><path d="M9 4v14M15 6v14"/></svg>Carto<span class="b">5</span></div>
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="7" width="18" height="12" rx="2"/><circle cx="12" cy="13" r="3"/></svg>Finance</div>
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>Plus</div>
+    </div>
+  </div>
+</body></html>

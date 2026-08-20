@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Teko — Espacement, rayons, ombres</title>
+<style>
+  body { margin:0; background:#FFFFFF; color:#323248; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; padding:28px; }
+  h1 { font-size:20px; font-weight:700; margin:0 0 4px; color:#3D0F5C; }
+  .sub { font-size:13px; color:#6B6B80; margin:0 0 24px; max-width:60ch; }
+  h2 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#8C238A; margin:26px 0 12px; }
+  .space-row { display:flex; align-items:center; gap:14px; margin:6px 0; }
+  .space-bar { background:#D49FFF; height:16px; border-radius:3px; }
+  .meta { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:11px; color:#6B6B80; width:120px; }
+  .row { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; }
+  .radius-demo { background:#F5E6FF; border:1.5px solid #8C238A; width:88px; height:56px; display:flex; align-items:center; justify-content:center; font-size:11px; color:#5A1A80; font-weight:600; }
+  .shadow-demo { background:#FFFFFF; border-radius:12px; width:150px; height:72px; display:flex; align-items:center; justify-content:center; font-size:12px; color:#6B6B80; }
+  .touch { display:flex; gap:16px; align-items:center; }
+  .target { border:1.5px dashed #E53E3E; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#E53E3E; }
+</style></head><body>
+  <h1>Espacement, rayons &amp; ombres</h1>
+  <p class="sub">Grille de 4 px. Padding horizontal d'écran : 16 px. Zone tactile minimum 44×44, idéal 48×48, 8 px entre cibles.</p>
+
+  <h2>Espacement</h2>
+  <div class="space-row"><span class="meta">1 · 4px</span><div class="space-bar" style="width:4px"></div></div>
+  <div class="space-row"><span class="meta">2 · 8px</span><div class="space-bar" style="width:8px"></div></div>
+  <div class="space-row"><span class="meta">3 · 12px</span><div class="space-bar" style="width:12px"></div></div>
+  <div class="space-row"><span class="meta">4 · 16px · écrans</span><div class="space-bar" style="width:16px"></div></div>
+  <div class="space-row"><span class="meta">6 · 24px · cartes</span><div class="space-bar" style="width:24px"></div></div>
+  <div class="space-row"><span class="meta">8 · 32px</span><div class="space-bar" style="width:32px"></div></div>
+  <div class="space-row"><span class="meta">12 · 48px · boutons</span><div class="space-bar" style="width:48px"></div></div>
+  <div class="space-row"><span class="meta">20 · 80px · safe area</span><div class="space-bar" style="width:80px"></div></div>
+
+  <h2>Rayons</h2>
+  <div class="row">
+    <div><div class="radius-demo" style="border-radius:4px">xs 4</div></div>
+    <div><div class="radius-demo" style="border-radius:8px">sm 8</div></div>
+    <div><div class="radius-demo" style="border-radius:12px">md 12 · cartes</div></div>
+    <div><div class="radius-demo" style="border-radius:16px">lg 16</div></div>
+    <div><div class="radius-demo" style="border-radius:20px">xl 20 · CTA</div></div>
+    <div><div class="radius-demo" style="border-radius:9999px">full · pills</div></div>
+  </div>
+
+  <h2>Ombres</h2>
+  <div class="row">
+    <div class="shadow-demo" style="box-shadow:0 1px 2px rgba(0,0,0,0.07)">xs · séparateur</div>
+    <div class="shadow-demo" style="box-shadow:0 2px 6px rgba(0,0,0,0.10)">sm · input focus</div>
+    <div class="shadow-demo" style="box-shadow:0 4px 16px rgba(0,0,0,0.12)">md · carte, sheet</div>
+    <div class="shadow-demo" style="box-shadow:0 8px 32px rgba(0,0,0,0.16)">lg · widget</div>
+    <div class="shadow-demo" style="box-shadow:0 4px 24px rgba(90,26,128,0.35)">brand · halo CTA</div>
+  </div>
+
+  <h2>Zones tactiles</h2>
+  <div class="touch">
+    <div class="target" style="width:44px;height:44px">44 min</div>
+    <div class="target" style="width:48px;height:48px;border-color:#22C47A;color:#22C47A">48 idéal</div>
+    <span style="font-size:12px;color:#6B6B80">8 px minimum entre deux cibles · jamais la couleur seule pour porter un état</span>
+  </div>
+</body></html>

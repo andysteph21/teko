@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>C-28 Suppression de compte</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .nav { padding:22px 16px 0; display:flex; align-items:center; gap:12px; }
+  .back { width:40px; height:40px; border-radius:9999px; background:#F0F0F5; display:flex; align-items:center; justify-content:center; }
+  .nav h1 { font-size:20px; font-weight:700; margin:0; color:#3D0F5C; }
+  .content { padding:20px 24px 0; flex:1; }
+  .sub { font-size:14px; line-height:1.5; color:#6B6B80; margin:0 0 18px; }
+  .card { background:#FFFFFF; border:1px solid #E0E0EA; border-radius:16px; padding:16px; margin-bottom:12px; }
+  .card h3 { font-size:13px; font-weight:700; margin:0 0 8px; display:flex; align-items:center; gap:8px; }
+  .card ul { margin:0; padding-left:18px; font-size:13.5px; line-height:1.6; color:#6B6B80; }
+  .del h3 { color:#E53E3E; }
+  .keep h3 { color:#4A4A60; }
+  .grace { display:flex; gap:10px; background:#E6F0FF; border-left:3px solid #3B82F6; border-radius:0 12px 12px 0; padding:12px 14px; margin:6px 0 18px; font-size:13.5px; line-height:1.5; color:#6B6B80; }
+  .grace strong { color:#1D4ED8; }
+  .danger { height:48px; border:none; border-radius:20px; width:100%; background:#FFF0F0; color:#E53E3E; font-size:16px; font-weight:600; font-family:inherit; }
+  .keep-btn { height:48px; border:none; border-radius:20px; width:100%; background:linear-gradient(135deg,#5A1A80 0%,#8C238A 100%); color:#fff; font-size:17px; font-weight:600; font-family:inherit; box-shadow:0 4px 24px rgba(90,26,128,0.35); margin-bottom:8px; }
+</style></head><body>
+  <div class="phone">
+    <div class="nav"><div class="back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#323248" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></div><h1>Supprimer mon compte</h1></div>
+    <div class="content">
+      <p class="sub">Avant de partir, voici exactement ce qui se passera. La suppression sera confirmée par un code envoyé au +241 06 12 34 56.</p>
+      <div class="card del">
+        <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E53E3E" stroke-width="2.4"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/></svg>Supprimé définitivement</h3>
+        <ul><li>Votre profil, votre photo et votre e-mail</li><li>Vos lieux et repères favoris</li><li>Votre historique de courses visible</li></ul>
+      </div>
+      <div class="card keep">
+        <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A4A60" stroke-width="2.4"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg>Conservé anonymisé (obligation légale)</h3>
+        <ul><li>Les écritures financières des paiements passés</li><li>Des statistiques agrégées, sans votre identité</li></ul>
+      </div>
+      <div class="grace">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.2" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <span><strong>30 jours pour changer d'avis</strong> : reconnectez-vous avant le 17 septembre et tout sera restauré à l'identique.</span>
+      </div>
+      <button class="keep-btn">Garder mon compte</button>
+      <button class="danger">Recevoir le code et supprimer</button>
+    </div>
+  </div>
+</body></html>

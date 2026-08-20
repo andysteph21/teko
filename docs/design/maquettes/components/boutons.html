@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Teko — Boutons</title>
+<style>
+  body { margin:0; background:#F9F9FB; color:#323248; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; padding:28px; }
+  h1 { font-size:20px; font-weight:700; margin:0 0 4px; color:#3D0F5C; }
+  .sub { font-size:13px; color:#6B6B80; margin:0 0 24px; max-width:60ch; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; }
+  .cell { background:#FFFFFF; border:1px solid #E0E0EA; border-radius:12px; padding:20px; }
+  .label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6B6B80; margin:0 0 12px; }
+  .btn { width:100%; height:48px; border:none; border-radius:20px; font-family:inherit; font-size:17px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; }
+  .btn-primary { background:linear-gradient(135deg,#5A1A80 0%,#8C238A 100%); color:#fff; box-shadow:0 4px 24px rgba(90,26,128,0.35); }
+  .btn-pressed { opacity:0.88; transform:scale(0.97); }
+  .btn-secondary { background:#F5E6FF; color:#5A1A80; }
+  .btn-ghost { background:transparent; color:#5A1A80; }
+  .btn-danger { background:#FFF0F0; color:#E53E3E; }
+  .btn-disabled { background:#E0E0EA; color:#9090A8; box-shadow:none; cursor:not-allowed; }
+  .btn-pill { height:36px; border-radius:9999px; font-size:13px; padding:0 16px; width:auto; }
+  .note { font-size:12px; color:#6B6B80; margin:10px 0 0; }
+</style></head><body>
+  <h1>Boutons</h1>
+  <p class="sub">Hauteur 48 px, rayon 20, texte md 17/600. Un seul bouton principal par écran. État pressé : opacité 0.88 + scale 0.97 (150 ms).</p>
+  <div class="grid">
+    <div class="cell"><p class="label">Principal — gradient</p><button class="btn btn-primary">Recevoir le code</button><p class="note">CTA unique, halo violet</p></div>
+    <div class="cell"><p class="label">Principal — pressé</p><button class="btn btn-primary btn-pressed">Recevoir le code</button><p class="note">opacity 0.88 · scale 0.97</p></div>
+    <div class="cell"><p class="label">Secondaire</p><button class="btn btn-secondary">Modifier le point de rencontre</button><p class="note">brand-50 / brand-800</p></div>
+    <div class="cell"><p class="label">Ghost</p><button class="btn btn-ghost">Plus tard</button><p class="note">action de repli, jamais deux ghosts côte à côte</p></div>
+    <div class="cell"><p class="label">Destructif</p><button class="btn btn-danger">Annuler la course</button><p class="note">toujours précédé du montant des frais</p></div>
+    <div class="cell"><p class="label">Désactivé</p><button class="btn btn-disabled">Continuer</button><p class="note">jamais masqué — expliquer ce qui manque</p></div>
+    <div class="cell"><p class="label">Pill — filtre / action légère</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-pill">Éco</button>
+        <button class="btn btn-secondary btn-pill">Moto</button>
+        <button class="btn btn-secondary btn-pill">Confort</button>
+      </div>
+      <p class="note">36 px — filtres d'historique, catégories compactes</p>
+    </div>
+  </div>
+</body></html>

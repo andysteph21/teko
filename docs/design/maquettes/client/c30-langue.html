@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>C-30 Langue</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .nav { padding:22px 16px 0; display:flex; align-items:center; gap:12px; }
+  .back { width:40px; height:40px; border-radius:9999px; background:#F0F0F5; display:flex; align-items:center; justify-content:center; }
+  .nav h1 { font-size:20px; font-weight:700; margin:0; color:#3D0F5C; }
+  .content { padding:20px 20px 0; flex:1; }
+  .row { display:flex; align-items:center; gap:12px; background:#FFFFFF; border:1.5px solid #E0E0EA; border-radius:16px; padding:15px 16px; margin-bottom:10px; }
+  .row.on { border-color:#8C238A; background:#F5E6FF; }
+  .row h4 { font-size:15px; font-weight:600; margin:0; }
+  .row p { font-size:12px; color:#6B6B80; margin:1px 0 0; }
+  .row.soon { opacity:0.55; }
+  .check { margin-left:auto; width:22px; height:22px; border-radius:9999px; background:#8C238A; color:#fff; display:flex; align-items:center; justify-content:center; flex:none; }
+  .soon-badge { margin-left:auto; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; background:#F0F0F5; color:#6B6B80; border-radius:9999px; padding:3px 9px; }
+  .note { font-size:12.5px; line-height:1.5; color:#6B6B80; background:#F0F0F5; border-radius:12px; padding:12px 14px; margin-top:8px; }
+</style></head><body>
+  <div class="phone">
+    <div class="nav"><div class="back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#323248" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></div><h1>Langue</h1></div>
+    <div class="content">
+      <div class="row on"><div><h4>Français</h4><p>Langue actuelle</p></div><span class="check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4.5 12.5l5 5 10-11"/></svg></span></div>
+      <div class="row soon"><div><h4>English</h4><p>À l'étude</p></div><span class="soon-badge">Bientôt</span></div>
+      <div class="row soon"><div><h4>Langues locales</h4><p>Selon les retours de la communauté</p></div><span class="soon-badge">Bientôt</span></div>
+      <p class="note">Teko est conçue pour accueillir d'autres langues sans mise à jour majeure. Dites-nous laquelle vous aiderait le plus via « Contacter Teko ».</p>
+    </div>
+  </div>
+</body></html>

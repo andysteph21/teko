@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>C-13 Chauffeur en approche</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F2F1F7; position:relative; overflow:hidden; }
+  .map { position:absolute; inset:0; }
+  .sos-fab { position:absolute; top:22px; right:16px; width:48px; height:48px; border-radius:9999px; background:#E53E3E; color:#fff; font-size:13px; font-weight:900; letter-spacing:0.5px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 32px rgba(229,62,62,0.4); }
+  .widget { position:absolute; bottom:346px; left:16px; background:#FFFFFF; border-radius:9999px; box-shadow:0 8px 32px rgba(0,0,0,0.16); display:flex; align-items:center; gap:8px; padding:7px 13px 7px 7px; }
+  .widget .ring { width:28px; height:28px; border-radius:9999px; background:#F5E6FF; color:#5A1A80; display:flex; align-items:center; justify-content:center; }
+  .widget .qty { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:12px; font-weight:700; }
+  .widget .cap { font-size:9px; color:#6B6B80; margin-top:-2px; }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:#FFFFFF; border-radius:20px 20px 0 0; box-shadow:0 -4px 24px rgba(0,0,0,0.14); padding:8px 20px 20px; }
+  .handle { width:36px; height:4px; border-radius:9999px; background:#E0E0EA; margin:0 auto 12px; }
+  .eta { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .eta h1 { font-size:18px; font-weight:700; margin:0; color:#3D0F5C; }
+  .eta .badge { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:14px; font-weight:700; background:#F5E6FF; color:#5A1A80; border-radius:9999px; padding:5px 12px; }
+  .drv { display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid #F0F0F5; }
+  .avatar { width:46px; height:46px; border-radius:9999px; background:#F5E6FF; color:#5A1A80; font-weight:700; font-size:16px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .drv h4 { font-size:15px; font-weight:600; margin:0; }
+  .drv p { font-size:12px; color:#6B6B80; margin:1px 0 0; }
+  .star { color:#F5A623; }
+  .plate { margin-left:auto; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:13px; font-weight:700; background:#F0F0F5; border-radius:8px; padding:4px 8px; }
+  .call { width:44px; height:44px; border-radius:9999px; background:#E6F9F0; display:flex; align-items:center; justify-content:center; flex:none; margin-left:8px; }
+  .pin-zone { text-align:center; padding:12px 0 4px; }
+  .pin-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6B6B80; margin:0 0 6px; }
+  .pin { font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; font-size:34px; font-weight:900; letter-spacing:10px; color:#3D0F5C; margin:0; }
+  .pin-help { font-size:12px; color:#6B6B80; margin:6px 0 12px; }
+  .cancel { display:block; text-align:center; font-size:13px; font-weight:600; color:#E53E3E; margin:0 auto; }
+</style></head><body>
+  <div class="phone">
+    <svg class="map" viewBox="0 0 360 800" role="img" aria-label="Le chauffeur approche du point de rencontre">
+      <rect width="360" height="800" fill="#F2F1F7"/>
+      <rect x="30" y="80" width="120" height="130" rx="4" fill="#E9E7F1"/>
+      <rect x="225" y="60" width="115" height="120" rx="4" fill="#E9E7F1"/>
+      <path d="M0 270 L360 240" stroke="#FFE3B3" stroke-width="16" stroke-linecap="round"/>
+      <path d="M0 270 L360 240" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+      <path d="M185 0 V460 M0 130 H360 M0 400 H360" stroke="#FFFFFF" stroke-width="6"/>
+      <path d="M60 130 L185 130 L185 258 L236 254" fill="none" stroke="#5A1A80" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(52,118) rotate(0)"><rect rx="5" width="30" height="17" fill="#00BFA5"/><rect x="6" y="3" width="12" height="11" rx="2" fill="#E0F7F4"/></g>
+      <circle cx="248" cy="252" r="26" fill="#F5A623" opacity="0.18"/>
+      <path d="M248 264c-9-8-14-15-14-23a14 14 0 1 1 28 0c0 8-5 15-14 23z" fill="#F5A623"/>
+      <circle cx="248" cy="240" r="5.5" fill="#FFF8E6"/>
+      <text x="196" y="292" font-size="9" fill="#6B6B80" font-family="system-ui">Pharmacie du Gros-Bouquet</text>
+    </svg>
+    <div class="sos-fab">SOS</div>
+    <div class="widget"><span class="ring"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 18v-6M10 18V9M16 18V4"/></svg></span>
+      <span><span class="qty">14 Mo</span><br><span class="cap">ce mois</span></span></div>
+    <div class="sheet">
+      <div class="handle"></div>
+      <div class="eta"><h1>Boris arrive</h1><span class="badge">3 min</span></div>
+      <div class="drv">
+        <div class="avatar">BM</div>
+        <div><h4>Boris M.</h4><p><span class="star">★</span> 4,8 · Toyota Corolla grise</p></div>
+        <span class="plate">GA-482-LBV</span>
+        <div class="call"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15874F" stroke-width="2.2"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></div>
+      </div>
+      <div class="pin-zone">
+        <p class="pin-label">Code de prise en charge</p>
+        <p class="pin">4729</p>
+        <p class="pin-help">Communiquez-le au chauffeur — la course démarre quand il le saisit.</p>
+      </div>
+      <a class="cancel">Annuler la course</a>
+    </div>
+  </div>
+</body></html>

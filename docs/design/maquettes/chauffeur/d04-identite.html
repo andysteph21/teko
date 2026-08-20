@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>D-04 Inscription 1/4 — Identité</title>
+<style>
+  body { margin:0; background:#E0E0EA; display:flex; justify-content:center; font-family:system-ui,-apple-system,Roboto,'Segoe UI',sans-serif; color:#323248; }
+  .phone { width:360px; height:800px; background:#F9F9FB; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+  .nav { padding:22px 16px 0; display:flex; align-items:center; gap:12px; }
+  .back { width:40px; height:40px; border-radius:9999px; background:#F0F0F5; display:flex; align-items:center; justify-content:center; }
+  .nav h1 { font-size:18px; font-weight:700; margin:0; color:#3D0F5C; }
+  .step { margin-left:auto; font-size:12px; font-weight:700; color:#007A6A; font-family:ui-monospace,'SF Mono','Roboto Mono',monospace; }
+  .progress { display:flex; gap:6px; padding:14px 16px 4px; }
+  .progress span { flex:1; height:4px; border-radius:9999px; background:#E0E0EA; }
+  .progress .on { background:#00BFA5; }
+  .content { padding:16px 24px 0; flex:1; }
+  .sub { font-size:14px; color:#6B6B80; margin:0 0 20px; }
+  .avatar-zone { display:flex; justify-content:center; margin-bottom:22px; }
+  .avatar { width:84px; height:84px; border-radius:9999px; background:#E0F7F4; color:#007A6A; display:flex; align-items:center; justify-content:center; position:relative; }
+  .avatar .cam { position:absolute; right:-2px; bottom:-2px; width:30px; height:30px; border-radius:9999px; background:#00BFA5; border:3px solid #F9F9FB; display:flex; align-items:center; justify-content:center; }
+  .field-label { font-size:13px; font-weight:600; margin:0 0 6px; }
+  .opt { color:#9090A8; font-weight:400; }
+  .input { height:46px; border-radius:12px; background:#F0F0F5; display:flex; align-items:center; padding:0 14px; font-size:16px; margin-bottom:14px; }
+  .ph { color:#9090A8; }
+  .badge { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; background:#FFF8E6; color:#B57308; border-radius:9999px; padding:1px 7px; }
+  .helper { font-size:12px; color:#6B6B80; margin:-8px 0 14px; }
+  .cta { height:48px; border:none; border-radius:20px; width:100%; background:linear-gradient(135deg,#5A1A80 0%,#8C238A 100%); color:#fff; font-size:17px; font-weight:600; font-family:inherit; box-shadow:0 4px 24px rgba(90,26,128,0.35); margin-top:6px; }
+</style></head><body>
+  <div class="phone">
+    <div class="nav"><div class="back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#323248" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></div><h1>Votre identité</h1><span class="step">1/4</span></div>
+    <div class="progress"><span class="on"></span><span></span><span></span><span></span></div>
+    <div class="content">
+      <p class="sub">Une photo nette de votre visage — les passagers la verront avant la prise en charge.</p>
+      <div class="avatar-zone">
+        <div class="avatar">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#00BFA5" stroke-width="2"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20c1.4-3.4 4.2-5 7.5-5s6.1 1.6 7.5 5"/></svg>
+          <span class="cam"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.2"/></svg></span>
+        </div>
+      </div>
+      <p class="field-label">Prénom</p>
+      <div class="input">Boris</div>
+      <p class="field-label">Nom</p>
+      <div class="input">Mba</div>
+      <p class="field-label">E-mail <span class="opt">· optionnel</span> <span class="badge">MVP</span></p>
+      <div class="input"><span class="ph">vous@exemple.com</span></div>
+      <p class="helper">Recommandé : permet de récupérer votre compte si vous perdez votre numéro.</p>
+      <button class="cta">Continuer</button>
+    </div>
+  </div>
+</body></html>
