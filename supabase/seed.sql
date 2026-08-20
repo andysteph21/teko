@@ -7,7 +7,7 @@
 -- Commission d'exemple : 15 % (paramétrable via app_config)
 update public.app_config set value = '{"type":"percent","value":15}'::jsonb where key = 'commission';
 update public.app_config set value = '500'::jsonb                              where key = 'payout_threshold';
-update public.app_config set value = '{"no_show":1000,"no_answer":1000,"wait_min":5}'::jsonb where key = 'cancellation_fee';
+update public.app_config set value = '{"fixed":300,"percent":20,"no_show":1000,"no_answer":1000,"wait_min":5}'::jsonb where key = 'cancellation_fee';
 update public.app_config set value = '{"min_passes":10,"min_distinct_drivers":3,"window_days":14}'::jsonb where key = 'road_detect_thresholds';
 
 -- Zone de lancement : Libreville (polygone approximatif)
