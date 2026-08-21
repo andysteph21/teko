@@ -41,6 +41,7 @@ postgres:
       maxzoom: 18
       properties:
         source: text
+        provenance: text
         attributes: jsonb
     zones:
       schema: public

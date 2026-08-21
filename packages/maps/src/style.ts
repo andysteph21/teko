@@ -44,7 +44,13 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
   ];
 
   if (!eco && opts.tilesUrl) {
-    sources["basemap"] = { type: "vector", url: opts.tilesUrl };
+    // Attribution ODbL obligatoire dès que des données OSM sont affichées
+    // (backlog OSM-02) — MapLibre la remonte dans le contrôle d'attribution.
+    sources["basemap"] = {
+      type: "vector",
+      url: opts.tilesUrl,
+      attribution: "© les contributeurs OpenStreetMap",
+    };
     // Fond minimal lisible sur le schéma OpenMapTiles (Planetiler → Martin) :
     // eau + voirie hiérarchisée, dans la palette des maquettes. Le style
     // « plein » viendra avec la charte carto complète.

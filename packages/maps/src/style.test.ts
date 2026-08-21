@@ -33,11 +33,12 @@ describe("buildMapStyle", () => {
     expect((s["sources"] as Record<string, unknown>)["basemap"]).toBeUndefined();
   });
 
-  it("mode normal : la source de tuiles Martin est branchée", () => {
+  it("mode normal : la source de tuiles Martin est branchée, avec l'attribution OSM (ODbL)", () => {
     const s = buildMapStyle({ tilesUrl: "https://tiles.example/teko.json" });
     expect((s["sources"] as Record<string, unknown>)["basemap"]).toMatchObject({
       type: "vector",
       url: "https://tiles.example/teko.json",
+      attribution: "© les contributeurs OpenStreetMap",
     });
   });
 

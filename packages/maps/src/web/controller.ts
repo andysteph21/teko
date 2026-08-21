@@ -38,7 +38,9 @@ export class TekoMapController {
       center: opts.center ? [opts.center.lon, opts.center.lat] : LIBREVILLE,
       zoom: opts.zoom ?? 14,
       interactive: opts.interactive ?? true,
-      attributionControl: false,
+      // Compact : repliée en icône ⓘ, dépliable — satisfait l'obligation
+      // d'attribution OSM sans manger l'écran mobile (OSM-02).
+      attributionControl: { compact: true },
     });
     this.map.on("load", () => {
       this.ready = true;
