@@ -10,13 +10,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type LandmarkRow,
   type LonLat,
+  type MapModePreference,
   MAP_COLORS,
   TekoMapData,
   decodePolyline6,
   landmarksToGeoJson,
+  resolveMapMode,
   roundPosition,
 } from "@teko/maps";
 import { TekoMapController } from "@teko/maps/web";
+import { currentNetworkHint, watchMapMode } from "@teko/maps/web/network";
 
 const params = new URLSearchParams(location.search);
 const TILES = params.get("tiles") ?? "http://127.0.0.1:3333/gabon";
@@ -86,7 +89,22 @@ export function App() {
   const [departTxt, setDepartTxt] = useState(fmt(parsePoint(params.get("o"))));
   const [arriveeTxt, setArriveeTxt] = useState(fmt(parsePoint(params.get("d"))));
   const [categorie, setCategorie] = useState<Categorie>("eco");
-  const [eco, setEco] = useState(params.get("eco") === "1");
+  const [modePref, setModePref] = useState<MapModePreference>(
+    (params.get("mode") as MapModePreference) ?? (params.get("eco") === "1" ? "eco" : "auto"),
+  );
+  const reseauForce = params.get("reseau"); // test : ?reseau=2g simule un réseau lent
+  const resolu = useMemo(
+    () => resolveMapMode(modePref, reseauForce ? { effectiveType: reseauForce } : currentNetworkHint()),
+    [modePref, reseauForce],
+  );
+  const eco = resolu.mode === "eco";
+  // En « auto », suit les changements réels du réseau (C-25).
+  const [, forceTick] = useState(0);
+  useEffect(() => {
+    if (modePref !== "auto" || reseauForce) return;
+    const w = watchMapMode("auto", () => forceTick((n) => n + 1));
+    return w.stop;
+  }, [modePref, reseauForce]);
   const [resume, setResume] = useState<{ km: number; min: number } | null>(null);
   const [prix, setPrix] = useState<number | null>(null);
   const [nbReperes, setNbReperes] = useState<number | null>(null);
@@ -498,11 +516,21 @@ export function App() {
             Effacer
           </button>
         </div>
-        <div className="rangee">
-          <label>
-            <input type="checkbox" checked={eco} onChange={(e) => setEco(e.target.checked)} />
-            Mode éco (sans tuiles)
-          </label>
+        <div className="rangee modes" role="radiogroup" aria-label="Régime de la carte">
+          {(["eco", "auto", "complet"] as const).map((p) => (
+            <button
+              key={p}
+              role="radio"
+              aria-checked={modePref === p}
+              className={modePref === p ? "on" : ""}
+              onClick={() => setModePref(p)}
+            >
+              {p === "eco" ? "Éco" : p === "auto" ? "Auto" : "Complet"}
+            </button>
+          ))}
+        </div>
+        <div className="info modes-etat" aria-live="polite">
+          {resolu.mode === "eco" ? "🍃 " : ""}Carte {resolu.mode} — {resolu.raison}
         </div>
         <div className="rangee">
           <select value={scenario} onChange={(e) => setScenario(e.target.value as Scenario)}>

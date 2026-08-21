@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./web": "./src/web/controller.ts"
+    "./web": "./src/web/controller.ts",
+    "./web/network": "./src/web/network.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

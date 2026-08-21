@@ -35,6 +35,13 @@ export {
 } from "./geojson.js";
 export { TEKO_SOURCES, type MapStyleOptions, buildMapStyle } from "./style.js";
 export {
+  type MapMode,
+  type MapModePreference,
+  type NetworkHint,
+  type ResolvedMapMode,
+  resolveMapMode,
+} from "./mode.js";
+export {
   TekoMapData,
   type NearestLandmarksOptions,
   type ProposeLandmarkInput,

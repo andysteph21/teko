@@ -41,3 +41,5 @@ body { margin: 0; font-family: system-ui, -apple-system, Roboto, "Segoe UI", san
 .erreur { margin-top: 8px; font-size: 12px; color: #e53e3e; }
 .aide { position: absolute; bottom: 26px; left: 12px; z-index: 10; background: #fff; border-radius: 9999px; padding: 6px 14px; font-size: 12px; color: #6b6b80; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 .panneau--mini { width: 250px; }
+.rangee.modes button.on { background: #f5e6ff; border-color: #8c238a; color: #5a1a80; }
+.modes-etat { margin-top: 2px; }

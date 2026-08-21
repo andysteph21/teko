@@ -139,3 +139,18 @@ export function animateAlong(
     },
   };
 }
+
+/** Petite image-lettre (police système, aucun octet réseau) — utilisée en
+ *  mode éco à la place des glyphes distants. */
+export function makeLetterImage(lettre: string, color: string, size = 22): ImageData {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  ctx.font = `bold ${Math.round(size * 0.62)}px system-ui, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = color;
+  ctx.fillText(lettre, size / 2, size / 2 + 1);
+  return ctx.getImageData(0, 0, size, size);
+}

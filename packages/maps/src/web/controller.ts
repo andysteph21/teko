@@ -8,7 +8,8 @@
 
 import maplibregl from "maplibre-gl";
 import { type LonLat, bboxAround } from "../geo.js";
-import { type VehicleAnimation, animateAlong, makePin, makePulse } from "./animations.js";
+import { type VehicleAnimation, animateAlong, makeLetterImage, makePin, makePulse } from "./animations.js";
+import { LANDMARK_LETTERS } from "../geojson.js";
 import {
   type DepartureHotspot,
   type FeatureCollection,
@@ -160,6 +161,48 @@ export class TekoMapController {
         "circle-stroke-width": 1.5,
       },
     });
+    // ÉCO (pas de glyphes distants) : les initiales de catégories et les
+    // lettres D/T/★ sont rendues en images canvas (police système, zéro
+    // octet réseau) — le mode éco reste lisible sans texte téléchargé.
+    if (!this.map.getLayer("teko-landmarks-letter")) {
+      const lettres = new Set([...Object.values(LANDMARK_LETTERS), "D", "T", "★"]);
+      for (const l of lettres) {
+        m.addImage(`teko-lettre-amber-${l}`, makeLetterImage(l, "#4A2F03"), { pixelRatio: 2 });
+        m.addImage(`teko-lettre-brand-${l}`, makeLetterImage(l, "#5A1A80"), { pixelRatio: 2 });
+      }
+      m.addLayer({
+        id: "teko-landmarks-letter-eco",
+        type: "symbol",
+        source: TEKO_SOURCES.landmarks,
+        layout: {
+          "icon-image": ["concat", "teko-lettre-amber-", ["get", "lettre"]],
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+        },
+      });
+      m.addLayer({
+        id: "teko-saved-places-dot-eco",
+        type: "circle",
+        source: TEKO_SOURCES.savedPlaces,
+        paint: {
+          "circle-color": "#FFFFFF",
+          "circle-radius": 9,
+          "circle-stroke-color": "#8C238A",
+          "circle-stroke-width": 2.5,
+        },
+      });
+      m.addLayer({
+        id: "teko-saved-places-letter-eco",
+        type: "symbol",
+        source: TEKO_SOURCES.savedPlaces,
+        layout: {
+          "icon-image": ["concat", "teko-lettre-brand-", ["get", "lettre"]],
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+        },
+      });
+    }
+
     // Épingles départ/arrivée, ancrées à la pointe.
     m.addLayer({
       id: "teko-endpoints-pins",
