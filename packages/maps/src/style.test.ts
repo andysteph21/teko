@@ -75,6 +75,34 @@ describe("buildMapStyle", () => {
     expect(min(dense, "labels-equipements-quartier")).toBeLessThan(min(faible, "labels-equipements-quartier"));
   });
 
+  it("l'itinéraire est liseré : casing blanc juste sous la ligne violette (token)", () => {
+    const all = layers(buildMapStyle({ eco: true }));
+    const iCasing = all.findIndex((l) => l.id === "teko-route-casing");
+    const iLine = all.findIndex((l) => l.id === "teko-route-line");
+    expect(iCasing).toBeGreaterThan(-1);
+    expect(iLine).toBe(iCasing + 1);
+    expect(all[iCasing]!.paint?.["line-color"]).toBe(MAP_COLORS.halo);
+  });
+
+  it("vocabulaire étendu : favoris, routes à confirmer, zones de départ", () => {
+    const s = buildMapStyle({ tilesUrl: "https://t.example/gabon" });
+    const srcs = s["sources"] as Record<string, unknown>;
+    expect(srcs["teko-saved-places"]).toBeDefined();
+    expect(srcs["teko-proposed-roads"]).toBeDefined();
+    expect(srcs["teko-departure-hotspots"]).toBeDefined();
+    expect(layer(s, "teko-proposed-roads-line").paint?.["line-dasharray"]).toBeDefined();
+    expect(JSON.stringify(layer(s, "teko-proposed-roads-label"))).toContain("à confirmer");
+    expect(layer(s, "teko-saved-places-dot").paint?.["circle-stroke-color"]).toBe("#8C238A");
+    expect(layer(s, "teko-hotspots-halo").paint?.["circle-opacity"]).toBeLessThan(0.3);
+  });
+
+  it("repères : taille selon la saillance + initiale de catégorie", () => {
+    const s = buildMapStyle({ tilesUrl: "https://t.example/gabon" });
+    expect(JSON.stringify(layer(s, "teko-landmarks-dot").paint?.["circle-radius"])).toContain("salience");
+    expect(JSON.stringify(layer(s, "teko-landmarks-letter"))).toContain("lettre");
+    expect(JSON.stringify(layer(s, "teko-vehicles-bearing"))).toContain("bearing");
+  });
+
   it("les repères Teko priorisent la saillance en cas de collision", () => {
     const s = buildMapStyle({ tilesUrl: "https://t.example/gabon" });
     const lm = layer(s, "teko-landmarks-label") as unknown as { layout: Record<string, unknown> };
@@ -127,5 +155,33 @@ describe("convertisseurs GeoJSON", () => {
     expect(clientPositionToGeoJson({ lon: 9.45, lat: 0.4 }).features[0]!.properties["kind"]).toBe("client");
     const v = vehiclesToGeoJson([{ id: "d1", lon: 9.46, lat: 0.41, bearing: 90 }]);
     expect(v.features[0]!.properties).toMatchObject({ kind: "vehicle", bearing: 90 });
+  });
+});
+
+describe("convertisseurs — vocabulaire étendu", () => {
+  it("savedPlacesToGeoJson : D/T/★ selon le type", async () => {
+    const { savedPlacesToGeoJson } = await import("./geojson.js");
+    const fc = savedPlacesToGeoJson([
+      { id: "1", kind: "home", label: "Maison", geom: { type: "Point", coordinates: [9.45, 0.4] } },
+      { id: "2", kind: "work", label: "Bureau", geom: { type: "Point", coordinates: [9.46, 0.41] } },
+      { id: "3", kind: "other", label: "Chez maman", geom: { type: "Point", coordinates: [9.47, 0.42] } },
+    ]);
+    expect(fc.features.map((f) => f.properties["lettre"])).toEqual(["D", "T", "★"]);
+  });
+
+  it("proposedRoadsToGeoJson : LineString + support, lignes trop courtes ignorées", async () => {
+    const { proposedRoadsToGeoJson } = await import("./geojson.js");
+    const fc = proposedRoadsToGeoJson([
+      { id: "a", coordinates: [{ lon: 9.45, lat: 0.4 }, { lon: 9.46, lat: 0.41 }], supportCount: 14 },
+      { id: "b", coordinates: [{ lon: 9.45, lat: 0.4 }] },
+    ]);
+    expect(fc.features).toHaveLength(1);
+    expect(fc.features[0]!.properties).toMatchObject({ kind: "proposed_road", support: 14 });
+  });
+
+  it("landmarkLetter : catégorie connue et repli", async () => {
+    const { landmarkLetter } = await import("./geojson.js");
+    expect(landmarkLetter("pharmacy")).toBe("P");
+    expect(landmarkLetter("inconnue")).toBe("●");
   });
 });

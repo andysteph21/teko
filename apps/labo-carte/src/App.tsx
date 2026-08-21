@@ -8,10 +8,12 @@
 import { createClient } from "@supabase/supabase-js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  type LandmarkRow,
   type LonLat,
   MAP_COLORS,
   TekoMapData,
   decodePolyline6,
+  landmarksToGeoJson,
   roundPosition,
 } from "@teko/maps";
 import { TekoMapController } from "@teko/maps/web";
@@ -27,6 +29,36 @@ const ANON_KEY =
 
 type Categorie = "eco" | "moto" | "confort";
 const COSTING: Record<Categorie, string> = { eco: "auto", moto: "motorcycle", confort: "auto" };
+
+// ---------------------------------------------------------------------------
+// Scénarios de test (points de vue client / chauffeur) — données fictives
+// mais réalistes, injectées dans les couches du composant carte.
+// ---------------------------------------------------------------------------
+type Scenario = "libre" | "client-depart" | "client-course" | "chauffeur-attente" | "chauffeur-navigation";
+
+const gj = (lon: number, lat: number) => ({ type: "Point" as const, coordinates: [lon, lat] });
+const MOCK_LANDMARKS: LandmarkRow[] = [
+  { id: "m1", name: "Marché de Mont-Bouët", aliases: [], category: "market", geom: gj(9.457, 0.399), salience: 9, usage_count: 214, photo_url: null },
+  { id: "m2", name: "Pharmacie du Gros-Bouquet", aliases: [], category: "pharmacy", geom: gj(9.4536, 0.4032), salience: 7, usage_count: 88, photo_url: null },
+  { id: "m3", name: "Station Total Glass", aliases: [], category: "fuel_station", geom: gj(9.449, 0.408), salience: 6, usage_count: 41, photo_url: null },
+  { id: "m4", name: "École Publique d'Akébé", aliases: [], category: "school", geom: gj(9.4602, 0.4051), salience: 4, usage_count: 12, photo_url: null },
+  { id: "m5", name: "Rond-point de la Démocratie", aliases: [], category: "roundabout", geom: gj(9.454, 0.392), salience: 10, usage_count: 156, photo_url: null },
+  { id: "m6", name: "Église Saint-Michel", aliases: [], category: "church", geom: gj(9.4631, 0.4092), salience: 5, usage_count: 23, photo_url: null },
+];
+const MOCK_SAVED = [
+  { id: "s1", kind: "home" as const, label: "Domicile", geom: gj(9.4512, 0.4009) },
+  { id: "s2", kind: "work" as const, label: "Travail", geom: gj(9.4665, 0.413) },
+  { id: "s3", kind: "other" as const, label: "Chez maman", geom: gj(9.4585, 0.3968) },
+];
+const MOCK_PROPOSED = [
+  { id: "p1", coordinates: [{ lon: 9.455, lat: 0.404 }, { lon: 9.457, lat: 0.4055 }, { lon: 9.4585, lat: 0.407 }], supportCount: 14 },
+  { id: "p2", coordinates: [{ lon: 9.4625, lat: 0.4022 }, { lon: 9.4648, lat: 0.4038 }], supportCount: 6 },
+];
+const MOCK_HOTSPOTS = [
+  { id: "h1", lon: 9.457, lat: 0.399, count: 30 },
+  { id: "h2", lon: 9.4536, lat: 0.4032, count: 18 },
+  { id: "h3", lon: 9.4665, lat: 0.413, count: 9 },
+];
 
 const parsePoint = (v: string | null): LonLat | null => {
   const [lon, lat] = (v ?? "").split(",").map((s) => Number(s.trim()));
@@ -52,6 +84,9 @@ export function App() {
   const [prix, setPrix] = useState<number | null>(null);
   const [nbReperes, setNbReperes] = useState<number | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [scenario, setScenario] = useState<Scenario>(
+    (params.get("sc") as Scenario) ?? "libre",
+  );
 
   const supabase = useMemo(
     () => createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false } }),
@@ -109,10 +144,63 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eco, setPoint]);
 
+  // Scénarios client/chauffeur : injecte le vocabulaire carte correspondant.
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m) return;
+    m.setSavedPlaces([]);
+    m.setProposedRoads([]);
+    m.setDepartureHotspots([]);
+    m.setVehicles([]);
+    switch (scenario) {
+      case "client-depart":
+        // C-08 : choisir le départ — favoris D/T/★, repères par catégorie.
+        m.setSavedPlaces(MOCK_SAVED);
+        m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS));
+        setDepart({ lon: 9.4512, lat: 0.4009 });
+        setDepartTxt("9.45120, 0.40090");
+        m.fitTo([{ lon: 9.449, lat: 0.392 }, { lon: 9.467, lat: 0.413 }], 250);
+        break;
+      case "client-course":
+        // C-13 : en course — itinéraire liseré, véhicule orienté, favoris.
+        m.setSavedPlaces(MOCK_SAVED);
+        m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS.slice(0, 3)));
+        m.setVehicles([{ id: "boris", lon: 9.4581, lat: 0.4066, bearing: 52 }]);
+        setDepart({ lon: 9.4512, lat: 0.4009 });
+        setDepartTxt("9.45120, 0.40090");
+        setArrivee({ lon: 9.4665, lat: 0.413 });
+        setArriveeTxt("9.46650, 0.41300");
+        break;
+      case "chauffeur-attente":
+        // D-09 : en ligne, en attente — zones de départ fréquentes (halos),
+        // repères, routes détectées « à confirmer ».
+        m.setDepartureHotspots(MOCK_HOTSPOTS);
+        m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS));
+        m.setProposedRoads(MOCK_PROPOSED);
+        m.setVehicles([{ id: "moi", lon: 9.4555, lat: 0.4028, bearing: 130 }]);
+        m.fitTo([{ lon: 9.449, lat: 0.394 }, { lon: 9.468, lat: 0.412 }], 220);
+        break;
+      case "chauffeur-navigation":
+        // D-11 : navigation — itinéraire, cap du véhicule, route à confirmer
+        // croisée en chemin, repère de rendez-vous.
+        m.setLandmarks(landmarksToGeoJson([MOCK_LANDMARKS[1]!, MOCK_LANDMARKS[3]!]));
+        m.setProposedRoads(MOCK_PROPOSED);
+        m.setVehicles([{ id: "moi", lon: 9.4548, lat: 0.4041, bearing: 48 }]);
+        setDepart({ lon: 9.4536, lat: 0.4032 });
+        setDepartTxt("9.45360, 0.40320");
+        setArrivee({ lon: 9.4602, lat: 0.4051 });
+        setArriveeTxt("9.46020, 0.40510");
+        break;
+      default:
+        break;
+    }
+  }, [scenario, eco]);
+
   // Départ : point client magenta + repères proches (Supabase RPC).
   useEffect(() => {
     mapRef.current?.setClientPosition(depart);
     if (!depart) return;
+    if (scenario !== "libre") return; // les scénarios injectent leurs repères
     mapData
       .nearestLandmarks(depart, { maxM: 800, limit: 8 })
       .then((fc) => {
@@ -253,6 +341,15 @@ export function App() {
             <input type="checkbox" checked={eco} onChange={(e) => setEco(e.target.checked)} />
             Mode éco (sans tuiles)
           </label>
+        </div>
+        <div className="rangee">
+          <select value={scenario} onChange={(e) => setScenario(e.target.value as Scenario)}>
+            <option value="libre">Scénario : libre</option>
+            <option value="client-depart">Client — choisir le départ</option>
+            <option value="client-course">Client — en course</option>
+            <option value="chauffeur-attente">Chauffeur — en attente</option>
+            <option value="chauffeur-navigation">Chauffeur — navigation</option>
+          </select>
         </div>
         {resume && (
           <div className="resume">

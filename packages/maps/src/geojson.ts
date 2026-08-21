@@ -52,6 +52,7 @@ export function landmarksToGeoJson(rows: LandmarkRow[]): FeatureCollection {
           kind: "landmark",
           name: r.name,
           category: r.category,
+          lettre: landmarkLetter(r.category),
           salience: Number(r.salience),
           usage_count: r.usage_count,
         },
@@ -101,3 +102,88 @@ export function routeToGeoJson(coordinates: LonLat[]): FeatureCollection {
 }
 
 export const emptyFeatureCollection: FeatureCollection = fc([]);
+
+// ---------------------------------------------------------------------------
+// Vocabulaire carte étendu : lieux favoris, routes à confirmer, zones de
+// départ fréquentes. Convertisseurs purs, comme le reste du fichier.
+// ---------------------------------------------------------------------------
+
+/** Initiale affichée dans l'épingle d'un repère, par catégorie. */
+export const LANDMARK_LETTERS: Record<string, string> = {
+  market: "M",
+  pharmacy: "P",
+  school: "É",
+  church: "E",
+  fuel_station: "S",
+  roundabout: "R",
+  bar: "B",
+  building: "■",
+  junction: "C",
+  other: "●",
+};
+
+export function landmarkLetter(category: string): string {
+  return LANDMARK_LETTERS[category] ?? LANDMARK_LETTERS["other"]!;
+}
+
+export interface SavedPlaceRow {
+  id: string;
+  kind: "home" | "work" | "other";
+  label: string;
+  geom: GeomInput;
+}
+
+/** Lieux favoris / points de départ habituels du client (C-08, C-19).
+ *  Symbole : D (domicile), T (travail), ★ (autre favori). */
+export function savedPlacesToGeoJson(rows: SavedPlaceRow[]): FeatureCollection {
+  const lettre = { home: "D", work: "T", other: "★" } as const;
+  return fc(
+    rows.map((r) =>
+      pointFeature(
+        toLonLat(r.geom),
+        { kind: "saved_place", place_kind: r.kind, label: r.label, lettre: lettre[r.kind] },
+        r.id,
+      ),
+    ),
+  );
+}
+
+export interface ProposedRoadRow {
+  id: string;
+  coordinates: LonLat[];
+  /** Nombre de passages GPS observés (affiché à l'admin/chauffeur). */
+  supportCount?: number;
+}
+
+/** Routes détectées mais PAS ENCORE validées — « à confirmer ».
+ *  Affichées en pointillés neutres, jamais comme de la voirie réelle. */
+export function proposedRoadsToGeoJson(rows: ProposedRoadRow[]): FeatureCollection {
+  return fc(
+    rows
+      .filter((r) => r.coordinates.length >= 2)
+      .map((r) => ({
+        type: "Feature" as const,
+        id: r.id,
+        geometry: {
+          type: "LineString" as const,
+          coordinates: r.coordinates.map((p) => [p.lon, p.lat] as [number, number]),
+        },
+        properties: { kind: "proposed_road", support: r.supportCount ?? 0 },
+      })),
+  );
+}
+
+export interface DepartureHotspot extends LonLat {
+  id: string;
+  /** Poids relatif (nb de départs récents) — taille du halo. */
+  count: number;
+}
+
+/** Zones de départ fréquentes (aide au positionnement chauffeur, D-09). */
+export function departureHotspotsToGeoJson(spots: DepartureHotspot[]): FeatureCollection {
+  return fc(
+    spots.map((s) =>
+      pointFeature(s, { kind: "departure_hotspot", count: s.count }, s.id),
+    ),
+  );
+}

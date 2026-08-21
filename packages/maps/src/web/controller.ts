@@ -9,11 +9,17 @@
 import maplibregl from "maplibre-gl";
 import { type LonLat, bboxAround } from "../geo.js";
 import {
+  type DepartureHotspot,
   type FeatureCollection,
+  type ProposedRoadRow,
+  type SavedPlaceRow,
   type VehiclePosition,
   clientPositionToGeoJson,
+  departureHotspotsToGeoJson,
   emptyFeatureCollection,
+  proposedRoadsToGeoJson,
   routeToGeoJson,
+  savedPlacesToGeoJson,
   vehiclesToGeoJson,
 } from "../geojson.js";
 import { type MapStyleOptions, TEKO_SOURCES, buildMapStyle } from "../style.js";
@@ -73,6 +79,24 @@ export class TekoMapController {
 
   setVehicles(vehicles: VehiclePosition[]): void {
     this.setData(TEKO_SOURCES.vehicles, vehiclesToGeoJson(vehicles));
+  }
+
+  /** Lieux favoris / points de départ habituels (D, T, ★). */
+  setSavedPlaces(rows: SavedPlaceRow[] | FeatureCollection): void {
+    const data = Array.isArray(rows) ? savedPlacesToGeoJson(rows) : rows;
+    this.setData(TEKO_SOURCES.savedPlaces, data);
+  }
+
+  /** Routes détectées « à confirmer » (pointillé + mention le long du tracé). */
+  setProposedRoads(rows: ProposedRoadRow[] | FeatureCollection): void {
+    const data = Array.isArray(rows) ? proposedRoadsToGeoJson(rows) : rows;
+    this.setData(TEKO_SOURCES.proposedRoads, data);
+  }
+
+  /** Zones de départ fréquentes (halos d'aide au positionnement chauffeur). */
+  setDepartureHotspots(spots: DepartureHotspot[] | FeatureCollection): void {
+    const data = Array.isArray(spots) ? departureHotspotsToGeoJson(spots) : spots;
+    this.setData(TEKO_SOURCES.departureHotspots, data);
   }
 
   setClientPosition(p: LonLat | null): void {
