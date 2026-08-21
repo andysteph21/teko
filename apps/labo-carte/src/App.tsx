@@ -34,7 +34,13 @@ const COSTING: Record<Categorie, string> = { eco: "auto", moto: "motorcycle", co
 // Scénarios de test (points de vue client / chauffeur) — données fictives
 // mais réalistes, injectées dans les couches du composant carte.
 // ---------------------------------------------------------------------------
-type Scenario = "libre" | "client-depart" | "client-course" | "chauffeur-attente" | "chauffeur-navigation";
+type Scenario =
+  | "libre"
+  | "client-depart"
+  | "client-course"
+  | "chauffeur-attente"
+  | "chauffeur-navigation"
+  | "demo-course";
 
 const gj = (lon: number, lat: number) => ({ type: "Point" as const, coordinates: [lon, lat] });
 const MOCK_LANDMARKS: LandmarkRow[] = [
@@ -144,15 +150,85 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eco, setPoint]);
 
+  // Démo animée : la course vue par le client, compréhensible sans lire —
+  // épingle-personne (départ), épingle-drapeau (arrivée), voiture qui
+  // approche, halo « il vous attend », point qui monte à bord, tracé
+  // consommé pendant la course. Boucle en continu.
+  const demoRunRef = useRef(0);
+  const runDemo = useCallback(async () => {
+    const runId = ++demoRunRef.current;
+    const alive = () => demoRunRef.current === runId && mapRef.current;
+    const m = mapRef.current!;
+    const CAR_START = { lon: 9.4505, lat: 0.3952 };
+    const PICKUP = { lon: 9.4536, lat: 0.4032 };
+    const DEST = { lon: 9.4602, lat: 0.4051 };
+    const fetchRoute = async (a: LonLat, b: LonLat) => {
+      const r = await fetch(`${VALHALLA}/route`, {
+        method: "POST",
+        body: JSON.stringify({ locations: [{ lat: a.lat, lon: a.lon }, { lat: b.lat, lon: b.lon }], costing: "auto" }),
+      }).then((x) => x.json());
+      return decodePolyline6(r.trip.legs[0].shape) as LonLat[];
+    };
+    const dodo = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    try {
+      const [approche, course] = await Promise.all([
+        fetchRoute(CAR_START, PICKUP),
+        fetchRoute(PICKUP, DEST),
+      ]);
+      m.setEndpoints(PICKUP, DEST);
+      m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS.slice(0, 4)));
+      m.fitTo([{ lon: 9.4515, lat: 0.3955 }, DEST], 260);
+      while (alive()) {
+        // 1 — La voiture arrive vers vous.
+        m.setClientAboard(false);
+        m.setVehicleWaiting(false);
+        m.setRouteProgress(null);
+        m.setRoute(course);
+        m.setClientPosition(PICKUP);
+        const a1 = m.driveVehicleAlong("demo", approche, 7000);
+        await a1.done;
+        if (!alive()) return;
+        // 2 — Elle vous attend (halo qui respire).
+        m.setVehicleWaiting(true);
+        await dodo(2600);
+        if (!alive()) return;
+        // 3 — Vous montez à bord (votre point rejoint la voiture).
+        m.setVehicleWaiting(false);
+        m.setClientAboard(true);
+        m.setClientPosition(null);
+        await dodo(1100);
+        if (!alive()) return;
+        // 4 — En course : le tracé se consomme derrière la voiture.
+        const a2 = m.driveVehicleAlong("demo", course, 9000, { consumeRoute: true });
+        await a2.done;
+        if (!alive()) return;
+        // 5 — Arrivée : le drapeau a gagné ; petite pause puis on rejoue.
+        m.setClientAboard(false);
+        m.setClientPosition(DEST);
+        await dodo(2200);
+      }
+    } catch {
+      /* Valhalla absent : la démo s'arrête silencieusement */
+    }
+  }, []);
+
   // Scénarios client/chauffeur : injecte le vocabulaire carte correspondant.
   useEffect(() => {
     const m = mapRef.current;
     if (!m) return;
+    demoRunRef.current++; // stoppe une éventuelle démo en cours
     m.setSavedPlaces([]);
     m.setProposedRoads([]);
     m.setDepartureHotspots([]);
     m.setVehicles([]);
+    m.setEndpoints(null, null);
+    m.setVehicleWaiting(false);
+    m.setClientAboard(false);
+    m.setRouteProgress(null);
     switch (scenario) {
+      case "demo-course":
+        void runDemo();
+        break;
       case "client-depart":
         // C-08 : choisir le départ — favoris D/T/★, repères par catégorie.
         m.setSavedPlaces(MOCK_SAVED);
@@ -194,7 +270,7 @@ export function App() {
       default:
         break;
     }
-  }, [scenario, eco]);
+  }, [scenario, eco, runDemo]);
 
   // Départ : point client magenta + repères proches (Supabase RPC).
   useEffect(() => {
@@ -279,11 +355,20 @@ export function App() {
   return (
     <div className="labo">
       <div ref={containerRef} className="carte" />
-      <div className="panneau">
+      <div className={`panneau ${scenario === "demo-course" ? "panneau--mini" : ""}`}>
         <h1>Teko — labo carte</h1>
         <p className="note">
           Temporaire · fond Martin + itinéraire Valhalla + tarifs Supabase
         </p>
+        {scenario === "demo-course" && (
+          <div className="rangee">
+            <select value={scenario} onChange={(e) => setScenario(e.target.value as Scenario)}>
+              <option value="libre">Scénario : libre</option>
+              <option value="demo-course">Démo animée — la course du client</option>
+            </select>
+          </div>
+        )}
+        {scenario !== "demo-course" && (<>
         <div className={`champ ${mode === "depart" ? "actif" : ""}`}>
           <span className="pastille" style={{ background: MAP_COLORS.markerClient }} />
           <input
@@ -349,6 +434,7 @@ export function App() {
             <option value="client-course">Client — en course</option>
             <option value="chauffeur-attente">Chauffeur — en attente</option>
             <option value="chauffeur-navigation">Chauffeur — navigation</option>
+            <option value="demo-course">Démo animée — la course du client</option>
           </select>
         </div>
         {resume && (
@@ -370,6 +456,7 @@ export function App() {
           </div>
         )}
         {erreur && <div className="erreur">{erreur}</div>}
+        </>)}
       </div>
       <div className="aide">
         Clic = {mode === "depart" ? "définir le DÉPART" : "définir l'ARRIVÉE"}

@@ -8,6 +8,7 @@
 
 import maplibregl from "maplibre-gl";
 import { type LonLat, bboxAround } from "../geo.js";
+import { type VehicleAnimation, animateAlong, makePin, makePulse } from "./animations.js";
 import {
   type DepartureHotspot,
   type FeatureCollection,
@@ -49,6 +50,7 @@ export class TekoMapController {
       attributionControl: { compact: true },
     });
     this.map.on("load", () => {
+      this.installPictos();
       this.ready = true;
       for (const fn of this.pending) fn();
       this.pending = [];
@@ -104,6 +106,146 @@ export class TekoMapController {
       TEKO_SOURCES.client,
       p ? clientPositionToGeoJson(p) : emptyFeatureCollection,
     );
+  }
+
+  // Pictogrammes & animations — lisibles sans texte : épingle-personne au
+  // départ, épingle-drapeau à l'arrivée, position qui pulse, attente qui
+  // respire, voiture qui roule et s'oriente.
+  private installPictos(): void {
+    const m = this.map;
+    m.addImage("teko-pin-depart", makePin("person", "#8C238A"), { pixelRatio: 2 });
+    m.addImage("teko-pin-dest", makePin("flag", "#3D0F5C"), { pixelRatio: 2 });
+    m.addImage("teko-pulse-client", makePulse(m, "#8C238A") as never, { pixelRatio: 2 });
+    m.addImage("teko-pulse-vehicle", makePulse(m, "#00BFA5") as never, { pixelRatio: 2 });
+
+    m.addSource("teko-endpoints", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
+    // Pulsation sous le point client (anneau magenta qui s'étend).
+    m.addLayer(
+      {
+        id: "teko-client-pulse",
+        type: "symbol",
+        source: TEKO_SOURCES.client,
+        layout: { "icon-image": "teko-pulse-client", "icon-allow-overlap": true, "icon-ignore-placement": true },
+      },
+      "teko-client-dot",
+    );
+    // Halo d'attente du véhicule (anneau teal), activé via setVehicleWaiting.
+    m.addLayer(
+      {
+        id: "teko-vehicle-pulse",
+        type: "symbol",
+        source: TEKO_SOURCES.vehicles,
+        layout: {
+          "icon-image": "teko-pulse-vehicle",
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+          visibility: "none",
+        },
+      },
+      "teko-vehicles-dot",
+    );
+    // Passager à bord : point magenta au cœur du véhicule (setClientAboard).
+    m.addLayer({
+      id: "teko-vehicle-aboard",
+      type: "circle",
+      source: TEKO_SOURCES.vehicles,
+      layout: { visibility: "none" },
+      paint: {
+        "circle-color": "#8C238A",
+        "circle-radius": 4,
+        "circle-stroke-color": "#FFFFFF",
+        "circle-stroke-width": 1.5,
+      },
+    });
+    // Épingles départ/arrivée, ancrées à la pointe.
+    m.addLayer({
+      id: "teko-endpoints-pins",
+      type: "symbol",
+      source: "teko-endpoints",
+      layout: {
+        "icon-image": ["get", "icon"],
+        "icon-anchor": "bottom",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 11, 0.7, 15, 1],
+      },
+    });
+  }
+
+  /** Épingles pictogrammes : départ (personne) et/ou arrivée (drapeau). */
+  setEndpoints(depart: LonLat | null, destination: LonLat | null): void {
+    this.whenReady(() => {
+      const features = [];
+      if (depart) {
+        features.push({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [depart.lon, depart.lat] },
+          properties: { icon: "teko-pin-depart" },
+        });
+      }
+      if (destination) {
+        features.push({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [destination.lon, destination.lat] },
+          properties: { icon: "teko-pin-dest" },
+        });
+      }
+      (this.map.getSource("teko-endpoints") as maplibregl.GeoJSONSource | undefined)?.setData({
+        type: "FeatureCollection",
+        features,
+      } as never);
+    });
+  }
+
+  /** Halo « le chauffeur vous attend » autour du véhicule. */
+  setVehicleWaiting(on: boolean): void {
+    this.whenReady(() =>
+      this.map.setLayoutProperty("teko-vehicle-pulse", "visibility", on ? "visible" : "none"),
+    );
+  }
+
+  /** Passager à bord : cœur magenta dans le véhicule. */
+  setClientAboard(on: boolean): void {
+    this.whenReady(() =>
+      this.map.setLayoutProperty("teko-vehicle-aboard", "visibility", on ? "visible" : "none"),
+    );
+  }
+
+  /**
+   * Fait rouler un véhicule le long de l'itinéraire (cap suivi) et consomme
+   * le tracé derrière lui (gris) si `consumeRoute`.
+   */
+  driveVehicleAlong(
+    id: string,
+    route: LonLat[],
+    durationMs: number,
+    opts: { consumeRoute?: boolean } = {},
+  ): VehicleAnimation {
+    return animateAlong(route, durationMs, (position, bearing, t) => {
+      this.setVehicles([{ id, ...position, bearing }]);
+      if (opts.consumeRoute) this.setRouteProgress(t);
+    });
+  }
+
+  /** Progression du tracé : la partie parcourue devient gris-violet. */
+  setRouteProgress(t: number | null): void {
+    this.whenReady(() => {
+      if (t === null) {
+        this.map.setPaintProperty("teko-route-line", "line-gradient", undefined as never);
+        return;
+      }
+      const p = Math.min(0.999, Math.max(0.001, t));
+      this.map.setPaintProperty("teko-route-line", "line-gradient", [
+        "step",
+        ["line-progress"],
+        "#C6C0D8",
+        p,
+        "#5A1A80",
+      ] as never);
+    });
   }
 
   /** Cadre la vue sur les points donnés (départ + arrivée + véhicule…). */

@@ -109,6 +109,46 @@ export function decodePolyline6(encoded: string): LonLat[] {
   return points;
 }
 
+/** Cap en degrés (0 = nord, sens horaire) de a vers b. */
+export function bearingBetween(a: LonLat, b: LonLat): number {
+  const rad = Math.PI / 180;
+  const dLon = (b.lon - a.lon) * rad;
+  const y = Math.sin(dLon) * Math.cos(b.lat * rad);
+  const x =
+    Math.cos(a.lat * rad) * Math.sin(b.lat * rad) -
+    Math.sin(a.lat * rad) * Math.cos(b.lat * rad) * Math.cos(dLon);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
+
+/**
+ * Position et cap à la fraction t ∈ [0,1] d'une polyligne, paramétrée par la
+ * DISTANCE (pas par l'index des sommets) : la progression est régulière même
+ * si les segments sont inégaux. Cœur pur des animations de véhicule.
+ */
+export function pointAlong(route: LonLat[], t: number): { position: LonLat; bearing: number } {
+  if (route.length === 0) throw new Error("pointAlong: itinéraire vide");
+  const first = route[0]!;
+  if (route.length === 1) return { position: first, bearing: 0 };
+  const clamped = Math.min(1, Math.max(0, t));
+  const cumul: number[] = [0];
+  for (let i = 1; i < route.length; i++) {
+    cumul.push(cumul[i - 1]! + distanceM(route[i - 1]!, route[i]!));
+  }
+  const total = cumul[cumul.length - 1]!;
+  if (total === 0) return { position: first, bearing: 0 };
+  const target = clamped * total;
+  let i = 1;
+  while (i < cumul.length - 1 && cumul[i]! < target) i++;
+  const a = route[i - 1]!;
+  const b = route[i]!;
+  const segLen = cumul[i]! - cumul[i - 1]!;
+  const f = segLen === 0 ? 0 : (target - cumul[i - 1]!) / segLen;
+  return {
+    position: { lon: a.lon + (b.lon - a.lon) * f, lat: a.lat + (b.lat - a.lat) * f },
+    bearing: bearingBetween(a, b),
+  };
+}
+
 /** Cadre englobant [ouest, sud, est, nord] avec marge (mètres approx.). */
 export function bboxAround(points: LonLat[], paddingM = 200): [number, number, number, number] {
   if (points.length === 0) throw new Error("bboxAround: aucun point");

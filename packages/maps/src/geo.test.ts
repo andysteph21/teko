@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bboxAround, decodePolyline6, distanceM, ewktPoint, parseEwkbPoint, roundPosition, toLonLat } from "./geo.js";
+import { bboxAround, bearingBetween, decodePolyline6, distanceM, ewktPoint, parseEwkbPoint, pointAlong, roundPosition, toLonLat } from "./geo.js";
 
 // Encodeur polyline6 de référence (test uniquement) — pour l'aller-retour.
 function encodePolyline6(points: Array<{ lon: number; lat: number }>): string {
@@ -134,5 +134,33 @@ describe("bboxAround", () => {
   });
   it("refuse une liste vide", () => {
     expect(() => bboxAround([])).toThrow();
+  });
+});
+
+describe("pointAlong / bearingBetween (animations)", () => {
+  const route = [
+    { lon: 9.45, lat: 0.4 },
+    { lon: 9.46, lat: 0.4 }, // segment est-ouest…
+    { lon: 9.46, lat: 0.41 }, // …puis plein nord
+  ];
+  it("t=0 et t=1 tombent sur les extrémités", () => {
+    expect(pointAlong(route, 0).position).toEqual(route[0]);
+    expect(pointAlong(route, 1).position.lat).toBeCloseTo(0.41, 9);
+  });
+  it("paramétré par la distance : t=0.5 est à mi-chemin réel", () => {
+    const { position } = pointAlong(route, 0.5);
+    const total = distanceM(route[0]!, route[1]!) + distanceM(route[1]!, route[2]!);
+    const parcouru = distanceM(route[0]!, route[1]!) >= total / 2
+      ? distanceM(route[0]!, position)
+      : distanceM(route[0]!, route[1]!) + distanceM(route[1]!, position);
+    expect(parcouru).toBeCloseTo(total / 2, 0);
+  });
+  it("le cap suit le segment courant (est ≈ 90°, nord ≈ 0°)", () => {
+    expect(pointAlong(route, 0.1).bearing).toBeCloseTo(90, 0);
+    expect(pointAlong(route, 0.9).bearing).toBeCloseTo(0, 0);
+  });
+  it("t hors bornes est borné, itinéraire vide refusé", () => {
+    expect(pointAlong(route, -1).position).toEqual(route[0]);
+    expect(() => pointAlong([], 0.5)).toThrow();
   });
 });
