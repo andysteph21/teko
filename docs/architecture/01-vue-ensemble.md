@@ -6,7 +6,7 @@
 |---|---|---|
 | **pnpm** | 10.x | Workspaces + **catalogs** (versions de deps partagées dans `pnpm-workspace.yaml`) |
 | **Turborepo** | 2.7.x | Cache local/distant, `turbo devtools`, configurations composables. Préparer v3 (dépréciations) |
-| **Expo SDK** | 56 | React Native 0.85, React 19.2, **New Architecture** (obligatoire depuis SDK 55), **Hermes V1** par défaut. Démarrages à froid plus rapides — utile sur Android d'entrée de gamme |
+| **Expo SDK** | **dernier stable au lancement** (57 en août 2026 ; 58 ~sept.) | RN 0.86+, React 19.2, **New Architecture**, **Hermes V1**. SDK 56 à éviter (régression mémoire Hermes avec Reanimated, corrigée en 57). Veille : `09-veille-expo.md` |
 | **Expo Router** | v6 (fourni avec SDK 56) | Navigation par fichiers, partagée entre les deux apps mobiles |
 | **EAS** | Build/Update/Submit | Builds cloud + **OTA updates** (correctifs sans repasser par les stores) |
 | **Next.js** | 16.2.x | App Router (défaut), React 19.2, Turbopack |
