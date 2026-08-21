@@ -15,6 +15,13 @@ Les lots de développement (monorepo, infra carto, apps, durcissement Airtel) re
 | 5 | DOC-01 | **Procédure opérationnelle du repli manuel de règlement** (qui valide la preuve, sous quel délai) | Document court validé par Finance ; référencé depuis D-16 et A-05. |
 | 6 | DOC-02 | **Procédure opérationnelle SOS** (qui reçoit, qui rappelle, escalade) | Document validé ; cohérent avec C-27 et le fil d'activité A-02. |
 
+## 2b. Post-MVP (décision reportée le 20 août 2026)
+
+| Prio | ID | Élément | Critère d'acceptation |
+|---|---|---|---|
+| — | OSM-01 | **Stratégie de contribution OSM** (reportée après déploiement MVP) : ADR-15 à rédiger — publication ODbL de la couche `teko_roads`, journée OSM mensuelle (upload manuel JOSM, compte dédié, jamais d'import massif), `osm_way_id` sur `road_segments` pour dédupliquer la conflation ; salience/usage des repères restent internes | ADR acté + process documenté |
+| — | OSM-02 | **Attribution « © les contributeurs OpenStreetMap »** dans les apps (obligatoire dès qu'une carte est montrée publiquement — `attributionControl` actuellement désactivé dans `@teko/maps/web`) | Attribution visible sur toute carte en prod |
+
 ## 3. Pré-code (rappel des bloquants de la Phase 0 du plan)
 
 Choix hébergeur carto (0.2) · fournisseur SMS OTP (0.3) · comptes Expo/EAS (0.4) · sandbox Airtel (0.5) · tuiles de repli (0.6). Détail et critères dans `00-plan-execution.md` §4.
