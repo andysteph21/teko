@@ -1,0 +1,27 @@
+{
+  "name": "@teko/labo-carte",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TEMPORAIRE — laboratoire de test du backend carto (Martin/Valhalla/Supabase) et du composant @teko/maps : définir départ/arrivée, itinéraire réel, estimation tarifaire. À supprimer quand les vraies apps existent.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "catalog:",
+    "@teko/maps": "workspace:*",
+    "maplibre-gl": "catalog:",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@teko/config": "workspace:*",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "catalog:",
+    "vite": "^6.0.0"
+  }
+}
