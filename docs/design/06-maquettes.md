@@ -37,6 +37,10 @@ Les 4 éléments issus de l'audit sont livrés : SOS sur C-13/C-13b, D-08b pièc
 
 Les 79 fichiers HTML sont désormais copiés à l'identique dans le dépôt : **`docs/design/maquettes/`** — `foundations/` (3), `components/` (4), `client/` (32, C-01 → C-31 + C-13b), `chauffeur/` (23, D-01 → D-20 + D-08b, D-11b, D-14b), `admin/` (10, A-01 → A-10), `admin-mobile/` (7, AM-01 → AM-07). Chaque fichier s'ouvre directement dans un navigateur. En cas de divergence, le projet Claude Design fait foi ; toute modification doit être poussée dans les deux (dépôt + DesignSync).
 
+## Langage carte implémenté
+
+Le design de la **carte** (fond, repères lettrés, épingles personne/drapeau, animations, régimes éco/auto/complet) est figé dans [`08-carte-langage.md`](08-carte-langage.md) avec captures et vidéos dans [`carte/`](carte/) — implémentation de référence : `packages/maps`.
+
 ## Passage au code
 
 Les maquettes sont du HTML/CSS construit sur `design-tokens.json` : `packages/ui` (lot 1) doit en dériver directement — tout écart token/maquette/code est un bug de fidélité, pas une interprétation.
