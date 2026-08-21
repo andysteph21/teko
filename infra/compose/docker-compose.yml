@@ -16,7 +16,7 @@ services:
     volumes:
       - ../tiles/martin/martin-config.yaml:/config/martin-config.yaml:ro
       - ../_data/tiles:/data/tiles:ro
-      - ../_data/fonts:/fonts:ro
+      - ../tiles/martin/fonts:/fonts:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
