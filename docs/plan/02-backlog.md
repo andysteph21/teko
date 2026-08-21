@@ -20,7 +20,7 @@ Les lots de développement (monorepo, infra carto, apps, durcissement Airtel) re
 | Prio | ID | Élément | Critère d'acceptation |
 |---|---|---|---|
 | — | OSM-01 | **Stratégie de contribution OSM** (reportée après déploiement MVP) : ADR-15 à rédiger — publication ODbL de la couche `teko_roads`, journée OSM mensuelle (upload manuel JOSM, compte dédié, jamais d'import massif), `osm_way_id` sur `road_segments` pour dédupliquer la conflation ; salience/usage des repères restent internes | ADR acté + process documenté |
-| — | OSM-02 | **Attribution « © les contributeurs OpenStreetMap »** dans les apps (obligatoire dès qu'une carte est montrée publiquement — `attributionControl` actuellement désactivé dans `@teko/maps/web`) | Attribution visible sur toute carte en prod |
+| ✅ | OSM-02 | ~~Attribution « © les contributeurs OpenStreetMap »~~ **réglé le 20 août** : contrôle compact dans `@teko/maps`, attribution portée par la source ; `teko_roads` publiée ODbL (`infra/tiles/martin/LICENCE-DONNEES.md`) ; colonne `provenance` sur road_segments/landmarks (migration 0020) | Attribution visible sur toute carte en prod |
 
 ## 3. Pré-code (rappel des bloquants de la Phase 0 du plan)
 
