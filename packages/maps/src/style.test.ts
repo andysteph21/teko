@@ -42,10 +42,43 @@ describe("buildMapStyle", () => {
     });
   });
 
-  it("pas de couche texte sans glyphes (MapLibre la refuserait)", () => {
+  it("pas de couche texte sans glyphes (MapLibre la refuserait) — l'éco reste muet", () => {
     expect(layers(buildMapStyle({ eco: true })).some((l) => l.type === "symbol")).toBe(false);
     const withGlyphs = buildMapStyle({ eco: true, glyphsUrl: "https://tiles.example/glyphs/{fontstack}/{range}.pbf" });
     expect(layers(withGlyphs).some((l) => l.type === "symbol")).toBe(true);
+  });
+
+  it("mode normal : les glyphes sont dérivés de l'origine du serveur de tuiles", () => {
+    const s = buildMapStyle({ tilesUrl: "http://tiles.example:3333/gabon" });
+    expect(s["glyphs"]).toBe("http://tiles.example:3333/font/{fontstack}/{range}");
+  });
+
+  it("étiquettes hiérarchisées par zoom : localités < équipements majeurs < quartier", () => {
+    const s = buildMapStyle({ tilesUrl: "https://t.example/gabon" });
+    const min = (id: string) => (layer(s, id) as unknown as { minzoom: number }).minzoom;
+    expect(min("labels-localites-majeures")).toBeLessThan(min("labels-equipements-majeurs"));
+    expect(min("labels-equipements-majeurs")).toBeLessThan(min("labels-equipements-quartier"));
+    expect(min("labels-rues-majeures")).toBeLessThan(min("labels-rues"));
+    const filtre = JSON.stringify(layer(s, "labels-equipements-majeurs"));
+    expect(filtre).toContain("hospital");
+    expect(filtre).toContain('"symbol-sort-key"');
+  });
+
+  it("labelDensity règle le padding de collision et retarde/avance les équipements", () => {
+    const dense = buildMapStyle({ tilesUrl: "https://t.example/gabon", labelDensity: "dense" });
+    const faible = buildMapStyle({ tilesUrl: "https://t.example/gabon", labelDensity: "faible" });
+    const pad = (s: Record<string, unknown>, id: string) =>
+      (layer(s, id) as unknown as { layout: Record<string, number> }).layout["text-padding"];
+    const min = (s: Record<string, unknown>, id: string) =>
+      (layer(s, id) as unknown as { minzoom: number }).minzoom;
+    expect(pad(dense, "labels-quartiers")).toBeLessThan(pad(faible, "labels-quartiers")!);
+    expect(min(dense, "labels-equipements-quartier")).toBeLessThan(min(faible, "labels-equipements-quartier"));
+  });
+
+  it("les repères Teko priorisent la saillance en cas de collision", () => {
+    const s = buildMapStyle({ tilesUrl: "https://t.example/gabon" });
+    const lm = layer(s, "teko-landmarks-label") as unknown as { layout: Record<string, unknown> };
+    expect(JSON.stringify(lm.layout["symbol-sort-key"])).toContain("salience");
   });
 
   it("le point client est la couche la plus haute (toujours visible)", () => {

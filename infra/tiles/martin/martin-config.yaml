@@ -13,6 +13,10 @@ pmtiles:
   paths:
     - /data/tiles
 
+# Glyphes des étiquettes (servis sur /font/{fontstack}/{range})
+fonts:
+  - /fonts
+
 # Chaîne de connexion : substituée depuis l'environnement du conteneur
 # (référence non guillemetée, requise par l'interpolation de Martin).
 postgres:

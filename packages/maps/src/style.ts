@@ -21,17 +21,51 @@ export const TEKO_SOURCES = {
 export interface MapStyleOptions {
   /** URL du style de fond (Martin/PMTiles) — ignorée en mode éco. */
   tilesUrl?: string;
-  /** Mode éco : fond uni, pas de requête tuiles. */
+  /** Mode éco : fond uni, pas de requête tuiles (ni glyphes → pas de texte). */
   eco?: boolean;
-  /** Glyphes (texte des repères). Défaut : glyphes du serveur de tuiles. */
+  /** Glyphes. Défaut : dérivés de l'origine de `tilesUrl` (Martin sert
+   *  /font/{fontstack}/{range}). */
   glyphsUrl?: string;
+  /** Piles de polices servies par Martin (défaut : DejaVu du compose dev ;
+   *  en prod, pointer les Noto déposées dans infra/_data/fonts). */
+  fonts?: { regular: string; bold: string };
+  /** Densité des étiquettes (padding de collision + seuils de zoom des
+   *  équipements) : "faible" pour les petits écrans/mode discret,
+   *  "dense" pour l'admin desktop. Défaut "normale". */
+  labelDensity?: "faible" | "normale" | "dense";
 }
+
+// Équipements « notables » (classes OpenMapTiles), en deux paliers :
+// visibles tôt (structurants pour se repérer) vs détail de quartier.
+const POI_MAJEURS = [
+  "hospital", "university", "stadium", "townhall", "police", "fire_station",
+  "courthouse", "museum", "monument", "harbor", "ferry_terminal",
+];
+const POI_QUARTIER = [
+  "school", "college", "place_of_worship", "grocery", "shop", "mall",
+  "bank", "fuel", "post", "pharmacy", "clinic", "doctors",
+];
 
 /** Style complet (sources GeoJSON vides + couches Teko). Objet compatible
  *  `StyleSpecification` de MapLibre, typé large pour rester sans dépendance. */
 export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknown> {
   const eco = opts.eco ?? false;
   const emptyGeoJson = { type: "geojson", data: { type: "FeatureCollection", features: [] } };
+
+  // Glyphes : explicites, sinon dérivés du serveur de tuiles (Martin).
+  const glyphsUrl =
+    opts.glyphsUrl ??
+    (!eco && opts.tilesUrl
+      ? `${new URL(opts.tilesUrl).origin}/font/{fontstack}/{range}`
+      : undefined);
+  const fonts = opts.fonts ?? { regular: "DejaVu Sans Book", bold: "DejaVu Sans Bold" };
+  const densite = opts.labelDensity ?? "normale";
+  // Le padding de collision est LE réglage de densité de MapLibre : plus il
+  // est grand, plus les étiquettes s'espacent. Le décalage de zoom retarde
+  // (ou avance) l'apparition des équipements.
+  const padding = { faible: 26, normale: 14, dense: 6 }[densite];
+  const zShift = { faible: 1, normale: 0, dense: -0.7 }[densite];
+  const halo = { "text-halo-color": MAP_COLORS.halo, "text-halo-width": 1.4 };
 
   const sources: Record<string, unknown> = {
     [TEKO_SOURCES.landmarks]: { ...emptyGeoJson },
@@ -80,6 +114,148 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
         paint: { "line-color": "#FFE3B3", "line-width": 4 },
       },
     );
+
+    // ------------------------------------------------------------------
+    // Étiquettes du fond — hiérarchie par zoom, densité par collision.
+    // MapLibre masque automatiquement toute étiquette qui en chevauche une
+    // autre : `symbol-sort-key` (rang OSM croissant) décide qui gagne, et
+    // `text-padding` règle l'espacement — c'est le curseur `labelDensity`.
+    // ------------------------------------------------------------------
+    if (glyphsUrl) {
+      layers.push(
+        // Localités : villes/communes tôt, quartiers et villages ensuite.
+        {
+          id: "labels-localites-majeures",
+          type: "symbol",
+          source: "basemap",
+          "source-layer": "place",
+          minzoom: 8,
+          filter: ["in", ["get", "class"], ["literal", ["city", "town"]]],
+          layout: {
+            "text-field": ["coalesce", ["get", "name:fr"], ["get", "name"]],
+            "text-font": [fonts.bold],
+            "text-size": ["interpolate", ["linear"], ["zoom"], 9, 13, 14, 18],
+            "text-padding": padding,
+            "symbol-sort-key": ["get", "rank"],
+          },
+          paint: { "text-color": "#4A4A60", ...halo },
+        },
+        {
+          id: "labels-quartiers",
+          type: "symbol",
+          source: "basemap",
+          "source-layer": "place",
+          minzoom: 12,
+          filter: ["in", ["get", "class"], ["literal", ["suburb", "quarter", "neighbourhood", "village", "hamlet"]]],
+          layout: {
+            "text-field": ["coalesce", ["get", "name:fr"], ["get", "name"]],
+            "text-font": [fonts.regular],
+            "text-size": ["interpolate", ["linear"], ["zoom"], 12, 11.5, 16, 14],
+            "text-transform": "uppercase",
+            "text-letter-spacing": 0.08,
+            "text-padding": padding,
+            "symbol-sort-key": ["get", "rank"],
+          },
+          paint: { "text-color": "#9090A8", ...halo },
+        },
+        // Aéroport : structurant, visible dès l'échelle ville.
+        {
+          id: "labels-aeroports",
+          type: "symbol",
+          source: "basemap",
+          "source-layer": "aerodrome_label",
+          minzoom: 10.5,
+          layout: {
+            "text-field": ["coalesce", ["get", "name:fr"], ["get", "name"]],
+            "text-font": [fonts.bold],
+            "text-size": 12,
+            "text-padding": padding,
+          },
+          paint: { "text-color": "#5A6B8C", ...halo },
+        },
+        // Équipements notables, palier 1 : hôpitaux, universités, stades…
+        {
+          id: "labels-equipements-majeurs",
+          type: "symbol",
+          source: "basemap",
+          "source-layer": "poi",
+          minzoom: 13.5 + zShift,
+          filter: [
+            "all",
+            ["has", "name"],
+            ["in", ["get", "class"], ["literal", POI_MAJEURS]],
+          ],
+          layout: {
+            "text-field": ["coalesce", ["get", "name:fr"], ["get", "name"]],
+            "text-font": [fonts.regular],
+            "text-size": 11.5,
+            "text-max-width": 8,
+            "text-padding": padding,
+            "symbol-sort-key": ["get", "rank"],
+          },
+          paint: { "text-color": "#4A4A60", ...halo },
+        },
+        // Équipements de quartier, palier 2 : écoles, stations, pharmacies…
+        {
+          id: "labels-equipements-quartier",
+          type: "symbol",
+          source: "basemap",
+          "source-layer": "poi",
+          minzoom: 15 + zShift,
+          filter: [
+            "all",
+            ["has", "name"],
+            [
+              "any",
+              ["in", ["get", "class"], ["literal", POI_QUARTIER]],
+              ["==", ["get", "subclass"], "marketplace"],
+            ],
+          ],
+          layout: {
+            "text-field": ["coalesce", ["get", "name:fr"], ["get", "name"]],
+            "text-font": [fonts.regular],
+            "text-size": 11,
+            "text-max-width": 8,
+            "text-padding": padding,
+            "symbol-sort-key": ["get", "rank"],
+          },
+          paint: { "text-color": "#6B6B80", ...halo },
+        },
+        // Noms de rues le long des tracés : grands axes d'abord.
+        {
+          id: "labels-rues-majeures",
+          type: "symbol",
+          source: "basemap",
+          "source-layer": "transportation_name",
+          minzoom: 12.5,
+          filter: ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary", "secondary"]]],
+          layout: {
+            "symbol-placement": "line",
+            "text-field": ["coalesce", ["get", "name:fr"], ["get", "name"]],
+            "text-font": [fonts.regular],
+            "text-size": 11.5,
+            "text-padding": padding,
+          },
+          paint: { "text-color": "#8A8AA0", ...halo },
+        },
+        {
+          id: "labels-rues",
+          type: "symbol",
+          source: "basemap",
+          "source-layer": "transportation_name",
+          minzoom: 15 + zShift,
+          filter: ["!", ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary", "secondary"]]]],
+          layout: {
+            "symbol-placement": "line",
+            "text-field": ["coalesce", ["get", "name:fr"], ["get", "name"]],
+            "text-font": [fonts.regular],
+            "text-size": 10.5,
+            "text-padding": padding,
+          },
+          paint: { "text-color": "#9090A8", ...halo },
+        },
+      );
+    }
   }
 
   layers.push(
@@ -103,20 +279,25 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
         "circle-stroke-width": 2,
       },
     },
-    // Nom des repères — seulement si des glyphes sont disponibles : MapLibre
-    // refuse toute couche texte sans `glyphs` (donc pas d'étiquettes en éco
-    // pur hors-ligne ; l'app affiche alors le nom dans sa fiche repère).
-    ...(opts.glyphsUrl
+    // Nom des repères Teko — priorité à la saillance (le repère le plus connu
+    // gagne la place en cas de collision). Sans glyphes (éco hors-ligne),
+    // MapLibre refuse toute couche texte : l'app montre alors le nom en fiche.
+    ...(glyphsUrl
       ? [
           {
             id: "teko-landmarks-label",
             type: "symbol",
             source: TEKO_SOURCES.landmarks,
+            minzoom: 12,
             layout: {
               "text-field": ["get", "name"],
+              "text-font": [fonts.bold],
               "text-size": 12,
               "text-offset": [0, 1.1],
               "text-anchor": "top",
+              "text-max-width": 9,
+              "text-padding": padding,
+              "symbol-sort-key": ["*", -1, ["to-number", ["get", "salience"], 0]],
             },
             paint: {
               "text-color": "#854F0B",
@@ -155,7 +336,7 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
   return {
     version: 8,
     name: eco ? "Teko éco" : "Teko",
-    ...(opts.glyphsUrl ? { glyphs: opts.glyphsUrl } : {}),
+    ...(glyphsUrl ? { glyphs: glyphsUrl } : {}),
     sources,
     layers,
   };

@@ -101,6 +101,7 @@ export function App() {
     });
     map.onClick((p) => setPoint(modeRef.current, p));
     mapRef.current = map;
+    if (import.meta.env.DEV) (window as unknown as { __map: unknown }).__map = map.map;
     return () => {
       mapRef.current = null;
       map.destroy();
