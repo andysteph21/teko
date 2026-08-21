@@ -40,7 +40,8 @@ type Scenario =
   | "client-course"
   | "chauffeur-attente"
   | "chauffeur-navigation"
-  | "demo-course";
+  | "demo-course"
+  | "demo-chauffeur";
 
 const gj = (lon: number, lat: number) => ({ type: "Point" as const, coordinates: [lon, lat] });
 const MOCK_LANDMARKS: LandmarkRow[] = [
@@ -85,7 +86,7 @@ export function App() {
   const [departTxt, setDepartTxt] = useState(fmt(parsePoint(params.get("o"))));
   const [arriveeTxt, setArriveeTxt] = useState(fmt(parsePoint(params.get("d"))));
   const [categorie, setCategorie] = useState<Categorie>("eco");
-  const [eco, setEco] = useState(false);
+  const [eco, setEco] = useState(params.get("eco") === "1");
   const [resume, setResume] = useState<{ km: number; min: number } | null>(null);
   const [prix, setPrix] = useState<number | null>(null);
   const [nbReperes, setNbReperes] = useState<number | null>(null);
@@ -212,6 +213,78 @@ export function App() {
     }
   }, []);
 
+  // Démo animée côté CHAUFFEUR — même grammaire sans texte, point de vue
+  // inversé : le client qui attend pulse (quelqu'un vous attend là), le
+  // drapeau n'apparaît qu'APRÈS acceptation (anti-écrémage), votre voiture
+  // roule, le halo dit « j'attends le client », le cœur magenta dit
+  // « client à bord ». Boucle continue.
+  const runDemoChauffeur = useCallback(async () => {
+    const runId = ++demoRunRef.current;
+    const alive = () => demoRunRef.current === runId && mapRef.current;
+    const m = mapRef.current!;
+    const ME_START = { lon: 9.4585, lat: 0.3975 };
+    const PICKUP = { lon: 9.4536, lat: 0.4032 };
+    const DEST = { lon: 9.4602, lat: 0.4051 };
+    const fetchRoute = async (a: LonLat, b: LonLat) => {
+      const r = await fetch(`${VALHALLA}/route`, {
+        method: "POST",
+        body: JSON.stringify({ locations: [{ lat: a.lat, lon: a.lon }, { lat: b.lat, lon: b.lon }], costing: "auto" }),
+      }).then((x) => x.json());
+      return decodePolyline6(r.trip.legs[0].shape) as LonLat[];
+    };
+    const dodo = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    try {
+      const [versClient, course] = await Promise.all([
+        fetchRoute(ME_START, PICKUP),
+        fetchRoute(PICKUP, DEST),
+      ]);
+      m.fitTo([{ lon: 9.4525, lat: 0.3965 }, DEST], 260);
+      while (alive()) {
+        // 0 — En attente, personne à bord.
+        m.setClientAboard(false);
+        m.setVehicleWaiting(false);
+        m.setRouteProgress(null);
+        m.setRoute([]);
+        m.setEndpoints(null, null);
+        m.setClientPosition(null);
+        m.setVehicles([{ id: "moi", ...ME_START, bearing: 0 }]);
+        await dodo(1200);
+        if (!alive()) return;
+        // 1 — Offre : quelqu'un vous attend LÀ (pulse) — destination cachée.
+        m.setClientPosition(PICKUP);
+        m.setEndpoints(PICKUP, null);
+        await dodo(2200);
+        if (!alive()) return;
+        // 2 — Acceptée : le drapeau et l'itinéraire apparaissent, on roule.
+        m.setEndpoints(PICKUP, DEST);
+        m.setRoute(versClient);
+        const a1 = m.driveVehicleAlong("moi", versClient, 6500, { consumeRoute: true });
+        await a1.done;
+        if (!alive()) return;
+        // 3 — Arrivé : « j'attends le client » (halo).
+        m.setVehicleWaiting(true);
+        await dodo(2400);
+        if (!alive()) return;
+        // 4 — Client à bord.
+        m.setVehicleWaiting(false);
+        m.setClientAboard(true);
+        m.setClientPosition(null);
+        await dodo(1000);
+        if (!alive()) return;
+        // 5 — Course vers le drapeau, tracé consommé.
+        m.setRoute(course);
+        m.setRouteProgress(null);
+        const a2 = m.driveVehicleAlong("moi", course, 8000, { consumeRoute: true });
+        await a2.done;
+        if (!alive()) return;
+        m.setClientAboard(false);
+        await dodo(2000);
+      }
+    } catch {
+      /* Valhalla absent : la démo s'arrête silencieusement */
+    }
+  }, []);
+
   // Scénarios client/chauffeur : injecte le vocabulaire carte correspondant.
   useEffect(() => {
     const m = mapRef.current;
@@ -228,6 +301,9 @@ export function App() {
     switch (scenario) {
       case "demo-course":
         void runDemo();
+        break;
+      case "demo-chauffeur":
+        void runDemoChauffeur();
         break;
       case "client-depart":
         // C-08 : choisir le départ — favoris D/T/★, repères par catégorie.
@@ -270,7 +346,7 @@ export function App() {
       default:
         break;
     }
-  }, [scenario, eco, runDemo]);
+  }, [scenario, eco, runDemo, runDemoChauffeur]);
 
   // Départ : point client magenta + repères proches (Supabase RPC).
   useEffect(() => {
@@ -355,20 +431,21 @@ export function App() {
   return (
     <div className="labo">
       <div ref={containerRef} className="carte" />
-      <div className={`panneau ${scenario === "demo-course" ? "panneau--mini" : ""}`}>
+      <div className={`panneau ${scenario.startsWith("demo-") ? "panneau--mini" : ""}`}>
         <h1>Teko — labo carte</h1>
         <p className="note">
           Temporaire · fond Martin + itinéraire Valhalla + tarifs Supabase
         </p>
-        {scenario === "demo-course" && (
+        {scenario.startsWith("demo-") && (
           <div className="rangee">
             <select value={scenario} onChange={(e) => setScenario(e.target.value as Scenario)}>
               <option value="libre">Scénario : libre</option>
               <option value="demo-course">Démo animée — la course du client</option>
+              <option value="demo-chauffeur">Démo animée — côté chauffeur</option>
             </select>
           </div>
         )}
-        {scenario !== "demo-course" && (<>
+        {!scenario.startsWith("demo-") && (<>
         <div className={`champ ${mode === "depart" ? "actif" : ""}`}>
           <span className="pastille" style={{ background: MAP_COLORS.markerClient }} />
           <input
@@ -435,6 +512,7 @@ export function App() {
             <option value="chauffeur-attente">Chauffeur — en attente</option>
             <option value="chauffeur-navigation">Chauffeur — navigation</option>
             <option value="demo-course">Démo animée — la course du client</option>
+            <option value="demo-chauffeur">Démo animée — côté chauffeur</option>
           </select>
         </div>
         {resume && (

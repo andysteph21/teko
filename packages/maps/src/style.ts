@@ -86,6 +86,64 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
     },
   ];
 
+  if (eco && opts.tilesUrl) {
+    // ------------------------------------------------------------------
+    // Mode éco ALLÉGÉ (pas aveugle) : on garde de quoi s'orienter — eau et
+    // voirie — mais on coupe ce qui coûte de la donnée :
+    //  · `maxzoom: 13` sur la source → au-delà, MapLibre RÉUTILISE les
+    //    tuiles z13 (sur-zoom) : plus aucune requête tuile en zoomant ;
+    //  · aucune police (pas de texte), pas de bâtiments/végétation/POI.
+    // Hors-ligne total (pas d'URL de tuiles) : fond uni comme avant.
+    // ------------------------------------------------------------------
+    sources["basemap"] = {
+      type: "vector",
+      url: opts.tilesUrl,
+      attribution: "© les contributeurs OpenStreetMap",
+      maxzoom: 13,
+    };
+    const wEco = (stops: [number, number][]) => [
+      "interpolate", ["exponential", 1.6], ["zoom"], ...stops.flat(),
+    ];
+    layers.push(
+      {
+        id: "eco-water",
+        type: "fill",
+        source: "basemap",
+        "source-layer": "water",
+        paint: { "fill-color": "#CFDCEA" },
+      },
+      {
+        id: "eco-roads-minor-casing",
+        type: "line",
+        source: "basemap",
+        "source-layer": "transportation",
+        minzoom: 11.5,
+        filter: ["!", ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary", "secondary", "path", "track"]]]],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": "#D6D2E2", "line-width": wEco([[12, 1], [15, 3], [18, 10]]) },
+      },
+      {
+        id: "eco-roads-minor",
+        type: "line",
+        source: "basemap",
+        "source-layer": "transportation",
+        minzoom: 11.5,
+        filter: ["!", ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary", "secondary", "path", "track"]]]],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": MAP_COLORS.road, "line-width": wEco([[12, 0.6], [15, 1.8], [18, 7]]) },
+      },
+      {
+        id: "eco-roads-major",
+        type: "line",
+        source: "basemap",
+        "source-layer": "transportation",
+        filter: ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary", "secondary"]]],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": "#F5DCA8", "line-width": wEco([[9, 1], [13, 3.5], [16, 7], [18, 16]]) },
+      },
+    );
+  }
+
   if (!eco && opts.tilesUrl) {
     // Attribution ODbL obligatoire dès que des données OSM sont affichées
     // (backlog OSM-02) — MapLibre la remonte dans le contrôle d'attribution.

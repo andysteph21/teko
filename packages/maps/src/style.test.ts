@@ -28,8 +28,24 @@ describe("buildMapStyle", () => {
     expect(layer(s, "teko-vehicles-dot").paint?.["circle-color"]).toBe("#00BFA5");
   });
 
-  it("mode éco : aucune source de tuiles, même avec une URL fournie", () => {
-    const s = buildMapStyle({ eco: true, tilesUrl: "https://tiles.example/teko.json" });
+  it("mode éco allégé : tuiles plafonnées à z13 (sur-zoom), couches minimales, muet", () => {
+    const s = buildMapStyle({ eco: true, tilesUrl: "https://tiles.example/gabon" });
+    expect((s["sources"] as Record<string, unknown>)["basemap"]).toMatchObject({
+      type: "vector",
+      maxzoom: 13,
+      attribution: "© les contributeurs OpenStreetMap",
+    });
+    const ids = layers(s).map((l) => l.id);
+    expect(ids).toContain("eco-roads-minor");
+    expect(ids).toContain("eco-roads-major");
+    expect(ids).not.toContain("basemap-buildings");
+    expect(ids).not.toContain("basemap-landcover");
+    expect(layers(s).some((l) => l.type === "symbol")).toBe(false);
+    expect(s["glyphs"]).toBeUndefined();
+  });
+
+  it("mode éco hors-ligne (sans URL) : fond uni, aucune source de tuiles", () => {
+    const s = buildMapStyle({ eco: true });
     expect((s["sources"] as Record<string, unknown>)["basemap"]).toBeUndefined();
   });
 
