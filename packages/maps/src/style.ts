@@ -65,7 +65,7 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
   // (ou avance) l'apparition des équipements.
   const padding = { faible: 26, normale: 14, dense: 6 }[densite];
   const zShift = { faible: 1, normale: 0, dense: -0.7 }[densite];
-  const halo = { "text-halo-color": MAP_COLORS.halo, "text-halo-width": 1.4 };
+  const halo = { "text-halo-color": MAP_COLORS.halo, "text-halo-width": 1.7 };
 
   const sources: Record<string, unknown> = {
     [TEKO_SOURCES.landmarks]: { ...emptyGeoJson },
@@ -74,7 +74,13 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
     [TEKO_SOURCES.client]: { ...emptyGeoJson },
   };
   const layers: Record<string, unknown>[] = [
-    { id: "teko-background", type: "background", paint: { "background-color": MAP_COLORS.background } },
+    // Normal : fond un cran plus profond que le token pour que la voirie
+    // blanche liserée ressorte ; éco : fond uni des maquettes (token).
+    {
+      id: "teko-background",
+      type: "background",
+      paint: { "background-color": eco ? MAP_COLORS.background : "#EDECF5" },
+    },
   ];
 
   if (!eco && opts.tilesUrl) {
@@ -85,33 +91,144 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
       url: opts.tilesUrl,
       attribution: "© les contributeurs OpenStreetMap",
     };
-    // Fond minimal lisible sur le schéma OpenMapTiles (Planetiler → Martin) :
-    // eau + voirie hiérarchisée, dans la palette des maquettes. Le style
-    // « plein » viendra avec la charte carto complète.
+
+    // ------------------------------------------------------------------
+    // Fond cartographique — lisibilité d'abord :
+    //  · fond légèrement assombri pour que la voirie blanche ressorte ;
+    //  · chaque route a un LISERÉ (casing) plus foncé — c'est lui qui rend
+    //    les petites rues lisibles, pas la couleur de remplissage ;
+    //  · largeurs en interpolation EXPONENTIELLE : les rues s'épaississent
+    //    naturellement au zoom (une ruelle reste fine à z12, large à z17) ;
+    //  · touches de contexte (végétation, bâtiments, eau) en teintes douces
+    //    de la palette violette — jamais plus saturées que les données Teko.
+    // ------------------------------------------------------------------
+    const MAJEURES = ["motorway", "trunk", "primary", "secondary"];
+    const w = (stops: [number, number][]) => [
+      "interpolate",
+      ["exponential", 1.6],
+      ["zoom"],
+      ...stops.flat(),
+    ];
+
     layers.push(
+      // Contexte : végétation, parcs, zones bâties — teintes très douces.
+      {
+        id: "basemap-landcover",
+        type: "fill",
+        source: "basemap",
+        "source-layer": "landcover",
+        filter: ["in", ["get", "class"], ["literal", ["grass", "wood", "farmland", "wetland"]]],
+        paint: { "fill-color": "#DEEAD9", "fill-opacity": 0.7 },
+      },
+      {
+        id: "basemap-park",
+        type: "fill",
+        source: "basemap",
+        "source-layer": "park",
+        paint: { "fill-color": "#D8E8D3", "fill-opacity": 0.8 },
+      },
+      {
+        id: "basemap-landuse",
+        type: "fill",
+        source: "basemap",
+        "source-layer": "landuse",
+        filter: ["in", ["get", "class"], ["literal", ["residential", "commercial", "industrial"]]],
+        paint: { "fill-color": "#E9E7F0", "fill-opacity": 0.5 },
+      },
+      // Eau : plans + cours, un ton plus soutenu pour un vrai contraste.
       {
         id: "basemap-water",
         type: "fill",
         source: "basemap",
         "source-layer": "water",
-        paint: { "fill-color": "#CBD9EE" },
+        paint: { "fill-color": "#BFD3ED" },
+      },
+      {
+        id: "basemap-waterway",
+        type: "line",
+        source: "basemap",
+        "source-layer": "waterway",
+        paint: { "line-color": "#BFD3ED", "line-width": w([[10, 0.5], [14, 1.5], [18, 4]]) },
+      },
+      // Pistes d'aéroport : structurantes pour se repérer.
+      {
+        id: "basemap-aeroway",
+        type: "line",
+        source: "basemap",
+        "source-layer": "aeroway",
+        paint: { "line-color": "#DDDAE8", "line-width": w([[10, 1], [14, 6], [16, 14]]) },
+      },
+      // Bâtiments au zoom quartier : donnent la texture urbaine.
+      {
+        id: "basemap-buildings",
+        type: "fill",
+        source: "basemap",
+        "source-layer": "building",
+        minzoom: 14.5,
+        paint: {
+          "fill-color": "#E3E0EC",
+          "fill-outline-color": "#D4D0E2",
+          "fill-opacity": ["interpolate", ["linear"], ["zoom"], 14.5, 0, 15.5, 0.9],
+        },
+      },
+      // Sentiers/pistes piétonnes : pointillés discrets, zoom élevé.
+      {
+        id: "basemap-paths",
+        type: "line",
+        source: "basemap",
+        "source-layer": "transportation",
+        minzoom: 15,
+        filter: ["in", ["get", "class"], ["literal", ["path", "track"]]],
+        paint: {
+          "line-color": "#C2BDD4",
+          "line-width": w([[15, 1], [18, 3.5]]),
+          "line-dasharray": [2, 1.6],
+        },
+      },
+      // ---- Voirie : liseré d'abord, remplissage ensuite (jointures nettes).
+      {
+        id: "basemap-roads-minor-casing",
+        type: "line",
+        source: "basemap",
+        "source-layer": "transportation",
+        minzoom: 11,
+        filter: [
+          "!",
+          ["in", ["get", "class"], ["literal", [...MAJEURES, "path", "track"]]],
+        ],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": "#CDC9DD", "line-width": w([[11, 1], [14, 3.2], [16, 7], [18, 17]]) },
+      },
+      {
+        id: "basemap-roads-major-casing",
+        type: "line",
+        source: "basemap",
+        "source-layer": "transportation",
+        filter: ["in", ["get", "class"], ["literal", MAJEURES]],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": "#E3B76F", "line-width": w([[9, 2], [12, 4.5], [14, 7], [16, 11], [18, 26]]) },
       },
       {
         id: "basemap-roads-minor",
         type: "line",
         source: "basemap",
         "source-layer": "transportation",
-        filter: ["!", ["in", ["get", "class"], ["literal", ["primary", "secondary", "trunk", "motorway"]]]],
-        paint: { "line-color": MAP_COLORS.road, "line-width": 1.5 },
+        minzoom: 11,
+        filter: [
+          "!",
+          ["in", ["get", "class"], ["literal", [...MAJEURES, "path", "track"]]],
+        ],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": MAP_COLORS.road, "line-width": w([[11, 0.5], [14, 2], [16, 5.2], [18, 14]]) },
       },
       {
         id: "basemap-roads-major",
         type: "line",
         source: "basemap",
         "source-layer": "transportation",
-        filter: ["in", ["get", "class"], ["literal", ["primary", "secondary", "trunk", "motorway"]]],
-        layout: { "line-cap": "round" },
-        paint: { "line-color": "#FFE3B3", "line-width": 4 },
+        filter: ["in", ["get", "class"], ["literal", MAJEURES]],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": "#FFE0A8", "line-width": w([[9, 1.2], [12, 3], [14, 5], [16, 8.5], [18, 22]]) },
       },
     );
 
@@ -138,7 +255,7 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
             "text-padding": padding,
             "symbol-sort-key": ["get", "rank"],
           },
-          paint: { "text-color": "#4A4A60", ...halo },
+          paint: { "text-color": "#3D3D52", ...halo },
         },
         {
           id: "labels-quartiers",
@@ -156,7 +273,7 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
             "text-padding": padding,
             "symbol-sort-key": ["get", "rank"],
           },
-          paint: { "text-color": "#9090A8", ...halo },
+          paint: { "text-color": "#71718A", ...halo },
         },
         // Aéroport : structurant, visible dès l'échelle ville.
         {
@@ -171,7 +288,7 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
             "text-size": 12,
             "text-padding": padding,
           },
-          paint: { "text-color": "#5A6B8C", ...halo },
+          paint: { "text-color": "#4E608A", ...halo },
         },
         // Équipements notables, palier 1 : hôpitaux, universités, stades…
         {
@@ -184,6 +301,9 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
             "all",
             ["has", "name"],
             ["in", ["get", "class"], ["literal", POI_MAJEURS]],
+            // class=hospital couvre aussi cabinets/cliniques (subclass) :
+            // seuls les vrais hôpitaux sont structurants à cette échelle.
+            ["!", ["in", ["get", "subclass"], ["literal", ["clinic", "doctors", "dentist"]]]],
           ],
           layout: {
             "text-field": ["coalesce", ["get", "name:fr"], ["get", "name"]],
@@ -209,6 +329,7 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
               "any",
               ["in", ["get", "class"], ["literal", POI_QUARTIER]],
               ["==", ["get", "subclass"], "marketplace"],
+              ["in", ["get", "subclass"], ["literal", ["clinic", "doctors", "dentist"]]],
             ],
           ],
           layout: {
@@ -236,7 +357,7 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
             "text-size": 11.5,
             "text-padding": padding,
           },
-          paint: { "text-color": "#8A8AA0", ...halo },
+          paint: { "text-color": "#5F5F76", ...halo },
         },
         {
           id: "labels-rues",
@@ -252,7 +373,7 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
             "text-size": 10.5,
             "text-padding": padding,
           },
-          paint: { "text-color": "#9090A8", ...halo },
+          paint: { "text-color": "#6E6E85", ...halo },
         },
       );
     }
