@@ -43,3 +43,23 @@ body { margin: 0; font-family: system-ui, -apple-system, Roboto, "Segoe UI", san
 .panneau--mini { width: 250px; }
 .rangee.modes button.on { background: #f5e6ff; border-color: #8c238a; color: #5a1a80; }
 .modes-etat { margin-top: 2px; }
+
+/* Doigt simulé pour les vidéos de démonstration (tap + swipe) */
+.doigt {
+  position: absolute; z-index: 50; width: 34px; height: 34px;
+  border-radius: 9999px; background: rgba(61, 15, 92, 0.30);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  will-change: transform;
+}
+.doigt.tap { background: rgba(61, 15, 92, 0.5); }
+.doigt.tap::after {
+  content: ""; position: absolute; inset: -7px; border-radius: 9999px;
+  border: 3px solid rgba(140, 35, 138, 0.85);
+  animation: tap-ripple 0.4s ease-out forwards;
+}
+@keyframes tap-ripple {
+  from { transform: scale(0.45); opacity: 1; }
+  to { transform: scale(1.9); opacity: 0; }
+}

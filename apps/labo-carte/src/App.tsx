@@ -171,6 +171,76 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eco, setPoint]);
 
+  // --- Doigt simulé (vidéos) : tap avec onde, swipe qui entraîne la carte ---
+  const doigtRef = useRef<HTMLDivElement>(null);
+  const doigt = useMemo(() => {
+    const el = () => doigtRef.current;
+    const move = (x: number, y: number) => {
+      const d = el();
+      if (d) d.style.transform = `translate(${x - 17}px, ${y - 17}px)`;
+    };
+    const visible = (v: boolean) => {
+      const d = el();
+      if (d) d.style.opacity = v ? "1" : "0";
+    };
+    const dodo = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const tap = async (x: number, y: number) => {
+      move(x, y);
+      visible(true);
+      await dodo(180);
+      el()?.classList.add("tap");
+      await dodo(400);
+      el()?.classList.remove("tap");
+      visible(false);
+      await dodo(150);
+    };
+    const tapLngLat = async (p: LonLat) => {
+      const m = mapRef.current;
+      if (!m) return;
+      const pt = m.map.project([p.lon, p.lat]);
+      await tap(pt.x, pt.y);
+    };
+    // Swipe : le doigt glisse et la carte SUIT le doigt (drag réel).
+    const swipe = async (x1: number, y1: number, x2: number, y2: number, ms: number) => {
+      const m = mapRef.current;
+      if (!m) return;
+      move(x1, y1);
+      visible(true);
+      await dodo(160);
+      const start = performance.now();
+      let px = x1;
+      let py = y1;
+      await new Promise<void>((res) => {
+        const tick = (now: number) => {
+          const t = Math.min(1, (now - start) / ms);
+          const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+          const nx = x1 + (x2 - x1) * e;
+          const ny = y1 + (y2 - y1) * e;
+          m.map.panBy([px - nx, py - ny], { duration: 0, animate: false });
+          move(nx, ny);
+          px = nx;
+          py = ny;
+          if (t < 1) requestAnimationFrame(tick);
+          else res();
+        };
+        requestAnimationFrame(tick);
+      });
+      visible(false);
+      await dodo(150);
+    };
+    // Amène un lieu au centre de l'écran par un swipe naturel.
+    const swipeVers = async (p: LonLat, ms = 1100) => {
+      const m = mapRef.current;
+      if (!m) return;
+      const c = m.map.getContainer();
+      const cx = c.clientWidth / 2;
+      const cy = c.clientHeight / 2;
+      const pt = m.map.project([p.lon, p.lat]);
+      await swipe(pt.x, pt.y, cx, cy, ms);
+    };
+    return { tap, tapLngLat, swipe, swipeVers };
+  }, []);
+
   // Démo animée : la course vue par le client, compréhensible sans lire —
   // épingle-personne (départ), épingle-drapeau (arrivée), voiture qui
   // approche, halo « il vous attend », point qui monte à bord, tracé
@@ -196,16 +266,29 @@ export function App() {
         fetchRoute(CAR_START, PICKUP),
         fetchRoute(PICKUP, DEST),
       ]);
-      m.setEndpoints(PICKUP, DEST);
       m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS.slice(0, 4)));
       m.fitTo([{ lon: 9.4515, lat: 0.3955 }, DEST], 260);
       while (alive()) {
-        // 1 — La voiture arrive vers vous.
+        // 0 — L'utilisateur compose sa course : tap départ, tap destination.
         m.setClientAboard(false);
         m.setVehicleWaiting(false);
         m.setRouteProgress(null);
-        m.setRoute(course);
+        m.setRoute([]);
+        m.setEndpoints(null, null);
+        m.setClientPosition(null);
+        m.setVehicles([]);
+        await dodo(700);
+        await doigt.tapLngLat(PICKUP);
+        m.setEndpoints(PICKUP, null);
         m.setClientPosition(PICKUP);
+        await dodo(650);
+        if (!alive()) return;
+        await doigt.tapLngLat(DEST);
+        m.setEndpoints(PICKUP, DEST);
+        m.setRoute(course);
+        await dodo(900);
+        if (!alive()) return;
+        // 1 — La voiture arrive vers vous.
         const a1 = m.driveVehicleAlong("demo", approche, 7000);
         await a1.done;
         if (!alive()) return;
@@ -273,9 +356,11 @@ export function App() {
         // 1 — Offre : quelqu'un vous attend LÀ (pulse) — destination cachée.
         m.setClientPosition(PICKUP);
         m.setEndpoints(PICKUP, null);
-        await dodo(2200);
+        await dodo(1500);
         if (!alive()) return;
-        // 2 — Acceptée : le drapeau et l'itinéraire apparaissent, on roule.
+        // 2 — Le chauffeur TAPE sur l'offre pour accepter : le drapeau et
+        // l'itinéraire apparaissent, on roule.
+        await doigt.tapLngLat(PICKUP);
         m.setEndpoints(PICKUP, DEST);
         m.setRoute(versClient);
         const a1 = m.driveVehicleAlong("moi", versClient, 6500, { consumeRoute: true });
@@ -322,16 +407,34 @@ export function App() {
       }).then((x) => x.json());
       const course = decodePolyline6(r.trip.legs[0].shape) as LonLat[];
       while (alive()) {
-        m.setClientAboard(true);
+        m.setClientAboard(false);
         m.setVehicleWaiting(false);
+        m.setEndpoints(null, null);
+        m.setRoute([]);
+        m.setRouteProgress(null);
+        m.setVehicles([]);
+        m.setSavedPlaces(MOCK_SAVED.slice(0, 2));
+        // L'utilisateur part de son quartier : tap sur « Domicile » (D)…
+        m.map.jumpTo({ center: [PICKUP.lon, PICKUP.lat], zoom: 14.6 });
+        m.setClientPosition(PICKUP);
+        await dodo(1100);
+        await doigt.tapLngLat(PICKUP);
+        m.setEndpoints(PICKUP, null);
+        await dodo(600);
+        if (!alive()) return;
+        // …swipe vers « Travail » (T), puis tap pour poser le drapeau.
+        await doigt.swipeVers(DEST, 1300);
+        await dodo(350);
+        await doigt.tapLngLat(DEST);
         m.setEndpoints(PICKUP, DEST);
         m.setRoute(course);
-        m.setRouteProgress(null);
-        m.setClientPosition(null);
-        m.setSavedPlaces(MOCK_SAVED.slice(0, 2));
-        m.map.jumpTo({ center: [PICKUP.lon, PICKUP.lat], zoom: 16 });
-        await dodo(1800);
+        await dodo(900);
         if (!alive()) return;
+        // La course démarre : caméra au zoom rue, les adresses défilent.
+        m.setClientAboard(true);
+        m.setClientPosition(null);
+        m.map.jumpTo({ center: [PICKUP.lon, PICKUP.lat], zoom: 16 });
+        await dodo(700);
         const a = m.driveVehicleAlong("moi", course, 20000, { consumeRoute: true, follow: { zoom: 16 } });
         await a.done;
         if (!alive()) return;
@@ -373,19 +476,24 @@ export function App() {
         m.setClientPosition(null);
         m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS));
         m.map.jumpTo({ center: [9.457, 0.401], zoom: 13.6 });
-        await dodo(2000);
+        await dodo(1600);
         if (!alive()) return;
-        await ease({ lon: 9.454, lat: 0.392 }, 15.5, 1400);
-        await dodo(900);
-        await ease(MARCHE, 15.8, 1200);
-        await dodo(600);
+        // L'utilisateur explore au doigt, amène le Marché au centre, et TAPE
+        // sur le repère M pour en faire son départ.
+        await doigt.swipeVers(MARCHE, 1200);
+        await ease(MARCHE, 15.6, 900);
+        await dodo(400);
+        await doigt.tapLngLat(MARCHE);
         m.setEndpoints(MARCHE, null);
         m.setClientPosition(MARCHE);
-        await dodo(1400);
+        await dodo(1100);
         if (!alive()) return;
-        await ease(ECOLE, 15.8, 1400);
+        // Swipe vers l'École (É), tap : le drapeau se pose sur le POI.
+        await doigt.swipeVers(ECOLE, 1300);
+        await dodo(350);
+        await doigt.tapLngLat(ECOLE);
         m.setEndpoints(MARCHE, ECOLE);
-        await dodo(1200);
+        await dodo(1100);
         if (!alive()) return;
         m.setRoute(course);
         m.map.jumpTo({ center: [(MARCHE.lon + ECOLE.lon) / 2, (MARCHE.lat + ECOLE.lat) / 2], zoom: 15.1 });
@@ -553,6 +661,7 @@ export function App() {
   return (
     <div className="labo">
       <div ref={containerRef} className="carte" />
+      <div ref={doigtRef} className="doigt" />
       <div className={`panneau ${scenario.startsWith("demo-") ? "panneau--mini" : ""}`}>
         <h1>Teko — labo carte</h1>
         <p className="note">
