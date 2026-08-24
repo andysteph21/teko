@@ -43,3 +43,6 @@ packages/*/demo/dist/
 
 # Artefacts carto générés
 infra/_data/
+
+# Vidéos et rendus de travail (non versionnés)
+misc/

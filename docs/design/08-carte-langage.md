@@ -104,9 +104,13 @@ jamais** sur 2G/EDGE et la batterie des téléphones chauffeurs.
 | `sc-chauffeur-navigation.png` | Navigation : itinéraire Valhalla réel + « à confirmer · 14 passages » |
 | `eco2-depart.png` | Éco v2 : utile et soigné, zéro police |
 | `auto-2g.png` | Auto sur 2G : bascule éco + raison affichée |
-| `Teko-demo-course-client.mp4` | Grammaire animée, point de vue client |
-| `Teko-demo-chauffeur.mp4` | Point de vue chauffeur (destination cachée avant acceptation) |
-| `Teko-demo-eco.mp4` | La même course en éco |
+
+Les **vidéos** vivent dans **`/misc`** (non versionné — régénérables via le
+labo, correspondances dans `misc/LISEZMOI.md`) : grammaire animée client,
+côté chauffeur, course en éco, **course guidée par les adresses** (caméra qui
+suit la voiture, noms de rues et quartiers lisibles — scène `demo-adresses`)
+et **choix par points d'intérêt** (départ au Marché de Mont-Bouët, arrivée à
+l'École — scène `demo-poi`).
 
 ## 7. Reprise pour les apps
 
