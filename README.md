@@ -42,6 +42,7 @@ teko/
 | L'état du plan et les jalons | [docs/plan/00-plan-execution.md](docs/plan/00-plan-execution.md) |
 | Les risques suivis | [docs/plan/01-registre-risques.md](docs/plan/01-registre-risques.md) |
 | Le travail restant (grain fin) | [docs/plan/02-backlog.md](docs/plan/02-backlog.md) |
+| Lancer les templates Taxido (« avant ») | [docs/plan/05-reference-taxido.md](docs/plan/05-reference-taxido.md) |
 | Les coûts d'infrastructure | [docs/plan/03-estimation-couts-ti.md](docs/plan/03-estimation-couts-ti.md) |
 | Toutes les maquettes + conventions | [docs/design/06-maquettes.md](docs/design/06-maquettes.md) |
 | La console admin sur téléphone | [docs/design/07-admin-responsive.md](docs/design/07-admin-responsive.md) |
