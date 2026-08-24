@@ -46,7 +46,8 @@ type Scenario =
   | "demo-course"
   | "demo-chauffeur"
   | "demo-adresses"
-  | "demo-poi";
+  | "demo-poi"
+  | "demo-admin";
 
 const gj = (lon: number, lat: number) => ({ type: "Point" as const, coordinates: [lon, lat] });
 const MOCK_LANDMARKS: LandmarkRow[] = [
@@ -71,6 +72,29 @@ const MOCK_HOTSPOTS = [
   { id: "h2", lon: 9.4536, lat: 0.4032, count: 18 },
   { id: "h3", lon: 9.4665, lat: 0.413, count: 9 },
 ];
+
+// Pictogrammes de phase — compréhensibles sans lire (SVG inline).
+function Picto({ k }: { k: string }) {
+  const c = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  switch (k) {
+    case "voiture":
+      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><path d="M4 15l1.5-5.5A2 2 0 0 1 7.4 8h9.2a2 2 0 0 1 1.9 1.5L20 15" /><path d="M3 15h18v3h-2.5M3 18h2.5" /><circle cx="7.5" cy="18" r="1.6" /><circle cx="16.5" cy="18" r="1.6" /></svg>);
+    case "attente":
+      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2.2" /></svg>);
+    case "personne":
+      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><circle cx="12" cy="8" r="3.2" /><path d="M5.5 19a6.5 6.5 0 0 1 13 0" /></svg>);
+    case "drapeau":
+      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><path d="M6 21V4" /><path d="M6 5h11l-2.5 3.5L17 12H6" /></svg>);
+    case "coche":
+      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><path d="M4.5 12.5l5 5 10-11" /></svg>);
+    case "onde":
+      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><path d="M7.5 16.5a6.4 6.4 0 0 1 0-9M16.5 7.5a6.4 6.4 0 0 1 0 9" /><path d="M4.8 19.2a10.2 10.2 0 0 1 0-14.4M19.2 4.8a10.2 10.2 0 0 1 0 14.4" /></svg>);
+    case "route":
+      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><path d="M5 21c4-4 4-8 0-12 5-5 9-5 14 0" strokeDasharray="3 3" /></svg>);
+    default:
+      return null;
+  }
+}
 
 const parsePoint = (v: string | null): LonLat | null => {
   const [lon, lat] = (v ?? "").split(",").map((s) => Number(s.trim()));
@@ -114,6 +138,10 @@ export function App() {
   const [scenario, setScenario] = useState<Scenario>(
     (params.get("sc") as Scenario) ?? "libre",
   );
+  // Habillage vidéo : ?rec=1 masque le chrome du labo et affiche la marque
+  // + l'indicateur de phase (pictogramme, lisible sans lire).
+  const rec = params.get("rec") === "1";
+  const [phase, setPhase] = useState<{ picto: string; texte: string } | null>(null);
 
   const supabase = useMemo(
     () => createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false } }),
@@ -148,6 +176,17 @@ export function App() {
       map.map.addSource("labo-dest", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
+      });
+      map.map.addSource("labo-valide", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      map.map.addLayer({
+        id: "labo-valide-line",
+        type: "line",
+        source: "labo-valide",
+        layout: { "line-cap": "round" },
+        paint: { "line-color": "#5A1A80", "line-width": 4 },
       });
       map.map.addLayer({
         id: "labo-dest-dot",
@@ -277,10 +316,12 @@ export function App() {
         m.setEndpoints(null, null);
         m.setClientPosition(null);
         m.setVehicles([]);
+        setPhase({ picto: "personne", texte: "Choisissez votre départ" });
         await dodo(700);
         await doigt.tapLngLat(PICKUP);
         m.setEndpoints(PICKUP, null);
         m.setClientPosition(PICKUP);
+        setPhase({ picto: "drapeau", texte: "Choisissez l'arrivée" });
         await dodo(650);
         if (!alive()) return;
         await doigt.tapLngLat(DEST);
@@ -289,24 +330,29 @@ export function App() {
         await dodo(900);
         if (!alive()) return;
         // 1 — La voiture arrive vers vous.
+        setPhase({ picto: "voiture", texte: "Votre chauffeur arrive" });
         const a1 = m.driveVehicleAlong("demo", approche, 7000);
         await a1.done;
         if (!alive()) return;
         // 2 — Elle vous attend (halo qui respire).
+        setPhase({ picto: "attente", texte: "Votre chauffeur vous attend" });
         m.setVehicleWaiting(true);
         await dodo(2600);
         if (!alive()) return;
         // 3 — Vous montez à bord (votre point rejoint la voiture).
+        setPhase({ picto: "personne", texte: "Montez à bord" });
         m.setVehicleWaiting(false);
         m.setClientAboard(true);
         m.setClientPosition(null);
         await dodo(1100);
         if (!alive()) return;
         // 4 — En course : le tracé se consomme derrière la voiture.
+        setPhase({ picto: "voiture", texte: "En course" });
         const a2 = m.driveVehicleAlong("demo", course, 9000, { consumeRoute: true });
         await a2.done;
         if (!alive()) return;
         // 5 — Arrivée : le drapeau a gagné ; petite pause puis on rejoue.
+        setPhase({ picto: "coche", texte: "Vous êtes arrivé" });
         m.setClientAboard(false);
         m.setClientPosition(DEST);
         await dodo(2200);
@@ -351,37 +397,50 @@ export function App() {
         m.setEndpoints(null, null);
         m.setClientPosition(null);
         m.setVehicles([{ id: "moi", ...ME_START, bearing: 0 }]);
-        await dodo(1200);
+        // En attente : le chauffeur consulte les zones de départ fréquentes.
+        setPhase({ picto: "onde", texte: "En ligne — en attente" });
+        m.setDepartureHotspots(MOCK_HOTSPOTS);
+        await dodo(900);
+        await doigt.swipeVers({ lon: 9.457, lat: 0.399 }, 1100);
+        await dodo(700);
         if (!alive()) return;
         // 1 — Offre : quelqu'un vous attend LÀ (pulse) — destination cachée.
+        setPhase({ picto: "personne", texte: "Nouvelle offre — 12 s" });
         m.setClientPosition(PICKUP);
         m.setEndpoints(PICKUP, null);
-        await dodo(1500);
+        await doigt.swipeVers(PICKUP, 900);
+        await dodo(900);
         if (!alive()) return;
         // 2 — Le chauffeur TAPE sur l'offre pour accepter : le drapeau et
         // l'itinéraire apparaissent, on roule.
         await doigt.tapLngLat(PICKUP);
+        m.setDepartureHotspots([]);
+        setPhase({ picto: "voiture", texte: "Vers le client" });
         m.setEndpoints(PICKUP, DEST);
         m.setRoute(versClient);
         const a1 = m.driveVehicleAlong("moi", versClient, 6500, { consumeRoute: true });
         await a1.done;
         if (!alive()) return;
         // 3 — Arrivé : « j'attends le client » (halo).
+        setPhase({ picto: "attente", texte: "Sur place — j'attends le client" });
         m.setVehicleWaiting(true);
         await dodo(2400);
         if (!alive()) return;
         // 4 — Client à bord.
+        setPhase({ picto: "personne", texte: "Client à bord" });
         m.setVehicleWaiting(false);
         m.setClientAboard(true);
         m.setClientPosition(null);
         await dodo(1000);
         if (!alive()) return;
         // 5 — Course vers le drapeau, tracé consommé.
+        setPhase({ picto: "voiture", texte: "En course" });
         m.setRoute(course);
         m.setRouteProgress(null);
         const a2 = m.driveVehicleAlong("moi", course, 8000, { consumeRoute: true });
         await a2.done;
         if (!alive()) return;
+        setPhase({ picto: "coche", texte: "Course terminée" });
         m.setClientAboard(false);
         await dodo(2000);
       }
@@ -417,9 +476,11 @@ export function App() {
         // L'utilisateur part de son quartier : tap sur « Domicile » (D)…
         m.map.jumpTo({ center: [PICKUP.lon, PICKUP.lat], zoom: 14.6 });
         m.setClientPosition(PICKUP);
+        setPhase({ picto: "personne", texte: "Choisissez votre départ" });
         await dodo(1100);
         await doigt.tapLngLat(PICKUP);
         m.setEndpoints(PICKUP, null);
+        setPhase({ picto: "drapeau", texte: "Choisissez l'arrivée" });
         await dodo(600);
         if (!alive()) return;
         // …swipe vers « Travail » (T), puis tap pour poser le drapeau.
@@ -431,6 +492,7 @@ export function App() {
         await dodo(900);
         if (!alive()) return;
         // La course démarre : caméra au zoom rue, les adresses défilent.
+        setPhase({ picto: "voiture", texte: "En course — suivez les rues" });
         m.setClientAboard(true);
         m.setClientPosition(null);
         m.map.jumpTo({ center: [PICKUP.lon, PICKUP.lat], zoom: 16 });
@@ -438,6 +500,7 @@ export function App() {
         const a = m.driveVehicleAlong("moi", course, 20000, { consumeRoute: true, follow: { zoom: 16 } });
         await a.done;
         if (!alive()) return;
+        setPhase({ picto: "coche", texte: "Vous êtes arrivé" });
         m.setClientAboard(false);
         m.setClientPosition(DEST);
         await dodo(2200);
@@ -476,6 +539,7 @@ export function App() {
         m.setClientPosition(null);
         m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS));
         m.map.jumpTo({ center: [9.457, 0.401], zoom: 13.6 });
+        setPhase({ picto: "onde", texte: "Explorez les repères de la ville" });
         await dodo(1600);
         if (!alive()) return;
         // L'utilisateur explore au doigt, amène le Marché au centre, et TAPE
@@ -486,6 +550,7 @@ export function App() {
         await doigt.tapLngLat(MARCHE);
         m.setEndpoints(MARCHE, null);
         m.setClientPosition(MARCHE);
+        setPhase({ picto: "personne", texte: "Départ : Marché de Mont-Bouët" });
         await dodo(1100);
         if (!alive()) return;
         // Swipe vers l'École (É), tap : le drapeau se pose sur le POI.
@@ -493,15 +558,18 @@ export function App() {
         await dodo(350);
         await doigt.tapLngLat(ECOLE);
         m.setEndpoints(MARCHE, ECOLE);
+        setPhase({ picto: "drapeau", texte: "Arrivée : École d'Akébé" });
         await dodo(1100);
         if (!alive()) return;
         m.setRoute(course);
         m.map.jumpTo({ center: [(MARCHE.lon + ECOLE.lon) / 2, (MARCHE.lat + ECOLE.lat) / 2], zoom: 15.1 });
         m.setClientAboard(true);
         m.setClientPosition(null);
+        setPhase({ picto: "voiture", texte: "En course" });
         const a = m.driveVehicleAlong("moi", course, 9000, { consumeRoute: true });
         await a.done;
         if (!alive()) return;
+        setPhase({ picto: "coche", texte: "Vous êtes arrivé" });
         m.setClientAboard(false);
         m.setClientPosition(ECOLE);
         await dodo(2200);
@@ -509,11 +577,87 @@ export function App() {
     } catch { /* Valhalla absent */ }
   }, []);
 
+  // Démo ADMIN (console carto, A-04) : surveiller la flotte, puis VALIDER
+  // au doigt les routes détectées — le pointillé « à confirmer » devient un
+  // trait plein, visible pour tous, sans rebuild.
+  const runDemoAdmin = useCallback(async () => {
+    const runId = ++demoRunRef.current;
+    const alive = () => demoRunRef.current === runId && mapRef.current;
+    const m = mapRef.current!;
+    const dodo = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const milieu = (p: { coordinates: LonLat[] }) =>
+      p.coordinates[Math.floor(p.coordinates.length / 2)]!;
+    const setValide = (lignes: LonLat[][]) => {
+      (m.map.getSource("labo-valide") as { setData: (d: unknown) => void } | undefined)?.setData({
+        type: "FeatureCollection",
+        features: lignes.map((l) => ({
+          type: "Feature",
+          geometry: { type: "LineString", coordinates: l.map((p) => [p.lon, p.lat]) },
+          properties: {},
+        })),
+      });
+    };
+    const ease = (c: LonLat, z: number, ms: number) =>
+      new Promise<void>((res) => {
+        m.map.easeTo({ center: [c.lon, c.lat], zoom: z, duration: ms });
+        m.map.once("moveend", () => res());
+      });
+    try {
+      while (alive()) {
+        // 0 — Vue d'ensemble : flotte, zones de départ, repères.
+        setPhase({ picto: "onde", texte: "Flotte en direct — 4 chauffeurs" });
+        m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS));
+        m.setDepartureHotspots(MOCK_HOTSPOTS);
+        m.setProposedRoads(MOCK_PROPOSED);
+        setValide([]);
+        m.setVehicles([
+          { id: "d1", lon: 9.4512, lat: 0.4009, bearing: 120 },
+          { id: "d2", lon: 9.4598, lat: 0.4102, bearing: 30 },
+          { id: "d3", lon: 9.4643, lat: 0.4033, bearing: 80 },
+          { id: "d4", lon: 9.4551, lat: 0.4168, bearing: 300 },
+        ]);
+        m.setEndpoints(null, null);
+        m.setClientPosition(null);
+        m.setRoute([]);
+        m.setRouteProgress(null);
+        m.map.jumpTo({ center: [9.457, 0.404], zoom: 13.7 });
+        await dodo(2400);
+        if (!alive()) return;
+        // 1 — Première route détectée : l'admin s'en approche et la valide.
+        setPhase({ picto: "route", texte: "Route détectée — 14 passages GPS" });
+        await doigt.swipeVers(milieu(MOCK_PROPOSED[0]!), 1200);
+        await ease(milieu(MOCK_PROPOSED[0]!), 15.2, 800);
+        await dodo(500);
+        await doigt.tapLngLat(milieu(MOCK_PROPOSED[0]!));
+        m.setProposedRoads([MOCK_PROPOSED[1]!]);
+        setValide([MOCK_PROPOSED[0]!.coordinates]);
+        setPhase({ picto: "coche", texte: "Validée — visible pour tous" });
+        await dodo(2000);
+        if (!alive()) return;
+        // 2 — Seconde route : même geste.
+        setPhase({ picto: "route", texte: "Route détectée — 6 passages GPS" });
+        await doigt.swipeVers(milieu(MOCK_PROPOSED[1]!), 1100);
+        await dodo(400);
+        await doigt.tapLngLat(milieu(MOCK_PROPOSED[1]!));
+        m.setProposedRoads([]);
+        setValide([MOCK_PROPOSED[0]!.coordinates, MOCK_PROPOSED[1]!.coordinates]);
+        setPhase({ picto: "coche", texte: "Réseau à jour — routable au prochain rebuild" });
+        await dodo(2000);
+        if (!alive()) return;
+        // 3 — Retour à la surveillance.
+        await ease({ lon: 9.457, lat: 0.404 }, 13.7, 1100);
+        setPhase({ picto: "onde", texte: "Surveillance de la flotte" });
+        await dodo(2200);
+      }
+    } catch { /* rien */ }
+  }, []);
+
   // Scénarios client/chauffeur : injecte le vocabulaire carte correspondant.
   useEffect(() => {
     const m = mapRef.current;
     if (!m) return;
     demoRunRef.current++; // stoppe une éventuelle démo en cours
+    setPhase(null);
     m.setSavedPlaces([]);
     m.setProposedRoads([]);
     m.setDepartureHotspots([]);
@@ -534,6 +678,9 @@ export function App() {
         break;
       case "demo-poi":
         void runDemoPoi();
+        break;
+      case "demo-admin":
+        void runDemoAdmin();
         break;
       case "client-depart":
         // C-08 : choisir le départ — favoris D/T/★, repères par catégorie.
@@ -576,7 +723,7 @@ export function App() {
       default:
         break;
     }
-  }, [scenario, eco, runDemo, runDemoChauffeur, runDemoAdresses, runDemoPoi]);
+  }, [scenario, eco, runDemo, runDemoChauffeur, runDemoAdresses, runDemoPoi, runDemoAdmin]);
 
   // Départ : point client magenta + repères proches (Supabase RPC).
   useEffect(() => {
@@ -658,10 +805,25 @@ export function App() {
     if (p) setPoint(which, p);
   };
 
+  const role = scenario === "demo-chauffeur" ? "chauffeur" : scenario === "demo-admin" ? "admin" : "";
   return (
-    <div className="labo">
+    <div className={"labo" + (rec ? " rec" : "")}>
       <div ref={containerRef} className="carte" />
       <div ref={doigtRef} className="doigt" />
+      {rec && (
+        <div className={`marque ${role}`}>
+          Teko
+          <span className="sous">
+            {role === "chauffeur" ? "chauffeur" : role === "admin" ? "console carto" : "client"}
+          </span>
+        </div>
+      )}
+      {rec && phase && (
+        <div className={`phase ${role}`} aria-live="polite">
+          <span className="rond"><Picto k={phase.picto} /></span>
+          {phase.texte}
+        </div>
+      )}
       <div className={`panneau ${scenario.startsWith("demo-") ? "panneau--mini" : ""}`}>
         <h1>Teko — labo carte</h1>
         <p className="note">
@@ -675,6 +837,7 @@ export function App() {
               <option value="demo-chauffeur">Démo animée — côté chauffeur</option>
             <option value="demo-adresses">Démo — course guidée par les adresses</option>
             <option value="demo-poi">Démo — choisir par point d'intérêt</option>
+            <option value="demo-admin">Démo — console admin (validation carto)</option>
             </select>
           </div>
         )}
@@ -758,6 +921,7 @@ export function App() {
             <option value="demo-chauffeur">Démo animée — côté chauffeur</option>
             <option value="demo-adresses">Démo — course guidée par les adresses</option>
             <option value="demo-poi">Démo — choisir par point d'intérêt</option>
+            <option value="demo-admin">Démo — console admin (validation carto)</option>
           </select>
         </div>
         {resume && (
