@@ -265,11 +265,16 @@ export class TekoMapController {
     id: string,
     route: LonLat[],
     durationMs: number,
-    opts: { consumeRoute?: boolean } = {},
+    opts: { consumeRoute?: boolean; follow?: { zoom: number } } = {},
   ): VehicleAnimation {
     return animateAlong(route, durationMs, (position, bearing, t) => {
       this.setVehicles([{ id, ...position, bearing }]);
       if (opts.consumeRoute) this.setRouteProgress(t);
+      // Caméra qui suit le véhicule (les noms de rues restent lisibles au
+      // zoom donné — mise à jour continue, pas d'à-coups d'easing).
+      if (opts.follow) {
+        this.map.jumpTo({ center: [position.lon, position.lat], zoom: opts.follow.zoom });
+      }
     });
   }
 

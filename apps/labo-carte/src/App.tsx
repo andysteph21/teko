@@ -44,7 +44,9 @@ type Scenario =
   | "chauffeur-attente"
   | "chauffeur-navigation"
   | "demo-course"
-  | "demo-chauffeur";
+  | "demo-chauffeur"
+  | "demo-adresses"
+  | "demo-poi";
 
 const gj = (lon: number, lat: number) => ({ type: "Point" as const, coordinates: [lon, lat] });
 const MOCK_LANDMARKS: LandmarkRow[] = [
@@ -303,6 +305,102 @@ export function App() {
     }
   }, []);
 
+  // Démo « adresses » : la course en mode COMPLET, caméra qui SUIT la
+  // voiture au zoom rue — les noms d'avenues, de rues et de quartiers
+  // défilent, lisibles, pendant tout le trajet.
+  const runDemoAdresses = useCallback(async () => {
+    const runId = ++demoRunRef.current;
+    const alive = () => demoRunRef.current === runId && mapRef.current;
+    const m = mapRef.current!;
+    const PICKUP = { lon: 9.4512, lat: 0.4009 };
+    const DEST = { lon: 9.4665, lat: 0.413 };
+    const dodo = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    try {
+      const r = await fetch(`${VALHALLA}/route`, {
+        method: "POST",
+        body: JSON.stringify({ locations: [{ lat: PICKUP.lat, lon: PICKUP.lon }, { lat: DEST.lat, lon: DEST.lon }], costing: "auto" }),
+      }).then((x) => x.json());
+      const course = decodePolyline6(r.trip.legs[0].shape) as LonLat[];
+      while (alive()) {
+        m.setClientAboard(true);
+        m.setVehicleWaiting(false);
+        m.setEndpoints(PICKUP, DEST);
+        m.setRoute(course);
+        m.setRouteProgress(null);
+        m.setClientPosition(null);
+        m.setSavedPlaces(MOCK_SAVED.slice(0, 2));
+        m.map.jumpTo({ center: [PICKUP.lon, PICKUP.lat], zoom: 16 });
+        await dodo(1800);
+        if (!alive()) return;
+        const a = m.driveVehicleAlong("moi", course, 20000, { consumeRoute: true, follow: { zoom: 16 } });
+        await a.done;
+        if (!alive()) return;
+        m.setClientAboard(false);
+        m.setClientPosition(DEST);
+        await dodo(2200);
+      }
+    } catch { /* Valhalla absent */ }
+  }, []);
+
+  // Démo « POI » : choisir départ et destination PAR points d'intérêt — la
+  // caméra visite les repères candidats, s'arrête sur le choix, puis la
+  // course relie le marché à l'école.
+  const runDemoPoi = useCallback(async () => {
+    const runId = ++demoRunRef.current;
+    const alive = () => demoRunRef.current === runId && mapRef.current;
+    const m = mapRef.current!;
+    const MARCHE = { lon: 9.457, lat: 0.399 };
+    const ECOLE = { lon: 9.4602, lat: 0.4051 };
+    const dodo = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const ease = (c: LonLat, z: number, ms: number) =>
+      new Promise<void>((res) => {
+        m.map.easeTo({ center: [c.lon, c.lat], zoom: z, duration: ms });
+        m.map.once("moveend", () => res());
+      });
+    try {
+      const r = await fetch(`${VALHALLA}/route`, {
+        method: "POST",
+        body: JSON.stringify({ locations: [{ lat: MARCHE.lat, lon: MARCHE.lon }, { lat: ECOLE.lat, lon: ECOLE.lon }], costing: "auto" }),
+      }).then((x) => x.json());
+      const course = decodePolyline6(r.trip.legs[0].shape) as LonLat[];
+      while (alive()) {
+        m.setClientAboard(false);
+        m.setVehicleWaiting(false);
+        m.setVehicles([]);
+        m.setRoute([]);
+        m.setRouteProgress(null);
+        m.setEndpoints(null, null);
+        m.setClientPosition(null);
+        m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS));
+        m.map.jumpTo({ center: [9.457, 0.401], zoom: 13.6 });
+        await dodo(2000);
+        if (!alive()) return;
+        await ease({ lon: 9.454, lat: 0.392 }, 15.5, 1400);
+        await dodo(900);
+        await ease(MARCHE, 15.8, 1200);
+        await dodo(600);
+        m.setEndpoints(MARCHE, null);
+        m.setClientPosition(MARCHE);
+        await dodo(1400);
+        if (!alive()) return;
+        await ease(ECOLE, 15.8, 1400);
+        m.setEndpoints(MARCHE, ECOLE);
+        await dodo(1200);
+        if (!alive()) return;
+        m.setRoute(course);
+        m.map.jumpTo({ center: [(MARCHE.lon + ECOLE.lon) / 2, (MARCHE.lat + ECOLE.lat) / 2], zoom: 15.1 });
+        m.setClientAboard(true);
+        m.setClientPosition(null);
+        const a = m.driveVehicleAlong("moi", course, 9000, { consumeRoute: true });
+        await a.done;
+        if (!alive()) return;
+        m.setClientAboard(false);
+        m.setClientPosition(ECOLE);
+        await dodo(2200);
+      }
+    } catch { /* Valhalla absent */ }
+  }, []);
+
   // Scénarios client/chauffeur : injecte le vocabulaire carte correspondant.
   useEffect(() => {
     const m = mapRef.current;
@@ -322,6 +420,12 @@ export function App() {
         break;
       case "demo-chauffeur":
         void runDemoChauffeur();
+        break;
+      case "demo-adresses":
+        void runDemoAdresses();
+        break;
+      case "demo-poi":
+        void runDemoPoi();
         break;
       case "client-depart":
         // C-08 : choisir le départ — favoris D/T/★, repères par catégorie.
@@ -364,7 +468,7 @@ export function App() {
       default:
         break;
     }
-  }, [scenario, eco, runDemo, runDemoChauffeur]);
+  }, [scenario, eco, runDemo, runDemoChauffeur, runDemoAdresses, runDemoPoi]);
 
   // Départ : point client magenta + repères proches (Supabase RPC).
   useEffect(() => {
@@ -460,6 +564,8 @@ export function App() {
               <option value="libre">Scénario : libre</option>
               <option value="demo-course">Démo animée — la course du client</option>
               <option value="demo-chauffeur">Démo animée — côté chauffeur</option>
+            <option value="demo-adresses">Démo — course guidée par les adresses</option>
+            <option value="demo-poi">Démo — choisir par point d'intérêt</option>
             </select>
           </div>
         )}
@@ -541,6 +647,8 @@ export function App() {
             <option value="chauffeur-navigation">Chauffeur — navigation</option>
             <option value="demo-course">Démo animée — la course du client</option>
             <option value="demo-chauffeur">Démo animée — côté chauffeur</option>
+            <option value="demo-adresses">Démo — course guidée par les adresses</option>
+            <option value="demo-poi">Démo — choisir par point d'intérêt</option>
           </select>
         </div>
         {resume && (
