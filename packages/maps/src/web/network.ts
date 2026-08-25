@@ -2,7 +2,12 @@
 // Écoute navigator.connection quand il existe (Chrome/Android — notre cible),
 // et se dégrade proprement ailleurs (mode complet).
 
-import { type MapModePreference, type NetworkHint, type ResolvedMapMode, resolveMapMode } from "../mode.js";
+import {
+  type MapModePreference,
+  type NetworkHint,
+  type ResolvedMapMode,
+  resolveMapMode,
+} from "../mode.js";
 
 interface NavigatorConnection extends EventTarget {
   effectiveType?: string;

@@ -6,20 +6,20 @@
 // ?tiles= ?valhalla= ?supabase= pour viser d'autres environnements.
 
 import { createClient } from "@supabase/supabase-js";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  decodePolyline6,
   type LandmarkRow,
   type LonLat,
-  type MapModePreference,
-  MAP_COLORS,
-  TekoMapData,
-  decodePolyline6,
   landmarksToGeoJson,
+  MAP_COLORS,
+  type MapModePreference,
   resolveMapMode,
   roundPosition,
+  TekoMapData,
 } from "@teko/maps";
 import { TekoMapController } from "@teko/maps/web";
 import { currentNetworkHint, watchMapMode } from "@teko/maps/web/network";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const params = new URLSearchParams(location.search);
 const TILES = params.get("tiles") ?? "http://127.0.0.1:3333/gabon";
@@ -51,12 +51,66 @@ type Scenario =
 
 const gj = (lon: number, lat: number) => ({ type: "Point" as const, coordinates: [lon, lat] });
 const MOCK_LANDMARKS: LandmarkRow[] = [
-  { id: "m1", name: "Marché de Mont-Bouët", aliases: [], category: "market", geom: gj(9.457, 0.399), salience: 9, usage_count: 214, photo_url: null },
-  { id: "m2", name: "Pharmacie du Gros-Bouquet", aliases: [], category: "pharmacy", geom: gj(9.4536, 0.4032), salience: 7, usage_count: 88, photo_url: null },
-  { id: "m3", name: "Station Total Glass", aliases: [], category: "fuel_station", geom: gj(9.449, 0.408), salience: 6, usage_count: 41, photo_url: null },
-  { id: "m4", name: "École Publique d'Akébé", aliases: [], category: "school", geom: gj(9.4602, 0.4051), salience: 4, usage_count: 12, photo_url: null },
-  { id: "m5", name: "Rond-point de la Démocratie", aliases: [], category: "roundabout", geom: gj(9.454, 0.392), salience: 10, usage_count: 156, photo_url: null },
-  { id: "m6", name: "Église Saint-Michel", aliases: [], category: "church", geom: gj(9.4631, 0.4092), salience: 5, usage_count: 23, photo_url: null },
+  {
+    id: "m1",
+    name: "Marché de Mont-Bouët",
+    aliases: [],
+    category: "market",
+    geom: gj(9.457, 0.399),
+    salience: 9,
+    usage_count: 214,
+    photo_url: null,
+  },
+  {
+    id: "m2",
+    name: "Pharmacie du Gros-Bouquet",
+    aliases: [],
+    category: "pharmacy",
+    geom: gj(9.4536, 0.4032),
+    salience: 7,
+    usage_count: 88,
+    photo_url: null,
+  },
+  {
+    id: "m3",
+    name: "Station Total Glass",
+    aliases: [],
+    category: "fuel_station",
+    geom: gj(9.449, 0.408),
+    salience: 6,
+    usage_count: 41,
+    photo_url: null,
+  },
+  {
+    id: "m4",
+    name: "École Publique d'Akébé",
+    aliases: [],
+    category: "school",
+    geom: gj(9.4602, 0.4051),
+    salience: 4,
+    usage_count: 12,
+    photo_url: null,
+  },
+  {
+    id: "m5",
+    name: "Rond-point de la Démocratie",
+    aliases: [],
+    category: "roundabout",
+    geom: gj(9.454, 0.392),
+    salience: 10,
+    usage_count: 156,
+    photo_url: null,
+  },
+  {
+    id: "m6",
+    name: "Église Saint-Michel",
+    aliases: [],
+    category: "church",
+    geom: gj(9.4631, 0.4092),
+    salience: 5,
+    usage_count: 23,
+    photo_url: null,
+  },
 ];
 const MOCK_SAVED = [
   { id: "s1", kind: "home" as const, label: "Domicile", geom: gj(9.4512, 0.4009) },
@@ -64,8 +118,23 @@ const MOCK_SAVED = [
   { id: "s3", kind: "other" as const, label: "Chez maman", geom: gj(9.4585, 0.3968) },
 ];
 const MOCK_PROPOSED = [
-  { id: "p1", coordinates: [{ lon: 9.455, lat: 0.404 }, { lon: 9.457, lat: 0.4055 }, { lon: 9.4585, lat: 0.407 }], supportCount: 14 },
-  { id: "p2", coordinates: [{ lon: 9.4625, lat: 0.4022 }, { lon: 9.4648, lat: 0.4038 }], supportCount: 6 },
+  {
+    id: "p1",
+    coordinates: [
+      { lon: 9.455, lat: 0.404 },
+      { lon: 9.457, lat: 0.4055 },
+      { lon: 9.4585, lat: 0.407 },
+    ],
+    supportCount: 14,
+  },
+  {
+    id: "p2",
+    coordinates: [
+      { lon: 9.4625, lat: 0.4022 },
+      { lon: 9.4648, lat: 0.4038 },
+    ],
+    supportCount: 6,
+  },
 ];
 const MOCK_HOTSPOTS = [
   { id: "h1", lon: 9.457, lat: 0.399, count: 30 },
@@ -75,22 +144,64 @@ const MOCK_HOTSPOTS = [
 
 // Pictogrammes de phase — compréhensibles sans lire (SVG inline).
 function Picto({ k }: { k: string }) {
-  const c = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  const c = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
   switch (k) {
     case "voiture":
-      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><path d="M4 15l1.5-5.5A2 2 0 0 1 7.4 8h9.2a2 2 0 0 1 1.9 1.5L20 15" /><path d="M3 15h18v3h-2.5M3 18h2.5" /><circle cx="7.5" cy="18" r="1.6" /><circle cx="16.5" cy="18" r="1.6" /></svg>);
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" {...c}>
+          <path d="M4 15l1.5-5.5A2 2 0 0 1 7.4 8h9.2a2 2 0 0 1 1.9 1.5L20 15" />
+          <path d="M3 15h18v3h-2.5M3 18h2.5" />
+          <circle cx="7.5" cy="18" r="1.6" />
+          <circle cx="16.5" cy="18" r="1.6" />
+        </svg>
+      );
     case "attente":
-      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2.2" /></svg>);
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" {...c}>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 7.5V12l3 2.2" />
+        </svg>
+      );
     case "personne":
-      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><circle cx="12" cy="8" r="3.2" /><path d="M5.5 19a6.5 6.5 0 0 1 13 0" /></svg>);
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" {...c}>
+          <circle cx="12" cy="8" r="3.2" />
+          <path d="M5.5 19a6.5 6.5 0 0 1 13 0" />
+        </svg>
+      );
     case "drapeau":
-      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><path d="M6 21V4" /><path d="M6 5h11l-2.5 3.5L17 12H6" /></svg>);
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" {...c}>
+          <path d="M6 21V4" />
+          <path d="M6 5h11l-2.5 3.5L17 12H6" />
+        </svg>
+      );
     case "coche":
-      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><path d="M4.5 12.5l5 5 10-11" /></svg>);
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" {...c}>
+          <path d="M4.5 12.5l5 5 10-11" />
+        </svg>
+      );
     case "onde":
-      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><path d="M7.5 16.5a6.4 6.4 0 0 1 0-9M16.5 7.5a6.4 6.4 0 0 1 0 9" /><path d="M4.8 19.2a10.2 10.2 0 0 1 0-14.4M19.2 4.8a10.2 10.2 0 0 1 0 14.4" /></svg>);
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" {...c}>
+          <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+          <path d="M7.5 16.5a6.4 6.4 0 0 1 0-9M16.5 7.5a6.4 6.4 0 0 1 0 9" />
+          <path d="M4.8 19.2a10.2 10.2 0 0 1 0-14.4M19.2 4.8a10.2 10.2 0 0 1 0 14.4" />
+        </svg>
+      );
     case "route":
-      return (<svg width="18" height="18" viewBox="0 0 24 24" {...c}><path d="M5 21c4-4 4-8 0-12 5-5 9-5 14 0" strokeDasharray="3 3" /></svg>);
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" {...c}>
+          <path d="M5 21c4-4 4-8 0-12 5-5 9-5 14 0" strokeDasharray="3 3" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -120,7 +231,8 @@ export function App() {
   );
   const reseauForce = params.get("reseau"); // test : ?reseau=2g simule un réseau lent
   const resolu = useMemo(
-    () => resolveMapMode(modePref, reseauForce ? { effectiveType: reseauForce } : currentNetworkHint()),
+    () =>
+      resolveMapMode(modePref, reseauForce ? { effectiveType: reseauForce } : currentNetworkHint()),
     [modePref, reseauForce],
   );
   const eco = resolu.mode === "eco";
@@ -135,9 +247,7 @@ export function App() {
   const [prix, setPrix] = useState<number | null>(null);
   const [nbReperes, setNbReperes] = useState<number | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
-  const [scenario, setScenario] = useState<Scenario>(
-    (params.get("sc") as Scenario) ?? "libre",
-  );
+  const [scenario, setScenario] = useState<Scenario>((params.get("sc") as Scenario) ?? "libre");
   // Habillage vidéo : ?rec=1 masque le chrome du labo et affiche la marque
   // + l'indicateur de phase (pictogramme, lisible sans lire).
   const rec = params.get("rec") === "1";
@@ -295,7 +405,13 @@ export function App() {
     const fetchRoute = async (a: LonLat, b: LonLat) => {
       const r = await fetch(`${VALHALLA}/route`, {
         method: "POST",
-        body: JSON.stringify({ locations: [{ lat: a.lat, lon: a.lon }, { lat: b.lat, lon: b.lon }], costing: "auto" }),
+        body: JSON.stringify({
+          locations: [
+            { lat: a.lat, lon: a.lon },
+            { lat: b.lat, lon: b.lon },
+          ],
+          costing: "auto",
+        }),
       }).then((x) => x.json());
       return decodePolyline6(r.trip.legs[0].shape) as LonLat[];
     };
@@ -360,7 +476,7 @@ export function App() {
     } catch {
       /* Valhalla absent : la démo s'arrête silencieusement */
     }
-  }, []);
+  }, [doigt.tapLngLat]);
 
   // Démo animée côté CHAUFFEUR — même grammaire sans texte, point de vue
   // inversé : le client qui attend pulse (quelqu'un vous attend là), le
@@ -377,7 +493,13 @@ export function App() {
     const fetchRoute = async (a: LonLat, b: LonLat) => {
       const r = await fetch(`${VALHALLA}/route`, {
         method: "POST",
-        body: JSON.stringify({ locations: [{ lat: a.lat, lon: a.lon }, { lat: b.lat, lon: b.lon }], costing: "auto" }),
+        body: JSON.stringify({
+          locations: [
+            { lat: a.lat, lon: a.lon },
+            { lat: b.lat, lon: b.lon },
+          ],
+          costing: "auto",
+        }),
       }).then((x) => x.json());
       return decodePolyline6(r.trip.legs[0].shape) as LonLat[];
     };
@@ -447,7 +569,7 @@ export function App() {
     } catch {
       /* Valhalla absent : la démo s'arrête silencieusement */
     }
-  }, []);
+  }, [doigt.swipeVers, doigt.tapLngLat]);
 
   // Démo « adresses » : la course en mode COMPLET, caméra qui SUIT la
   // voiture au zoom rue — les noms d'avenues, de rues et de quartiers
@@ -462,7 +584,13 @@ export function App() {
     try {
       const r = await fetch(`${VALHALLA}/route`, {
         method: "POST",
-        body: JSON.stringify({ locations: [{ lat: PICKUP.lat, lon: PICKUP.lon }, { lat: DEST.lat, lon: DEST.lon }], costing: "auto" }),
+        body: JSON.stringify({
+          locations: [
+            { lat: PICKUP.lat, lon: PICKUP.lon },
+            { lat: DEST.lat, lon: DEST.lon },
+          ],
+          costing: "auto",
+        }),
       }).then((x) => x.json());
       const course = decodePolyline6(r.trip.legs[0].shape) as LonLat[];
       while (alive()) {
@@ -497,7 +625,10 @@ export function App() {
         m.setClientPosition(null);
         m.map.jumpTo({ center: [PICKUP.lon, PICKUP.lat], zoom: 16 });
         await dodo(700);
-        const a = m.driveVehicleAlong("moi", course, 20000, { consumeRoute: true, follow: { zoom: 16 } });
+        const a = m.driveVehicleAlong("moi", course, 20000, {
+          consumeRoute: true,
+          follow: { zoom: 16 },
+        });
         await a.done;
         if (!alive()) return;
         setPhase({ picto: "coche", texte: "Vous êtes arrivé" });
@@ -505,8 +636,10 @@ export function App() {
         m.setClientPosition(DEST);
         await dodo(2200);
       }
-    } catch { /* Valhalla absent */ }
-  }, []);
+    } catch {
+      /* Valhalla absent */
+    }
+  }, [doigt.tapLngLat, doigt.swipeVers]);
 
   // Démo « POI » : choisir départ et destination PAR points d'intérêt — la
   // caméra visite les repères candidats, s'arrête sur le choix, puis la
@@ -526,7 +659,13 @@ export function App() {
     try {
       const r = await fetch(`${VALHALLA}/route`, {
         method: "POST",
-        body: JSON.stringify({ locations: [{ lat: MARCHE.lat, lon: MARCHE.lon }, { lat: ECOLE.lat, lon: ECOLE.lon }], costing: "auto" }),
+        body: JSON.stringify({
+          locations: [
+            { lat: MARCHE.lat, lon: MARCHE.lon },
+            { lat: ECOLE.lat, lon: ECOLE.lon },
+          ],
+          costing: "auto",
+        }),
       }).then((x) => x.json());
       const course = decodePolyline6(r.trip.legs[0].shape) as LonLat[];
       while (alive()) {
@@ -562,7 +701,10 @@ export function App() {
         await dodo(1100);
         if (!alive()) return;
         m.setRoute(course);
-        m.map.jumpTo({ center: [(MARCHE.lon + ECOLE.lon) / 2, (MARCHE.lat + ECOLE.lat) / 2], zoom: 15.1 });
+        m.map.jumpTo({
+          center: [(MARCHE.lon + ECOLE.lon) / 2, (MARCHE.lat + ECOLE.lat) / 2],
+          zoom: 15.1,
+        });
         m.setClientAboard(true);
         m.setClientPosition(null);
         setPhase({ picto: "voiture", texte: "En course" });
@@ -574,8 +716,10 @@ export function App() {
         m.setClientPosition(ECOLE);
         await dodo(2200);
       }
-    } catch { /* Valhalla absent */ }
-  }, []);
+    } catch {
+      /* Valhalla absent */
+    }
+  }, [doigt.swipeVers, doigt.tapLngLat]);
 
   // Démo ADMIN (console carto, A-04) : surveiller la flotte, puis VALIDER
   // au doigt les routes détectées — le pointillé « à confirmer » devient un
@@ -649,8 +793,10 @@ export function App() {
         setPhase({ picto: "onde", texte: "Surveillance de la flotte" });
         await dodo(2200);
       }
-    } catch { /* rien */ }
-  }, []);
+    } catch {
+      /* rien */
+    }
+  }, [doigt.tapLngLat, doigt.swipeVers]);
 
   // Scénarios client/chauffeur : injecte le vocabulaire carte correspondant.
   useEffect(() => {
@@ -688,7 +834,13 @@ export function App() {
         m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS));
         setDepart({ lon: 9.4512, lat: 0.4009 });
         setDepartTxt("9.45120, 0.40090");
-        m.fitTo([{ lon: 9.449, lat: 0.392 }, { lon: 9.467, lat: 0.413 }], 250);
+        m.fitTo(
+          [
+            { lon: 9.449, lat: 0.392 },
+            { lon: 9.467, lat: 0.413 },
+          ],
+          250,
+        );
         break;
       case "client-course":
         // C-13 : en course — itinéraire liseré, véhicule orienté, favoris.
@@ -707,7 +859,13 @@ export function App() {
         m.setLandmarks(landmarksToGeoJson(MOCK_LANDMARKS));
         m.setProposedRoads(MOCK_PROPOSED);
         m.setVehicles([{ id: "moi", lon: 9.4555, lat: 0.4028, bearing: 130 }]);
-        m.fitTo([{ lon: 9.449, lat: 0.394 }, { lon: 9.468, lat: 0.412 }], 220);
+        m.fitTo(
+          [
+            { lon: 9.449, lat: 0.394 },
+            { lon: 9.468, lat: 0.412 },
+          ],
+          220,
+        );
         break;
       case "chauffeur-navigation":
         // D-11 : navigation — itinéraire, cap du véhicule, route à confirmer
@@ -723,7 +881,7 @@ export function App() {
       default:
         break;
     }
-  }, [scenario, eco, runDemo, runDemoChauffeur, runDemoAdresses, runDemoPoi, runDemoAdmin]);
+  }, [scenario, runDemo, runDemoChauffeur, runDemoAdresses, runDemoPoi, runDemoAdmin]);
 
   // Départ : point client magenta + repères proches (Supabase RPC).
   useEffect(() => {
@@ -737,7 +895,7 @@ export function App() {
         setNbReperes(fc.features.length);
       })
       .catch(() => setNbReperes(null)); // Supabase absent : pas bloquant
-  }, [depart, mapData, eco]);
+  }, [depart, mapData, scenario]);
 
   // Arrivée : pastille brand-900.
   useEffect(() => {
@@ -747,10 +905,16 @@ export function App() {
     src?.setData({
       type: "FeatureCollection",
       features: arrivee
-        ? [{ type: "Feature", geometry: { type: "Point", coordinates: [arrivee.lon, arrivee.lat] }, properties: {} }]
+        ? [
+            {
+              type: "Feature",
+              geometry: { type: "Point", coordinates: [arrivee.lon, arrivee.lat] },
+              properties: {},
+            },
+          ]
         : [],
     });
-  }, [arrivee, eco]);
+  }, [arrivee]);
 
   // Itinéraire réel + estimation tarifaire dès que les deux points existent.
   useEffect(() => {
@@ -798,16 +962,17 @@ export function App() {
     return () => {
       annule = true;
     };
-  }, [depart, arrivee, categorie, supabase, eco]);
+  }, [depart, arrivee, categorie, supabase]);
 
   const onChampEnter = (which: "depart" | "arrivee", txt: string) => {
     const p = parsePoint(txt);
     if (p) setPoint(which, p);
   };
 
-  const role = scenario === "demo-chauffeur" ? "chauffeur" : scenario === "demo-admin" ? "admin" : "";
+  const role =
+    scenario === "demo-chauffeur" ? "chauffeur" : scenario === "demo-admin" ? "admin" : "";
   return (
-    <div className={"labo" + (rec ? " rec" : "")}>
+    <div className={`labo${rec ? " rec" : ""}`}>
       <div ref={containerRef} className="carte" />
       <div ref={doigtRef} className="doigt" />
       {rec && (
@@ -820,130 +985,133 @@ export function App() {
       )}
       {rec && phase && (
         <div className={`phase ${role}`} aria-live="polite">
-          <span className="rond"><Picto k={phase.picto} /></span>
+          <span className="rond">
+            <Picto k={phase.picto} />
+          </span>
           {phase.texte}
         </div>
       )}
       <div className={`panneau ${scenario.startsWith("demo-") ? "panneau--mini" : ""}`}>
         <h1>Teko — labo carte</h1>
-        <p className="note">
-          Temporaire · fond Martin + itinéraire Valhalla + tarifs Supabase
-        </p>
+        <p className="note">Temporaire · fond Martin + itinéraire Valhalla + tarifs Supabase</p>
         {scenario.startsWith("demo-") && (
           <div className="rangee">
             <select value={scenario} onChange={(e) => setScenario(e.target.value as Scenario)}>
               <option value="libre">Scénario : libre</option>
               <option value="demo-course">Démo animée — la course du client</option>
               <option value="demo-chauffeur">Démo animée — côté chauffeur</option>
-            <option value="demo-adresses">Démo — course guidée par les adresses</option>
-            <option value="demo-poi">Démo — choisir par point d'intérêt</option>
-            <option value="demo-admin">Démo — console admin (validation carto)</option>
+              <option value="demo-adresses">Démo — course guidée par les adresses</option>
+              <option value="demo-poi">Démo — choisir par point d'intérêt</option>
+              <option value="demo-admin">Démo — console admin (validation carto)</option>
             </select>
           </div>
         )}
-        {!scenario.startsWith("demo-") && (<>
-        <div className={`champ ${mode === "depart" ? "actif" : ""}`}>
-          <span className="pastille" style={{ background: MAP_COLORS.markerClient }} />
-          <input
-            placeholder="Départ — cliquer la carte ou lon, lat"
-            value={departTxt}
-            onChange={(e) => setDepartTxt(e.target.value)}
-            onBlur={(e) => onChampEnter("depart", e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onChampEnter("depart", departTxt)}
-            onFocus={() => setMode("depart")}
-          />
-        </div>
-        <div className={`champ ${mode === "arrivee" ? "actif" : ""}`}>
-          <span className="pastille" style={{ background: "#3D0F5C" }} />
-          <input
-            placeholder="Arrivée — cliquer la carte ou lon, lat"
-            value={arriveeTxt}
-            onChange={(e) => setArriveeTxt(e.target.value)}
-            onBlur={(e) => onChampEnter("arrivee", e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onChampEnter("arrivee", arriveeTxt)}
-            onFocus={() => setMode("arrivee")}
-          />
-        </div>
-        <div className="rangee">
-          <select value={categorie} onChange={(e) => setCategorie(e.target.value as Categorie)}>
-            <option value="eco">Éco</option>
-            <option value="moto">Moto-taxi</option>
-            <option value="confort">Confort</option>
-          </select>
-          <button
-            onClick={() => {
-              const d = depart;
-              setDepart(arrivee);
-              setArrivee(d);
-              setDepartTxt(fmt(arrivee));
-              setArriveeTxt(fmt(d));
-            }}
-          >
-            ⇅ Inverser
-          </button>
-          <button
-            onClick={() => {
-              setDepart(null);
-              setArrivee(null);
-              setDepartTxt("");
-              setArriveeTxt("");
-              setMode("depart");
-              mapRef.current?.setLandmarks({ type: "FeatureCollection", features: [] });
-            }}
-          >
-            Effacer
-          </button>
-        </div>
-        <div className="rangee modes" role="radiogroup" aria-label="Régime de la carte">
-          {(["eco", "auto", "complet"] as const).map((p) => (
-            <button
-              key={p}
-              role="radio"
-              aria-checked={modePref === p}
-              className={modePref === p ? "on" : ""}
-              onClick={() => setModePref(p)}
-            >
-              {p === "eco" ? "Éco" : p === "auto" ? "Auto" : "Complet"}
-            </button>
-          ))}
-        </div>
-        <div className="info modes-etat" aria-live="polite">
-          {resolu.mode === "eco" ? "🍃 " : ""}Carte {resolu.mode} — {resolu.raison}
-        </div>
-        <div className="rangee">
-          <select value={scenario} onChange={(e) => setScenario(e.target.value as Scenario)}>
-            <option value="libre">Scénario : libre</option>
-            <option value="client-depart">Client — choisir le départ</option>
-            <option value="client-course">Client — en course</option>
-            <option value="chauffeur-attente">Chauffeur — en attente</option>
-            <option value="chauffeur-navigation">Chauffeur — navigation</option>
-            <option value="demo-course">Démo animée — la course du client</option>
-            <option value="demo-chauffeur">Démo animée — côté chauffeur</option>
-            <option value="demo-adresses">Démo — course guidée par les adresses</option>
-            <option value="demo-poi">Démo — choisir par point d'intérêt</option>
-            <option value="demo-admin">Démo — console admin (validation carto)</option>
-          </select>
-        </div>
-        {resume && (
-          <div className="resume">
-            <div className="ligne1">
-              {resume.km.toFixed(2).replace(".", ",")} km · {Math.round(resume.min)} min
-              {prix !== null && ` · ≈ ${prix.toLocaleString("fr-FR")} F`}
+        {!scenario.startsWith("demo-") && (
+          <>
+            <div className={`champ ${mode === "depart" ? "actif" : ""}`}>
+              <span className="pastille" style={{ background: MAP_COLORS.markerClient }} />
+              <input
+                placeholder="Départ — cliquer la carte ou lon, lat"
+                value={departTxt}
+                onChange={(e) => setDepartTxt(e.target.value)}
+                onBlur={(e) => onChampEnter("depart", e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && onChampEnter("depart", departTxt)}
+                onFocus={() => setMode("depart")}
+              />
             </div>
-            <div className="ligne2">
-              {prix !== null
-                ? `Estimation ${categorie} (barème Supabase) — itinéraire Valhalla réel`
-                : "Itinéraire Valhalla réel — barème indisponible (Supabase ?)"}
+            <div className={`champ ${mode === "arrivee" ? "actif" : ""}`}>
+              <span className="pastille" style={{ background: "#3D0F5C" }} />
+              <input
+                placeholder="Arrivée — cliquer la carte ou lon, lat"
+                value={arriveeTxt}
+                onChange={(e) => setArriveeTxt(e.target.value)}
+                onBlur={(e) => onChampEnter("arrivee", e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && onChampEnter("arrivee", arriveeTxt)}
+                onFocus={() => setMode("arrivee")}
+              />
             </div>
-          </div>
+            <div className="rangee">
+              <select value={categorie} onChange={(e) => setCategorie(e.target.value as Categorie)}>
+                <option value="eco">Éco</option>
+                <option value="moto">Moto-taxi</option>
+                <option value="confort">Confort</option>
+              </select>
+              <button
+                onClick={() => {
+                  const d = depart;
+                  setDepart(arrivee);
+                  setArrivee(d);
+                  setDepartTxt(fmt(arrivee));
+                  setArriveeTxt(fmt(d));
+                }}
+              >
+                ⇅ Inverser
+              </button>
+              <button
+                onClick={() => {
+                  setDepart(null);
+                  setArrivee(null);
+                  setDepartTxt("");
+                  setArriveeTxt("");
+                  setMode("depart");
+                  mapRef.current?.setLandmarks({ type: "FeatureCollection", features: [] });
+                }}
+              >
+                Effacer
+              </button>
+            </div>
+            <div className="rangee modes" role="radiogroup" aria-label="Régime de la carte">
+              {(["eco", "auto", "complet"] as const).map((p) => (
+                <button
+                  key={p}
+                  role="radio"
+                  aria-checked={modePref === p}
+                  className={modePref === p ? "on" : ""}
+                  onClick={() => setModePref(p)}
+                >
+                  {p === "eco" ? "Éco" : p === "auto" ? "Auto" : "Complet"}
+                </button>
+              ))}
+            </div>
+            <div className="info modes-etat" aria-live="polite">
+              {resolu.mode === "eco" ? "🍃 " : ""}Carte {resolu.mode} — {resolu.raison}
+            </div>
+            <div className="rangee">
+              <select value={scenario} onChange={(e) => setScenario(e.target.value as Scenario)}>
+                <option value="libre">Scénario : libre</option>
+                <option value="client-depart">Client — choisir le départ</option>
+                <option value="client-course">Client — en course</option>
+                <option value="chauffeur-attente">Chauffeur — en attente</option>
+                <option value="chauffeur-navigation">Chauffeur — navigation</option>
+                <option value="demo-course">Démo animée — la course du client</option>
+                <option value="demo-chauffeur">Démo animée — côté chauffeur</option>
+                <option value="demo-adresses">Démo — course guidée par les adresses</option>
+                <option value="demo-poi">Démo — choisir par point d'intérêt</option>
+                <option value="demo-admin">Démo — console admin (validation carto)</option>
+              </select>
+            </div>
+            {resume && (
+              <div className="resume">
+                <div className="ligne1">
+                  {resume.km.toFixed(2).replace(".", ",")} km · {Math.round(resume.min)} min
+                  {prix !== null && ` · ≈ ${prix.toLocaleString("fr-FR")} F`}
+                </div>
+                <div className="ligne2">
+                  {prix !== null
+                    ? `Estimation ${categorie} (barème Supabase) — itinéraire Valhalla réel`
+                    : "Itinéraire Valhalla réel — barème indisponible (Supabase ?)"}
+                </div>
+              </div>
+            )}
+            {nbReperes !== null && depart && (
+              <div className="info">
+                {nbReperes} repère{nbReperes > 1 ? "s" : ""} autour du départ (RPC
+                nearest_landmarks)
+              </div>
+            )}
+            {erreur && <div className="erreur">{erreur}</div>}
+          </>
         )}
-        {nbReperes !== null && depart && (
-          <div className="info">
-            {nbReperes} repère{nbReperes > 1 ? "s" : ""} autour du départ (RPC nearest_landmarks)
-          </div>
-        )}
-        {erreur && <div className="erreur">{erreur}</div>}
-        </>)}
       </div>
       <div className="aide">
         Clic = {mode === "depart" ? "définir le DÉPART" : "définir l'ARRIVÉE"}

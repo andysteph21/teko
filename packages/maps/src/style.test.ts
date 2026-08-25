@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { MAP_COLORS } from "./tokens.js";
-import { TEKO_SOURCES, buildMapStyle } from "./style.js";
 import {
   clientPositionToGeoJson,
   landmarksToGeoJson,
   routeToGeoJson,
   vehiclesToGeoJson,
 } from "./geojson.js";
+import { buildMapStyle, TEKO_SOURCES } from "./style.js";
+import { MAP_COLORS } from "./tokens.js";
 
 type Layer = { id: string; type: string; source?: string; paint?: Record<string, unknown> };
-const layers = (s: Record<string, unknown>) => s["layers"] as Layer[];
+const layers = (s: Record<string, unknown>) => s.layers as Layer[];
 const layer = (s: Record<string, unknown>, id: string) => layers(s).find((l) => l.id === id)!;
 
 describe("buildMapStyle", () => {
   it("contient les 4 sources Teko et le fond du langage carte", () => {
     const s = buildMapStyle({ eco: true });
-    const sources = s["sources"] as Record<string, unknown>;
+    const sources = s.sources as Record<string, unknown>;
     for (const id of Object.values(TEKO_SOURCES)) expect(sources[id]).toBeDefined();
     expect(layer(s, "teko-background").paint?.["background-color"]).toBe(MAP_COLORS.background);
   });
@@ -30,7 +30,7 @@ describe("buildMapStyle", () => {
 
   it("mode éco allégé : tuiles plafonnées à z13 (sur-zoom), couches minimales, muet", () => {
     const s = buildMapStyle({ eco: true, tilesUrl: "https://tiles.example/gabon" });
-    expect((s["sources"] as Record<string, unknown>)["basemap"]).toMatchObject({
+    expect((s.sources as Record<string, unknown>).basemap).toMatchObject({
       type: "vector",
       maxzoom: 13,
       attribution: "© les contributeurs OpenStreetMap",
@@ -41,17 +41,17 @@ describe("buildMapStyle", () => {
     expect(ids).not.toContain("basemap-buildings");
     expect(ids).not.toContain("basemap-landcover");
     expect(layers(s).some((l) => l.type === "symbol")).toBe(false);
-    expect(s["glyphs"]).toBeUndefined();
+    expect(s.glyphs).toBeUndefined();
   });
 
   it("mode éco hors-ligne (sans URL) : fond uni, aucune source de tuiles", () => {
     const s = buildMapStyle({ eco: true });
-    expect((s["sources"] as Record<string, unknown>)["basemap"]).toBeUndefined();
+    expect((s.sources as Record<string, unknown>).basemap).toBeUndefined();
   });
 
   it("mode normal : la source de tuiles Martin est branchée, avec l'attribution OSM (ODbL)", () => {
     const s = buildMapStyle({ tilesUrl: "https://tiles.example/teko.json" });
-    expect((s["sources"] as Record<string, unknown>)["basemap"]).toMatchObject({
+    expect((s.sources as Record<string, unknown>).basemap).toMatchObject({
       type: "vector",
       url: "https://tiles.example/teko.json",
       attribution: "© les contributeurs OpenStreetMap",
@@ -60,13 +60,16 @@ describe("buildMapStyle", () => {
 
   it("pas de couche texte sans glyphes (MapLibre la refuserait) — l'éco reste muet", () => {
     expect(layers(buildMapStyle({ eco: true })).some((l) => l.type === "symbol")).toBe(false);
-    const withGlyphs = buildMapStyle({ eco: true, glyphsUrl: "https://tiles.example/glyphs/{fontstack}/{range}.pbf" });
+    const withGlyphs = buildMapStyle({
+      eco: true,
+      glyphsUrl: "https://tiles.example/glyphs/{fontstack}/{range}.pbf",
+    });
     expect(layers(withGlyphs).some((l) => l.type === "symbol")).toBe(true);
   });
 
   it("mode normal : les glyphes sont dérivés de l'origine du serveur de tuiles", () => {
     const s = buildMapStyle({ tilesUrl: "http://tiles.example:3333/gabon" });
-    expect(s["glyphs"]).toBe("http://tiles.example:3333/font/{fontstack}/{range}");
+    expect(s.glyphs).toBe("http://tiles.example:3333/font/{fontstack}/{range}");
   });
 
   it("étiquettes hiérarchisées par zoom : localités < équipements majeurs < quartier", () => {
@@ -88,7 +91,9 @@ describe("buildMapStyle", () => {
     const min = (s: Record<string, unknown>, id: string) =>
       (layer(s, id) as unknown as { minzoom: number }).minzoom;
     expect(pad(dense, "labels-quartiers")).toBeLessThan(pad(faible, "labels-quartiers")!);
-    expect(min(dense, "labels-equipements-quartier")).toBeLessThan(min(faible, "labels-equipements-quartier"));
+    expect(min(dense, "labels-equipements-quartier")).toBeLessThan(
+      min(faible, "labels-equipements-quartier"),
+    );
   });
 
   it("l'itinéraire est liseré : casing blanc juste sous la ligne violette (token)", () => {
@@ -102,7 +107,7 @@ describe("buildMapStyle", () => {
 
   it("vocabulaire étendu : favoris, routes à confirmer, zones de départ", () => {
     const s = buildMapStyle({ tilesUrl: "https://t.example/gabon" });
-    const srcs = s["sources"] as Record<string, unknown>;
+    const srcs = s.sources as Record<string, unknown>;
     expect(srcs["teko-saved-places"]).toBeDefined();
     expect(srcs["teko-proposed-roads"]).toBeDefined();
     expect(srcs["teko-departure-hotspots"]).toBeDefined();
@@ -114,7 +119,9 @@ describe("buildMapStyle", () => {
 
   it("repères : taille selon la saillance + initiale de catégorie", () => {
     const s = buildMapStyle({ tilesUrl: "https://t.example/gabon" });
-    expect(JSON.stringify(layer(s, "teko-landmarks-dot").paint?.["circle-radius"])).toContain("salience");
+    expect(JSON.stringify(layer(s, "teko-landmarks-dot").paint?.["circle-radius"])).toContain(
+      "salience",
+    );
     expect(JSON.stringify(layer(s, "teko-landmarks-letter"))).toContain("lettre");
     expect(JSON.stringify(layer(s, "teko-vehicles-bearing"))).toContain("bearing");
   });
@@ -144,12 +151,25 @@ describe("convertisseurs GeoJSON", () => {
         })
         .join("");
     const fc = landmarksToGeoJson([
-      { id: "l1", name: "Marché de Mont-Bouët", aliases: [], category: "market", geom: hex.toUpperCase(), salience: "9", usage_count: 3, photo_url: null },
+      {
+        id: "l1",
+        name: "Marché de Mont-Bouët",
+        aliases: [],
+        category: "market",
+        geom: hex.toUpperCase(),
+        salience: "9",
+        usage_count: 3,
+        photo_url: null,
+      },
     ]);
     expect(fc.features).toHaveLength(1);
     const f = fc.features[0]!;
     expect(f.geometry).toEqual({ type: "Point", coordinates: [9.457, 0.399] });
-    expect(f.properties).toMatchObject({ kind: "landmark", name: "Marché de Mont-Bouët", salience: 9 });
+    expect(f.properties).toMatchObject({
+      kind: "landmark",
+      name: "Marché de Mont-Bouët",
+      salience: 9,
+    });
   });
 
   it("routeToGeoJson : LineString, vide si moins de 2 points", () => {
@@ -168,7 +188,9 @@ describe("convertisseurs GeoJSON", () => {
   });
 
   it("client et véhicules portent leur kind (pour le débogage/QA)", () => {
-    expect(clientPositionToGeoJson({ lon: 9.45, lat: 0.4 }).features[0]!.properties["kind"]).toBe("client");
+    expect(clientPositionToGeoJson({ lon: 9.45, lat: 0.4 }).features[0]!.properties.kind).toBe(
+      "client",
+    );
     const v = vehiclesToGeoJson([{ id: "d1", lon: 9.46, lat: 0.41, bearing: 90 }]);
     expect(v.features[0]!.properties).toMatchObject({ kind: "vehicle", bearing: 90 });
   });
@@ -179,16 +201,33 @@ describe("convertisseurs — vocabulaire étendu", () => {
     const { savedPlacesToGeoJson } = await import("./geojson.js");
     const fc = savedPlacesToGeoJson([
       { id: "1", kind: "home", label: "Maison", geom: { type: "Point", coordinates: [9.45, 0.4] } },
-      { id: "2", kind: "work", label: "Bureau", geom: { type: "Point", coordinates: [9.46, 0.41] } },
-      { id: "3", kind: "other", label: "Chez maman", geom: { type: "Point", coordinates: [9.47, 0.42] } },
+      {
+        id: "2",
+        kind: "work",
+        label: "Bureau",
+        geom: { type: "Point", coordinates: [9.46, 0.41] },
+      },
+      {
+        id: "3",
+        kind: "other",
+        label: "Chez maman",
+        geom: { type: "Point", coordinates: [9.47, 0.42] },
+      },
     ]);
-    expect(fc.features.map((f) => f.properties["lettre"])).toEqual(["D", "T", "★"]);
+    expect(fc.features.map((f) => f.properties.lettre)).toEqual(["D", "T", "★"]);
   });
 
   it("proposedRoadsToGeoJson : LineString + support, lignes trop courtes ignorées", async () => {
     const { proposedRoadsToGeoJson } = await import("./geojson.js");
     const fc = proposedRoadsToGeoJson([
-      { id: "a", coordinates: [{ lon: 9.45, lat: 0.4 }, { lon: 9.46, lat: 0.41 }], supportCount: 14 },
+      {
+        id: "a",
+        coordinates: [
+          { lon: 9.45, lat: 0.4 },
+          { lon: 9.46, lat: 0.41 },
+        ],
+        supportCount: 14,
+      },
       { id: "b", coordinates: [{ lon: 9.45, lat: 0.4 }] },
     ]);
     expect(fc.features).toHaveLength(1);

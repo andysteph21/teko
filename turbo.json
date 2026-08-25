@@ -2,20 +2,39 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "globalDependencies": ["tsconfig.json", ".npmrc"],
+  "globalEnv": [
+    "SUPABASE_URL",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_DB_URL",
+    "API_URL",
+    "ANON_KEY",
+    "SERVICE_ROLE_KEY",
+    "DB_URL",
+    "DATABASE_URL",
+    "CI"
+  ],
   "tasks": {
+    "//#lint": {
+      "inputs": ["**/*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css}", "biome.json", "**/biome.json"]
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
-    },
-    "lint": {
-      "dependsOn": ["^build"]
     },
     "typecheck": {
       "dependsOn": ["^build"]
     },
     "test": {
       "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**"],
+      "env": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "DATABASE_URL",
+        "CI"
+      ]
     },
     "dev": {
       "cache": false,

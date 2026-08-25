@@ -1,0 +1,199 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.10/schema.json",
+  "root": true,
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/docs",
+      "!**/supabase/tests/e2e",
+      "!**/supabase/functions",
+      "!**/infra",
+      "!**/envoi-client",
+      "!**/indication client",
+      "!logos",
+      "!assets",
+      "!**/packages/types/src/database.ts"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "arrowParentheses": "always"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "domains": {
+      "react": "recommended",
+      "test": "recommended",
+      "project": "recommended",
+      "turborepo": "recommended"
+    },
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        "noExcessiveLinesPerFile": {
+          "level": "error",
+          "options": {
+            "maxLines": 300,
+            "skipBlankLines": true
+          }
+        },
+        "useImportType": {
+          "level": "error",
+          "fix": "safe"
+        },
+        "useExportType": {
+          "level": "error",
+          "fix": "safe"
+        },
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "@supabase/supabase-js": "Confiné à packages/api-client (et à l'adaptateur de packages/maps) — doc 10 §3. Passer par @teko/api-client."
+            }
+          }
+        }
+      },
+      "complexity": {
+        "noExcessiveLinesPerFunction": {
+          "level": "error",
+          "options": {
+            "maxLines": 60,
+            "skipBlankLines": true,
+            "skipIifes": true
+          }
+        },
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 15
+          }
+        },
+        "useMaxParams": {
+          "level": "error",
+          "options": {
+            "max": 4
+          }
+        }
+      },
+      "correctness": {
+        "noUnusedVariables": "error",
+        "noUnusedImports": {
+          "level": "error",
+          "fix": "safe"
+        },
+        "noUndeclaredDependencies": "warn"
+      },
+      "suspicious": {
+        "noImportCycles": "error"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/vitest.config.ts",
+        "**/jest.setup.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": "off",
+            "noNonNullAssertion": "off"
+          },
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off",
+            "noExcessiveCognitiveComplexity": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/labo-carte/**", "packages/maps/demo/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": "off",
+            "noNonNullAssertion": "off",
+            "noRestrictedImports": "off"
+          },
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off",
+            "noExcessiveCognitiveComplexity": "off",
+            "useMaxParams": "off"
+          },
+          "a11y": {
+            "noSvgWithoutTitle": "off",
+            "useButtonType": "off",
+            "useSemanticElements": "off"
+          },
+          "suspicious": {
+            "noUndeclaredEnvVars": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/maps/src/style/*.ts"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/maps/**", "packages/api-client/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "packages/maps/src/geo.ts",
+        "packages/maps/src/geojson.ts",
+        "packages/maps/src/web/animations.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    }
+  ]
+}

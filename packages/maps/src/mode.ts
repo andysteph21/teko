@@ -21,10 +21,7 @@ export interface ResolvedMapMode {
 
 const RESEAUX_LENTS = new Set(["slow-2g", "2g"]);
 
-export function resolveMapMode(
-  pref: MapModePreference,
-  reseau: NetworkHint = {},
-): ResolvedMapMode {
+export function resolveMapMode(pref: MapModePreference, reseau: NetworkHint = {}): ResolvedMapMode {
   if (pref === "eco") return { mode: "eco", raison: "choix : éco" };
   if (pref === "complet") return { mode: "complet", raison: "choix : complet" };
   if (reseau.saveData) {

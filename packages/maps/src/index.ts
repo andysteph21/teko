@@ -1,39 +1,43 @@
 // @teko/maps — cœur sans dépendance de rendu.
 // Le contrôleur web (MapLibre GL JS) s'importe via `@teko/maps/web`.
 
-export { MAP_COLORS, type MapColorToken } from "./tokens.js";
 export {
-  type LonLat,
-  ewktPoint,
-  roundPosition,
-  distanceM,
+  type NearestLandmarksOptions,
+  type ProposeLandmarkInput,
+  type RidePositionEvent,
+  TekoMapData,
+} from "./adapter.js";
+export {
   bboxAround,
-  parseEwkbPoint,
-  toLonLat,
   decodePolyline6,
-  type GeomInput,
+  distanceM,
+  ewktPoint,
   type GeoJsonPointLike,
+  type GeomInput,
+  type LonLat,
+  parseEwkbPoint,
+  roundPosition,
+  toLonLat,
 } from "./geo.js";
 export {
+  clientPositionToGeoJson,
+  type DepartureHotspot,
+  departureHotspotsToGeoJson,
+  emptyFeatureCollection,
   type Feature,
   type FeatureCollection,
-  type LandmarkRow,
-  type VehiclePosition,
-  type SavedPlaceRow,
-  type ProposedRoadRow,
-  type DepartureHotspot,
   LANDMARK_LETTERS,
+  type LandmarkRow,
   landmarkLetter,
-  savedPlacesToGeoJson,
-  proposedRoadsToGeoJson,
-  departureHotspotsToGeoJson,
   landmarksToGeoJson,
-  clientPositionToGeoJson,
-  vehiclesToGeoJson,
+  type ProposedRoadRow,
+  proposedRoadsToGeoJson,
   routeToGeoJson,
-  emptyFeatureCollection,
+  type SavedPlaceRow,
+  savedPlacesToGeoJson,
+  type VehiclePosition,
+  vehiclesToGeoJson,
 } from "./geojson.js";
-export { TEKO_SOURCES, type MapStyleOptions, buildMapStyle } from "./style.js";
 export {
   type MapMode,
   type MapModePreference,
@@ -41,9 +45,5 @@ export {
   type ResolvedMapMode,
   resolveMapMode,
 } from "./mode.js";
-export {
-  TekoMapData,
-  type NearestLandmarksOptions,
-  type ProposeLandmarkInput,
-  type RidePositionEvent,
-} from "./adapter.js";
+export { buildMapStyle, type MapStyleOptions, TEKO_SOURCES } from "./style.js";
+export { MAP_COLORS, type MapColorToken } from "./tokens.js";

@@ -1,29 +1,36 @@
 # Espaces de travail du monorepo Teko.
-# Les apps (Expo client/chauffeur, admin Next.js) et les packages partagés.
+# Les apps (Expo client/driver, admin Next.js) et les packages partagés.
 packages:
   - "apps/*"
   - "packages/*"
 
 # Catalogs : versions partagées et figées, référencées via "catalog:" dans les
 # package.json. Source unique de vérité pour les dépendances transverses.
+# Versions vérifiées le 25 août 2026 (docs/architecture/10-regles-ingenierie.md).
 catalog:
   # Langage & types
-  typescript: ^5.6.0
+  typescript: ^5.9.0
   "@types/node": ^22.0.0
 
-  # Lint & format
-  eslint: ^9.9.0
-  "@eslint/js": ^9.9.0
-  typescript-eslint: ^8.8.0
-  eslint-config-prettier: ^9.1.0
-  prettier: ^3.3.0
+  # Lint & format (Biome remplace ESLint/Prettier — doc 10 §2)
+  "@biomejs/biome": ^2.5.10
 
   # Données & carte
   "@supabase/supabase-js": ^2.45.0
   maplibre-gl: ^4.7.0
 
+  # État client & serveur (doc 10 §4)
+  zustand: ^5.0.15
+  "@tanstack/react-query": ^5.102.3
+  "@tanstack/react-query-persist-client": ^5.102.3
+
+  # i18n (ADR-08)
+  i18next: ^26.4.0
+  react-i18next: ^17.0.12
+
   # Tests & outillage
   vitest: ^2.1.0
+  "@vitest/coverage-v8": ^2.1.0
   esbuild: ^0.24.0
   pg: ^8.12.0
   "@types/pg": ^8.11.0

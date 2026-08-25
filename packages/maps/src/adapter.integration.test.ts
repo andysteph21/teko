@@ -7,6 +7,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 // Client non typé par un schéma généré (les types Supabase seront générés
 // dans packages/types) — on neutralise les génériques pour ce test.
 type AnyClient = SupabaseClient<any, any, any>;
+
 import { randomUUID } from "node:crypto";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -16,7 +17,10 @@ import { distanceM } from "./geo.js";
 const API_URL = process.env.SUPABASE_URL ?? process.env.API_URL ?? "http://127.0.0.1:54321";
 const ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.ANON_KEY;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SERVICE_ROLE_KEY;
-const DB_URL = process.env.SUPABASE_DB_URL ?? process.env.DB_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+const DB_URL =
+  process.env.SUPABASE_DB_URL ??
+  process.env.DB_URL ??
+  "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 const hasStack = Boolean(ANON_KEY && SERVICE_KEY);
 
 const d = describe.skipIf(!hasStack);
@@ -29,7 +33,7 @@ let client: AnyClient;
 let driver: AnyClient;
 let clientData: TekoMapData;
 let driverData: TekoMapData;
-let clientId: string;
+let _clientId: string;
 let driverId: string;
 
 async function serviceSql(text: string, params: unknown[] = []) {
@@ -51,14 +55,15 @@ async function serviceSql(text: string, params: unknown[] = []) {
 async function makeUser(role?: "driver") {
   const email = `maps-${randomUUID()}@test.teko.ga`;
   const password = "e2e-Passw0rd!";
-  const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
   if (error) throw error;
   const id = data.user!.id;
   if (role === "driver") {
-    await serviceSql(
-      `update public.profiles set role = 'driver' where id = $1`,
-      [id],
-    );
+    await serviceSql(`update public.profiles set role = 'driver' where id = $1`, [id]);
     await serviceSql(
       `insert into public.drivers (id, kyc_status, is_active, categories, gps_consent)
        values ($1, 'validated', true, '{eco}'::public.vehicle_category[], true)`,
@@ -77,7 +82,7 @@ beforeAll(async () => {
   admin = createClient(API_URL, SERVICE_KEY!, { auth: { persistSession: false } }) as AnyClient;
   const u1 = await makeUser();
   const u2 = await makeUser("driver");
-  clientId = u1.id;
+  _clientId = u1.id;
   driverId = u2.id;
   client = u1.client;
   driver = u2.client;
@@ -95,9 +100,9 @@ d("repères (nearest_landmarks → GeoJSON)", () => {
   it("retourne les repères seed autour de Mont-Bouët en FeatureCollection", async () => {
     const fc = await clientData.nearestLandmarks(MONT_BOUET, { maxM: 800, limit: 5 });
     expect(fc.type).toBe("FeatureCollection");
-    const names = fc.features.map((f) => f.properties["name"]);
+    const names = fc.features.map((f) => f.properties.name);
     expect(names).toContain("Marché de Mont-Bouët");
-    const mb = fc.features.find((f) => f.properties["name"] === "Marché de Mont-Bouët")!;
+    const mb = fc.features.find((f) => f.properties.name === "Marché de Mont-Bouët")!;
     const [lon, lat] = mb.geometry.coordinates as [number, number];
     expect(distanceM({ lon, lat }, MONT_BOUET)).toBeLessThan(150);
   });

@@ -6,12 +6,8 @@
 // Les composants carte (web/RN) ne voient que du GeoJSON et des callbacks.
 
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
-import { type GeomInput, type LonLat, ewktPoint, roundPosition, toLonLat } from "./geo.js";
-import {
-  type FeatureCollection,
-  type LandmarkRow,
-  landmarksToGeoJson,
-} from "./geojson.js";
+import { ewktPoint, type GeomInput, type LonLat, roundPosition, toLonLat } from "./geo.js";
+import { type FeatureCollection, type LandmarkRow, landmarksToGeoJson } from "./geojson.js";
 
 export interface NearestLandmarksOptions {
   maxM?: number;
@@ -64,7 +60,9 @@ export class TekoMapData {
 
   /** Point de rendez-vous suggéré (C-09) — null si aucun repère proche.
    *  La RPC renvoie l'uuid du repère ; on complète avec sa fiche. */
-  async suggestMeetingLandmark(center: LonLat): Promise<{ id: string; name: string; position: LonLat } | null> {
+  async suggestMeetingLandmark(
+    center: LonLat,
+  ): Promise<{ id: string; name: string; position: LonLat } | null> {
     const { data: id, error } = await this.supabase.rpc("suggest_meeting_landmark", {
       p_point: ewktPoint(center),
     });
@@ -141,10 +139,7 @@ export class TekoMapData {
   }
 
   /** Suivi temps réel du statut de la course (accepted → … → completed). */
-  subscribeRideStatus(
-    rideId: string,
-    onStatus: (status: string) => void,
-  ): RealtimeChannel {
+  subscribeRideStatus(rideId: string, onStatus: (status: string) => void): RealtimeChannel {
     return this.supabase
       .channel(`ride-status-${rideId}`)
       .on(

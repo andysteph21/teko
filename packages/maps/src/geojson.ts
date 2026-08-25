@@ -17,7 +17,9 @@ export interface LandmarkRow {
 export interface Feature {
   type: "Feature";
   id?: string | number;
-  geometry: { type: "Point"; coordinates: [number, number] } | { type: "LineString"; coordinates: [number, number][] };
+  geometry:
+    | { type: "Point"; coordinates: [number, number] }
+    | { type: "LineString"; coordinates: [number, number][] };
   properties: Record<string, unknown>;
 }
 
@@ -31,11 +33,7 @@ const fc = (features: Feature[]): FeatureCollection => ({
   features,
 });
 
-const pointFeature = (
-  p: LonLat,
-  properties: Record<string, unknown>,
-  id?: string,
-): Feature => ({
+const pointFeature = (p: LonLat, properties: Record<string, unknown>, id?: string): Feature => ({
   type: "Feature",
   ...(id ? { id } : {}),
   geometry: { type: "Point", coordinates: [p.lon, p.lat] },
@@ -76,9 +74,7 @@ export interface VehiclePosition extends LonLat {
 /** Véhicules (teal) — présence chauffeurs ou véhicule de la course. */
 export function vehiclesToGeoJson(vehicles: VehiclePosition[]): FeatureCollection {
   return fc(
-    vehicles.map((v) =>
-      pointFeature(v, { kind: "vehicle", bearing: v.bearing ?? 0 }, v.id),
-    ),
+    vehicles.map((v) => pointFeature(v, { kind: "vehicle", bearing: v.bearing ?? 0 }, v.id)),
   );
 }
 
@@ -123,7 +119,7 @@ export const LANDMARK_LETTERS: Record<string, string> = {
 };
 
 export function landmarkLetter(category: string): string {
-  return LANDMARK_LETTERS[category] ?? LANDMARK_LETTERS["other"]!;
+  return LANDMARK_LETTERS[category] ?? LANDMARK_LETTERS.other!;
 }
 
 export interface SavedPlaceRow {
@@ -181,9 +177,5 @@ export interface DepartureHotspot extends LonLat {
 
 /** Zones de départ fréquentes (aide au positionnement chauffeur, D-09). */
 export function departureHotspotsToGeoJson(spots: DepartureHotspot[]): FeatureCollection {
-  return fc(
-    spots.map((s) =>
-      pointFeature(s, { kind: "departure_hotspot", count: s.count }, s.id),
-    ),
-  );
+  return fc(spots.map((s) => pointFeature(s, { kind: "departure_hotspot", count: s.count }, s.id)));
 }

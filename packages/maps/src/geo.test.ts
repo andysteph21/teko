@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { bboxAround, bearingBetween, decodePolyline6, distanceM, ewktPoint, parseEwkbPoint, pointAlong, roundPosition, toLonLat } from "./geo.js";
+import {
+  bboxAround,
+  decodePolyline6,
+  distanceM,
+  ewktPoint,
+  parseEwkbPoint,
+  pointAlong,
+  roundPosition,
+  toLonLat,
+} from "./geo.js";
 
 // Encodeur polyline6 de référence (test uniquement) — pour l'aller-retour.
 function encodePolyline6(points: Array<{ lon: number; lat: number }>): string {
@@ -27,7 +36,11 @@ function encodePolyline6(points: Array<{ lon: number; lat: number }>): string {
 
 // Encodeur EWKB de référence (test uniquement) — construit ce que PostGIS/
 // PostgREST renvoie, pour vérifier le décodeur par aller-retour.
-function encodeEwkbPoint(lon: number, lat: number, opts: { srid?: boolean; littleEndian?: boolean } = {}): string {
+function encodeEwkbPoint(
+  lon: number,
+  lat: number,
+  opts: { srid?: boolean; littleEndian?: boolean } = {},
+): string {
   const { srid = true, littleEndian = true } = opts;
   const buf = new ArrayBuffer(srid ? 25 : 21);
   const view = new DataView(buf);
@@ -40,7 +53,10 @@ function encodeEwkbPoint(lon: number, lat: number, opts: { srid?: boolean; littl
   }
   view.setFloat64(off, lon, littleEndian);
   view.setFloat64(off + 8, lat, littleEndian);
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+  return [...new Uint8Array(buf)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .toUpperCase();
 }
 
 describe("ewktPoint", () => {
@@ -56,13 +72,19 @@ describe("parseEwkbPoint", () => {
   });
 
   it("décode aussi sans SRID et en big-endian", () => {
-    expect(parseEwkbPoint(encodeEwkbPoint(-0.5, 12.25, { srid: false }))).toEqual({ lon: -0.5, lat: 12.25 });
-    expect(parseEwkbPoint(encodeEwkbPoint(9.1, 0.2, { littleEndian: false }))).toEqual({ lon: 9.1, lat: 0.2 });
+    expect(parseEwkbPoint(encodeEwkbPoint(-0.5, 12.25, { srid: false }))).toEqual({
+      lon: -0.5,
+      lat: 12.25,
+    });
+    expect(parseEwkbPoint(encodeEwkbPoint(9.1, 0.2, { littleEndian: false }))).toEqual({
+      lon: 9.1,
+      lat: 0.2,
+    });
   });
 
   it("rejette autre chose qu'un Point", () => {
     // type 2 = LineString
-    const hex = "0102000000" + "00".repeat(16);
+    const hex = `0102000000${"00".repeat(16)}`;
     expect(() => parseEwkbPoint(hex)).toThrow(/pas un Point/);
   });
 });
@@ -89,9 +111,10 @@ describe("decodePolyline6 (shape Valhalla)", () => {
 
 describe("toLonLat (formats Supabase)", () => {
   it("accepte l'objet GeoJSON de PostgREST/Realtime (format vérifié sur la stack locale)", () => {
-    expect(
-      toLonLat({ type: "Point", coordinates: [9.457, 0.399] }),
-    ).toEqual({ lon: 9.457, lat: 0.399 });
+    expect(toLonLat({ type: "Point", coordinates: [9.457, 0.399] })).toEqual({
+      lon: 9.457,
+      lat: 0.399,
+    });
   });
   it("accepte l'EWKB hexadécimal", () => {
     expect(toLonLat(encodeEwkbPoint(9.457, 0.399))).toEqual({ lon: 9.457, lat: 0.399 });
@@ -103,10 +126,16 @@ describe("toLonLat (formats Supabase)", () => {
 
 describe("roundPosition (sobriété)", () => {
   it("5 décimales en mode normal (~1 m)", () => {
-    expect(roundPosition({ lon: 9.4536789, lat: 0.4032111 })).toEqual({ lon: 9.45368, lat: 0.40321 });
+    expect(roundPosition({ lon: 9.4536789, lat: 0.4032111 })).toEqual({
+      lon: 9.45368,
+      lat: 0.40321,
+    });
   });
   it("4 décimales en mode éco (~11 m)", () => {
-    expect(roundPosition({ lon: 9.4536789, lat: 0.4032111 }, true)).toEqual({ lon: 9.4537, lat: 0.4032 });
+    expect(roundPosition({ lon: 9.4536789, lat: 0.4032111 }, true)).toEqual({
+      lon: 9.4537,
+      lat: 0.4032,
+    });
   });
 });
 
@@ -150,9 +179,10 @@ describe("pointAlong / bearingBetween (animations)", () => {
   it("paramétré par la distance : t=0.5 est à mi-chemin réel", () => {
     const { position } = pointAlong(route, 0.5);
     const total = distanceM(route[0]!, route[1]!) + distanceM(route[1]!, route[2]!);
-    const parcouru = distanceM(route[0]!, route[1]!) >= total / 2
-      ? distanceM(route[0]!, position)
-      : distanceM(route[0]!, route[1]!) + distanceM(route[1]!, position);
+    const parcouru =
+      distanceM(route[0]!, route[1]!) >= total / 2
+        ? distanceM(route[0]!, position)
+        : distanceM(route[0]!, route[1]!) + distanceM(route[1]!, position);
     expect(parcouru).toBeCloseTo(total / 2, 0);
   });
   it("le cap suit le segment courant (est ≈ 90°, nord ≈ 0°)", () => {

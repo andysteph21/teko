@@ -10,16 +10,16 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "lint": "turbo run lint",
+    "lint": "biome check .",
+    "format": "biome check --write .",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "dev": "turbo run dev",
     "clean": "turbo run clean && rm -rf node_modules",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml}\""
+    "gen:types": "supabase gen types typescript --local > packages/types/src/database.ts && biome check --write packages/types/src/database.ts"
   },
   "devDependencies": {
-    "prettier": "catalog:",
+    "@biomejs/biome": "catalog:",
     "turbo": "^2.7.0",
     "typescript": "catalog:"
   }

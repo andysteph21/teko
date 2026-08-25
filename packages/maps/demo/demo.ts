@@ -12,10 +12,10 @@
 //                      + couche teko_roads en direct (avant/après rebuild)
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import { TekoMapController } from "../src/web/controller.js";
 import { decodePolyline6 } from "../src/geo.js";
-import { landmarksToGeoJson, type LandmarkRow } from "../src/geojson.js";
+import { type LandmarkRow, landmarksToGeoJson } from "../src/geojson.js";
 import { MAP_COLORS } from "../src/tokens.js";
+import { TekoMapController } from "../src/web/controller.js";
 
 function ewkbHex(lon: number, lat: number): string {
   const buf = new ArrayBuffer(25);
@@ -29,7 +29,14 @@ function ewkbHex(lon: number, lat: number): string {
 }
 
 const lm = (id: string, name: string, category: string, lon: number, lat: number): LandmarkRow => ({
-  id, name, category, geom: ewkbHex(lon, lat), aliases: [], salience: 5, usage_count: 0, photo_url: null,
+  id,
+  name,
+  category,
+  geom: ewkbHex(lon, lat),
+  aliases: [],
+  salience: 5,
+  usage_count: 0,
+  photo_url: null,
 });
 
 const landmarks: LandmarkRow[] = [
@@ -55,7 +62,9 @@ function addLiveTekoRoads(): void {
   map.map.on("load", () => {
     map.map.addSource("teko-live-roads", {
       type: "vector",
-      url: tilesUrl ? tilesUrl.replace(/\/gabon$/, "/teko_roads") : "http://127.0.0.1:3333/teko_roads",
+      url: tilesUrl
+        ? tilesUrl.replace(/\/gabon$/, "/teko_roads")
+        : "http://127.0.0.1:3333/teko_roads",
     });
     map.map.addLayer({
       id: "teko-live-roads-line",
@@ -88,13 +97,19 @@ switch (scene) {
     map.fitTo([o, d], 350);
     void fetch(`${valhalla}/route`, {
       method: "POST",
-      body: JSON.stringify({ locations: [{ lat: o.lat, lon: o.lon }, { lat: d.lat, lon: d.lon }], costing: "auto" }),
+      body: JSON.stringify({
+        locations: [
+          { lat: o.lat, lon: o.lon },
+          { lat: d.lat, lon: d.lon },
+        ],
+        costing: "auto",
+      }),
     })
       .then((r) => r.json())
       .then((r) => {
         const leg = r.trip.legs[0];
         map.setRoute(decodePolyline6(leg.shape));
-        (document.getElementById("status") as HTMLElement).dataset["route"] =
+        (document.getElementById("status") as HTMLElement).dataset.route =
           `${r.trip.summary.length.toFixed(2)} km`;
       });
     break;
@@ -114,18 +129,32 @@ switch (scene) {
       { id: "d3", lon: 9.4472, lat: 0.3951, bearing: 200 },
       { id: "d4", lon: 9.4643, lat: 0.4033, bearing: 80 },
       { id: "d5", lon: 9.4551, lat: 0.4168, bearing: 300 },
-      { id: "d6", lon: 9.4703, lat: 0.4090, bearing: 10 },
+      { id: "d6", lon: 9.4703, lat: 0.409, bearing: 10 },
     ]);
     map.setLandmarks(landmarksToGeoJson(landmarks.slice(0, 3)));
-    map.fitTo([{ lon: 9.4472, lat: 0.3951 }, { lon: 9.4703, lat: 0.4168 }], 300);
+    map.fitTo(
+      [
+        { lon: 9.4472, lat: 0.3951 },
+        { lon: 9.4703, lat: 0.4168 },
+      ],
+      300,
+    );
     break;
   }
   case "route-teko": {
     // A-04 : la couche teko_roads servie EN DIRECT par Martin (PostGIS) —
     // le « Passage Akébé » validé apparaît sans aucun rebuild de tuiles.
     addLiveTekoRoads();
-    map.setLandmarks(landmarksToGeoJson([lm("l5", "Passage Akébé (Teko)", "junction", 9.4568, 0.4055)]));
-    map.fitTo([{ lon: 9.4535, lat: 0.4028 }, { lon: 9.4600, lat: 0.4082 }], 120);
+    map.setLandmarks(
+      landmarksToGeoJson([lm("l5", "Passage Akébé (Teko)", "junction", 9.4568, 0.4055)]),
+    );
+    map.fitTo(
+      [
+        { lon: 9.4535, lat: 0.4028 },
+        { lon: 9.46, lat: 0.4082 },
+      ],
+      120,
+    );
     break;
   }
   default: {
@@ -140,5 +169,6 @@ switch (scene) {
 
 map.onIdle(() => {
   document.title = "Teko carte — rendu terminé";
-  (document.getElementById("status") as HTMLElement).textContent = `scène : ${scene} — rendu terminé`;
+  (document.getElementById("status") as HTMLElement).textContent =
+    `scène : ${scene} — rendu terminé`;
 });

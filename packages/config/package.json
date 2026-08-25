@@ -2,33 +2,19 @@
   "name": "@teko/config",
   "version": "0.0.0",
   "private": true,
-  "description": "Configurations partagées (TypeScript, ESLint, Prettier) du monorepo Teko.",
+  "description": "Configurations TypeScript partagées du monorepo Teko. Lint & format : Biome, configuré à la racine du dépôt (biome.json).",
   "type": "module",
   "exports": {
     "./tsconfig/base.json": "./tsconfig/base.json",
     "./tsconfig/nextjs.json": "./tsconfig/nextjs.json",
     "./tsconfig/react-native.json": "./tsconfig/react-native.json",
-    "./tsconfig/react-library.json": "./tsconfig/react-library.json",
-    "./eslint": "./eslint/base.js",
-    "./eslint/next": "./eslint/next.js",
-    "./eslint/react-native": "./eslint/react-native.js",
-    "./prettier": "./prettier/index.js"
+    "./tsconfig/react-library.json": "./tsconfig/react-library.json"
   },
   "files": [
-    "tsconfig",
-    "eslint",
-    "prettier"
+    "tsconfig"
   ],
   "scripts": {
-    "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.json"
-  },
-  "dependencies": {
-    "@eslint/js": "catalog:",
-    "eslint": "catalog:",
-    "eslint-config-prettier": "catalog:",
-    "prettier": "catalog:",
-    "typescript-eslint": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:"

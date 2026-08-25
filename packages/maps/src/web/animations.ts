@@ -33,7 +33,8 @@ export function makePulse(map: maplibregl.Map, color: string, size = 120) {
       ctx.lineWidth = 4 + 4 * (1 - t);
       ctx.stroke();
       ctx.globalAlpha = 1;
-      this.data = ctx.getImageData(0, 0, size, size).data as unknown as Uint8ClampedArray<ArrayBuffer>;
+      this.data = ctx.getImageData(0, 0, size, size)
+        .data as unknown as Uint8ClampedArray<ArrayBuffer>;
       map.triggerRepaint();
       return true;
     },
@@ -57,7 +58,12 @@ export function makePin(kind: "person" | "flag", color: string): ImageData {
   ctx.beginPath();
   ctx.arc(cx, cy, R, Math.PI * 0.8, Math.PI * 0.2);
   ctx.quadraticCurveTo(cx + 10, cy + R + 8, cx, H - 6);
-  ctx.quadraticCurveTo(cx - 10, cy + R + 8, cx - R * Math.cos(Math.PI * 0.2), cy + R * Math.sin(Math.PI * 0.2));
+  ctx.quadraticCurveTo(
+    cx - 10,
+    cy + R + 8,
+    cx - R * Math.cos(Math.PI * 0.2),
+    cy + R * Math.sin(Math.PI * 0.2),
+  );
   ctx.closePath();
   ctx.fillStyle = color;
   ctx.strokeStyle = "#FFFFFF";
