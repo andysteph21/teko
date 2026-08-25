@@ -35,3 +35,8 @@ auth_token = "env(TWILIO_AUTH_TOKEN)"
 24107000001 = "123456"
 24107000002 = "123456"
 24107000003 = "123456"
+
+# Fonction webhook du push : appelée par pg_net (secret partagé applicatif),
+# pas par un client authentifié — le JWT est vérifié par le secret x-teko.
+[functions.notify-push]
+verify_jwt = false

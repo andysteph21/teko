@@ -1,3 +1,109 @@
-// Textes français — espace de noms « history ». Rempli avec les écrans du lot 3.
+// Textes français — espace de noms « history » : le quotidien C-18→C-22
+// (planification, historique, détail, annulation, notifications). Copie
+// fidèle aux maquettes docs/design/maquettes/client/c18-…-c22.
 
-export const historyFr = {} as const;
+export const historyFr = {
+  calendrier: {
+    // Données de locale (dates françaises) — consommées par les helpers
+    // (ride-display), pas via t().
+    jours: ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+    joursCourts: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
+    mois: [
+      "janvier",
+      "février",
+      "mars",
+      "avril",
+      "mai",
+      "juin",
+      "juillet",
+      "août",
+      "septembre",
+      "octobre",
+      "novembre",
+      "décembre",
+    ],
+  },
+  jours: {
+    aujourdhui: "Aujourd'hui",
+    hier: "Hier",
+    demain: "Demain",
+    aVenir: "À venir",
+  },
+  categorie: {
+    eco: "Éco",
+    moto: "Moto",
+    confort: "Confort",
+    covoiturage: "Covoiturage",
+  },
+  entete: {
+    retour: "Retour",
+  },
+  liste: {
+    titre: "Mes courses",
+    filtreToutes: "Toutes",
+    filtreAVenir: "À venir",
+    filtreTerminees: "Terminées",
+    filtreAnnulees: "Annulées",
+    statutTerminee: "Terminée",
+    statutAnnulee: "Annulée",
+    statutPlanifiee: "Planifiée",
+    statutEnCours: "En cours",
+    course: "Course {{categorie}}",
+    videTitre: "Aucune course pour le moment",
+    videTexte: "Vos trajets apparaîtront ici après votre première course.",
+  },
+  detail: {
+    titre: "Course {{categorie}}",
+    depart: "Point de départ",
+    arrivee: "Destination",
+    chauffeur: "Chauffeur",
+    paiement: "Paiement",
+    paiementEspeces: "Espèces",
+    paiementAirtel: "Airtel Money",
+    totalPaye: "Total payé",
+    estimation: "Estimation",
+    voirRecu: "Voir le reçu",
+    introuvable: "Course introuvable.",
+  },
+  notifs: {
+    titre: "Notifications",
+    vide: "Aucune notification pour le moment.",
+    typeRideAccepted: "Chauffeur attribué",
+    typeDriverArrived: "Votre chauffeur est arrivé",
+    typeRideCompleted: "Course terminée",
+    typeCancellationFee: "Frais d'annulation appliqués",
+    typeNoDriverFound: "Aucun chauffeur disponible",
+    typeLandmarkAccepted: "Repère accepté",
+    typeLandmarkRejected: "Repère refusé",
+    typeSettlementReminder: "Rappel de règlement",
+    typeDeletionRequested: "Demande de suppression enregistrée",
+    detailRideCompleted: "Votre reçu est disponible.",
+    detailCancellationFee: "{{montant}} seront réglés lors de votre prochaine course.",
+    detailLandmarkAccepted:
+      "« {{nom}} » est maintenant visible par tous. Merci de faire grandir la carte !",
+    detailLandmarkRejected: "« {{nom}} » n'a pas pu être validé.",
+  },
+  planifier: {
+    titre: "Planifier une course",
+    secJour: "Jour",
+    secHeure: "Heure de prise en charge",
+    note: "Votre chauffeur sera recherché environ 15 minutes avant l'heure choisie. Vous serez notifiée dès l'attribution.",
+    cta: "Planifier · {{quand}}",
+    aucunCreneau: "Plus de créneau disponible aujourd'hui — choisissez un autre jour.",
+  },
+  annulation: {
+    titre: "Annuler la course ?",
+    sousTitre: "Dites-nous pourquoi — cela nous aide à améliorer le service.",
+    motifLoin: "Le chauffeur est trop loin",
+    motifPlans: "Changement de plans",
+    motifErreur: "Erreur de repère ou de destination",
+    motifAutre: "Autre raison",
+    gratuite: "Annulation gratuite avant attribution.",
+    frais:
+      "Votre chauffeur est déjà en route : des frais d'annulation de {{montant}} s'appliquent. Ils seront réglés lors de votre prochaine course.",
+    garder: "Garder ma course",
+    confirmer: "Confirmer l'annulation",
+    confirmerAvecFrais: "Confirmer l'annulation · {{montant}}",
+    impossible: "Cette course ne peut plus être annulée.",
+  },
+} as const;

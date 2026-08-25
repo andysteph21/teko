@@ -1,6 +1,6 @@
 // Tests unitaires (Deno) de la logique de paiement, indépendants de la base et d'Airtel.
 // Lancer : deno test supabase/functions/
-import { assertEquals } from "jsr:@std/assert@1";
+import { assertEquals } from "@std/assert";
 import { resolveOutcome } from "./provider.ts";
 import { MockProvider } from "./mock.ts";
 

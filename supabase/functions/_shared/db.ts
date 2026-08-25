@@ -1,4 +1,5 @@
 // Client Supabase "service role" (hors RLS) + utilitaires partagés.
+// deno-lint-ignore no-import-prefix -- URL directe : le runtime Edge ne doit pas dépendre de la résolution d'import map
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 export function admin(): SupabaseClient {
@@ -17,7 +18,13 @@ export function json(body: unknown, status = 200): Response {
 }
 
 // Récupère le MSISDN concerné par un paiement (payeur côté collecte, bénéficiaire côté payout).
-export async function resolveMsisdn(db: SupabaseClient, pmt: any): Promise<string | null> {
+interface PaymentLike {
+  kind: string;
+  ride_id?: string | null;
+  driver_id?: string | null;
+}
+
+export async function resolveMsisdn(db: SupabaseClient, pmt: PaymentLike): Promise<string | null> {
   let userId: string | null = null;
   if (pmt.kind === "ride_collection" && pmt.ride_id) {
     const { data } = await db.from("rides").select("client_id").eq("id", pmt.ride_id).single();

@@ -1,3 +1,46 @@
-// Textes français — espace de noms « ride ». Rempli avec les écrans du lot 3.
+// Textes français — suivi de course & SOS (C-13, C-13b, C-14, C-27).
+// Copie fidèle des maquettes ; espace de noms i18n « ride ».
 
-export const rideFr = {} as const;
+export const rideFr = {
+  suivi: {
+    titreApproche: "{{name}} arrive",
+    titreApprocheSansNom: "Votre chauffeur arrive",
+    chauffeurFallback: "Votre chauffeur",
+    enRouteVersVous: "En route vers vous",
+    etaMin: "{{min}} min",
+    pinLabel: "Code de prise en charge",
+    pinAide: "Communiquez-le au chauffeur — la course démarre quand il le saisit.",
+    annuler: "Annuler la course",
+    annulerFrais: "Annuler la course · frais possibles",
+    arriveTitre: "{{name}} est arrivé",
+    arriveTitreSansNom: "Votre chauffeur est arrivé",
+    arriveSous: "Au point de rencontre",
+    pinLabelArrive: "Donnez ce code au chauffeur",
+    pinAideArrive: "La course démarre quand {{name}} le saisit.",
+    pinAideArriveSansNom: "La course démarre quand le chauffeur le saisit.",
+    enCourse: "En course",
+    arrivee: "Arrivée {{heure}}",
+    vers: "Vers",
+    destinationFallback: "votre destination",
+    paiementEspeces: "Espèces",
+    paiementAirtel: "Airtel Money",
+    partager: "Partager le trajet",
+    partageMessage: "Suivez ma course Teko en direct : {{lien}}",
+    positionFigee: "Position figée — le réseau du chauffeur est instable.",
+    annuleTitre: "Course annulée",
+    annuleChauffeurTexte: "Votre chauffeur a dû annuler. Vous pouvez relancer une commande.",
+    sos: "SOS",
+    chargementErreur: "Impossible de charger la course.",
+  },
+  sos: {
+    titre: "Besoin d'aide ?",
+    sousTitre: "Votre position et les détails de votre course accompagnent chaque action.",
+    alerterTitre: "Alerter l'équipe Teko",
+    alerterSous: "L'équipe vous rappelle en priorité",
+    alerterConfirme: "L'équipe Teko vous rappelle immédiatement",
+    partagerTitre: "Partager mon trajet en direct",
+    partagerSous: "Lien de suivi par SMS ou WhatsApp",
+    policeTitre: "Appeler la police (177)",
+    policeSous: "Appel direct depuis votre téléphone",
+  },
+} as const;

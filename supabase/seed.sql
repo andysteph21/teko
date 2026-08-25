@@ -39,3 +39,8 @@ select * from (values
      extensions.ST_SetSRID(extensions.ST_MakePoint(9.4490, 0.4080),4326), 'validated'::public.geo_status, 7::numeric)
 ) as v(name, aliases, category, geom, status, salience)
 where not exists (select 1 from public.landmarks);
+
+-- Webhook push local (dev) : l'Edge Function notify-push via Kong (réseau
+-- docker interne). En CI/dev sans besoin de push, le meilleur-effort ignore
+-- les échecs. Prod/staging : URL réelle + secret via la console (A-07).
+update public.app_config set value = to_jsonb('http://supabase_kong_teko:8000/functions/v1/notify-push'::text) where key = 'push_webhook_url';

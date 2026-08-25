@@ -7,6 +7,7 @@ import {
   cancelAccountDeletion,
   getProfile,
   needsReverification,
+  registerDevice,
   requestAccountDeletion,
   touchLastSeen,
   updateProfile,
@@ -49,6 +50,7 @@ const CHAIN_METHODS = [
   "from",
   "select",
   "in",
+  "upsert",
   "insert",
   "update",
   "eq",
@@ -237,6 +239,15 @@ describe("compte", () => {
     const client = tableClient({ id: "u1", full_name: "Nadia O." });
     await updateProfile(client, "u1", { fullName: "Nadia O." });
     expect(client.update).toHaveBeenCalledWith({ full_name: "Nadia O." });
+  });
+
+  it("registerDevice upsert le jeton par (user, token)", async () => {
+    const client = tableClient(null);
+    await registerDevice(client, "u1", "fcm-token-1");
+    expect(client.upsert).toHaveBeenCalledWith(
+      { user_id: "u1", push_token: "fcm-token-1", platform: "android" },
+      { onConflict: "user_id,push_token" },
+    );
   });
 
   it("requestAccountDeletion renvoie la date de purge ; getProfile lit sous RLS", async () => {

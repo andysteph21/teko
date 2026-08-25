@@ -45,13 +45,18 @@ function commonHeaders(token: string) {
 }
 
 // Mappe les statuts Airtel -> statut interne.
-function mapCollectStatus(j: any): TxnStatus {
+interface AirtelJson {
+  data?: { transaction?: { status?: string } };
+  status?: { success?: boolean };
+}
+
+function mapCollectStatus(j: AirtelJson): TxnStatus {
   const s = (j?.data?.transaction?.status ?? "").toUpperCase();
   if (s === "SUCCESS" || j?.status?.success === true) return "success";
   if (s === "FAILED") return "failed";
   return "pending";
 }
-function mapDisburseStatus(j: any): TxnStatus {
+function mapDisburseStatus(j: AirtelJson): TxnStatus {
   const s = (j?.data?.transaction?.status ?? "").toUpperCase();
   if (s === "TS") return "success";
   if (s === "TF") return "failed";

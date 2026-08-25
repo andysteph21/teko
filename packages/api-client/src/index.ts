@@ -2,6 +2,7 @@ export {
   cancelAccountDeletion,
   getProfile,
   needsReverification,
+  registerDevice,
   requestAccountDeletion,
   touchLastSeen,
   type UpdateProfileInput,
@@ -26,10 +27,10 @@ export {
   createSettlementPayment,
   driverBalance,
   getPayment,
-  listPaymentsForRide,
   invokeCollect,
   listMyLedger,
   listMyStatements,
+  listPaymentsForRide,
 } from "./finance";
 export { listNotifications, markNotificationRead } from "./notifications";
 export {

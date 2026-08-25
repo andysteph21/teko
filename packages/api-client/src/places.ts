@@ -34,9 +34,6 @@ export async function listMyLandmarkProposals(
   client: TekoClient,
 ): Promise<TableRow<"landmark_proposals">[]> {
   return unwrap(
-    await client
-      .from("landmark_proposals")
-      .select("*")
-      .order("created_at", { ascending: false }),
+    await client.from("landmark_proposals").select("*").order("created_at", { ascending: false }),
   );
 }

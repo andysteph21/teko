@@ -27,6 +27,23 @@ export async function cancelAccountDeletion(client: TekoClient): Promise<void> {
   unwrap(await client.rpc("cancel_account_deletion"));
 }
 
+/** Enregistre le jeton push de l'appareil (FCM) — la livraison des offres
+ *  et notifications passe par lui (spike doc 11 : Realtime ≠ arrière-plan). */
+export async function registerDevice(
+  client: TekoClient,
+  userId: string,
+  pushToken: string,
+): Promise<void> {
+  unwrap(
+    await client.from("devices").upsert(
+      { user_id: userId, push_token: pushToken, platform: "android" },
+      {
+        onConflict: "user_id,push_token",
+      },
+    ),
+  );
+}
+
 /** Profil d'un utilisateur (le sien, sous RLS). */
 export async function getProfile(client: TekoClient, userId: string): Promise<ProfileRow> {
   return unwrap(await client.from("profiles").select("*").eq("id", userId).single());
