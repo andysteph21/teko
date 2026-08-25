@@ -9,7 +9,7 @@
     "android": "expo run:android",
     "build": "expo export --platform android --output-dir dist",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "jest"
+    "test": "jest --maxWorkers=2"
   },
   "dependencies": {
     "@maplibre/maplibre-react-native": "~11.3.7",
