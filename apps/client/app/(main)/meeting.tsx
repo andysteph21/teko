@@ -59,7 +59,10 @@ export default function Meeting() {
     reset();
     router.replace("/(main)/home" as Href);
   };
-  const sheetPad = { paddingBottom: insets.bottom + spacing[3] };
+  const sheetStyle = StyleSheet.flatten([
+    styles.sheet,
+    { paddingBottom: insets.bottom + spacing[3] },
+  ]);
 
   return (
     <View style={styles.screen}>
@@ -75,7 +78,7 @@ export default function Meeting() {
       <BackChip onPress={() => router.back()} />
 
       {scheduledConfirmed ? (
-        <BottomPanel style={[styles.sheet, sheetPad]}>
+        <BottomPanel style={sheetStyle}>
           <PanelTitle>{t("booking:rencontre.planifieeTitre")}</PanelTitle>
           <Text style={styles.why}>{t("booking:rencontre.planifieeTexte")}</Text>
           <Button
@@ -85,7 +88,7 @@ export default function Meeting() {
           />
         </BottomPanel>
       ) : (
-        <BottomPanel style={[styles.sheet, sheetPad]}>
+        <BottomPanel style={sheetStyle}>
           {suggestionQuery.isPending ? (
             <Text style={styles.loading}>{t("booking:rencontre.recherche")}</Text>
           ) : suggestion ? (

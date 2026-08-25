@@ -86,7 +86,9 @@ export default function Category() {
         </View>
       </View>
 
-      <BottomPanel style={[styles.sheet, { paddingBottom: insets.bottom + spacing[3] }]}>
+      <BottomPanel
+        style={StyleSheet.flatten([styles.sheet, { paddingBottom: insets.bottom + spacing[3] }])}
+      >
         <PanelTitle>{t("booking:categorie.titre")}</PanelTitle>
         {loading ? (
           <SkeletonRows />

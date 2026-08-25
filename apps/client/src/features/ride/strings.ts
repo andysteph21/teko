@@ -19,6 +19,7 @@ export const rideFr = {
     pinAideArrive: "La course démarre quand {{name}} le saisit.",
     pinAideArriveSansNom: "La course démarre quand le chauffeur le saisit.",
     enCourse: "En course",
+    vousConduit: "Vous conduit à destination",
     arrivee: "Arrivée {{heure}}",
     vers: "Vers",
     destinationFallback: "votre destination",

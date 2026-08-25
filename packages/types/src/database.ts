@@ -1737,6 +1737,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      estimate_cancellation_fee: { Args: { p_ride: string }; Returns: number }
       estimate_price: {
         Args: {
           p_category: Database["public"]["Enums"]["vehicle_category"]

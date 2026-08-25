@@ -16,7 +16,7 @@
     "test": "turbo run test",
     "dev": "turbo run dev",
     "clean": "turbo run clean && rm -rf node_modules",
-    "gen:types": "supabase gen types typescript --local > packages/types/src/database.ts && biome check --write packages/types/src/database.ts"
+    "gen:types": "supabase gen types typescript --local > packages/types/src/database.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

@@ -50,6 +50,7 @@ export {
   cancelRide,
   completeRide,
   type EstimatePriceInput,
+  estimateCancellationFee,
   estimatePrice,
   findActiveRide,
   getRide,

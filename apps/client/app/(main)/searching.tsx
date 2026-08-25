@@ -79,6 +79,8 @@ export default function Searching() {
   const price = draft.estimates[draft.category];
   const place = draft.meeting?.name ?? draft.origin?.label;
   const sheetPad = { paddingBottom: insets.bottom + spacing[3] };
+  const sheetStyle = StyleSheet.flatten([styles.sheet, sheetPad]);
+  const sheetStyleCenter = StyleSheet.flatten([styles.sheet, styles.sheetCenter, sheetPad]);
 
   return (
     <View style={styles.screen}>
@@ -100,7 +102,7 @@ export default function Searching() {
       </View>
 
       {noDriver ? (
-        <BottomPanel style={[styles.sheet, sheetPad]}>
+        <BottomPanel style={sheetStyle}>
           <PanelTitle>{t("booking:recherche.aucunChauffeur")}</PanelTitle>
           <Text style={styles.avg}>{t("booking:recherche.aucunChauffeurTexte")}</Text>
           <Button label={t("commun.reessayer")} onPress={retryCategory} testID="retry-category" />
@@ -114,7 +116,7 @@ export default function Searching() {
           />
         </BottomPanel>
       ) : (
-        <BottomPanel style={[styles.sheet, styles.sheetCenter, sheetPad]}>
+        <BottomPanel style={sheetStyleCenter}>
           <View style={styles.dots}>
             <View style={[styles.dot, { backgroundColor: color.brand[100] }]} />
             <View style={[styles.dot, { backgroundColor: color.brand[400] }]} />

@@ -134,6 +134,15 @@ export async function rateRide(
   );
 }
 
+/** Montant des frais d'annulation AFFICHÉ avant confirmation (C-21) —
+ *  calculé côté serveur (0 avant attribution), jamais la formule en UI. */
+export async function estimateCancellationFee(
+  client: TekoClient,
+  rideId: string,
+): Promise<number> {
+  return Number(unwrap(await client.rpc("estimate_cancellation_fee", { p_ride: rideId })));
+}
+
 /** Une course par id (participant sous RLS) — PIN visible côté client. */
 export async function getRide(client: TekoClient, rideId: string): Promise<RideRow> {
   return unwrap(await client.from("rides").select("*").eq("id", rideId).single());

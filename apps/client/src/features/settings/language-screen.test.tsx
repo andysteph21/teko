@@ -22,11 +22,9 @@ describe("C-30 Langue", () => {
 
     expect(screen.getByText("Français")).toBeOnTheScreen();
     expect(screen.getByText("Langue actuelle")).toBeOnTheScreen();
-    expect(screen.getByTestId("lang-fr")).toHaveAccessibilityState({ checked: true });
-    expect(screen.getByTestId("lang-en")).toHaveAccessibilityState({
-      checked: false,
-      disabled: true,
-    });
+    expect(screen.getByTestId("lang-fr")).toBeChecked();
+    expect(screen.getByTestId("lang-en")).not.toBeChecked();
+    expect(screen.getByTestId("lang-en")).toBeDisabled();
     expect(screen.getAllByText("Bientôt")).toHaveLength(2);
     expect(screen.getByText(/accueillir d'autres langues sans mise à jour majeure/)).toBeOnTheScreen();
   });

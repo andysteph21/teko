@@ -61,7 +61,7 @@ export function CoursePanel(props: CoursePanelProps) {
       <DriverCard
         name={name}
         initials={name.charAt(0).toUpperCase()}
-        detail={t("ride:suivi.enCourse")}
+        detail={t("ride:suivi.vousConduit")}
         testID="driver-card"
       />
       <View style={styles.actions}>

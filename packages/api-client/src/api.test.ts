@@ -27,6 +27,7 @@ import { listNotifications, markNotificationRead } from "./notifications";
 import {
   cancelRide,
   completeRide,
+  estimateCancellationFee,
   estimatePrice,
   findActiveRide,
   listMyRides,
@@ -118,6 +119,12 @@ describe("rides", () => {
 
     const ko = rpcClient(null, { message: "PIN incorrect" });
     await expect(startRide(ko, "r1", "0000")).rejects.toMatchObject({ code: "pin_incorrect" });
+  });
+
+  it("estimateCancellationFee : montant serveur converti en number", async () => {
+    const client = rpcClient("300");
+    expect(await estimateCancellationFee(client, "r1")).toBe(300);
+    expect(lastRpcCall(client)).toEqual(["estimate_cancellation_fee", { p_ride: "r1" }]);
   });
 
   it("cancelRide passe le motif quand il existe", async () => {
