@@ -35,6 +35,7 @@ Plateforme de transport à la demande pour le Gabon (MVP ride-hailing Libreville
 - **Libs natives Expo : épingler aux versions de `expo/bundledNativeModules.json`** (reanimated, worklets, gesture-handler…). `auto-install-peers` tire sinon la dernière version → erreurs C++ (`executeSync` absent de WorkletRuntime, vécu).
 - Auth téléphone locale : GoTrue ne l'active que si un **fournisseur SMS est déclaré** — bloc twilio factice dans `config.toml`, les numéros `test_otp` court-circuitent tout appel réel.
 - Builds Android : `-PreactNativeArchitectures=arm64-v8a` (le parc est 100 % arm64) + `--max-workers=2-3` (28 Go partagés avec Docker) — build ×3 plus court.
+- `expo prebuild --clean` **efface `android/local.properties`** → gradle échoue en « SDK location not found » : recréer `sdk.dir=$HOME/Android/Sdk` après chaque prebuild propre (vécu, lot 4).
 
 ## Interdits
 

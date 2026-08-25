@@ -37,13 +37,16 @@ Ce document transforme la liste des 6 prochaines étapes en **plan d'attaque ex�
 |---|---|
 | Documentation produit (`docs/product/`) | ✅ Livrée |
 | Architecture + ADRs (`docs/architecture/`) | ✅ Livrée (ADR-01→11) |
-| Schéma DB + RLS + fonctions métier (`supabase/migrations/`) | ✅ Livré, **56 tests pgTAP** |
-| Edge Functions Airtel (`supabase/functions/`) | ✅ Livrées (3 TODO ouverts → lot 6) |
+| Schéma DB + RLS + fonctions métier (`supabase/migrations/`) | ✅ Livré, **74 tests pgTAP** (+ push, frais d'annulation, fiche chauffeur, recherche de repères, versements) |
+| Edge Functions Airtel (`supabase/functions/`) | ✅ Livrées + durcies hors sandbox (25 août, lot 6) : PIN RSA PKCS#1 v1.5, callbacks fermés par défaut, enquiry par type — restent sandbox : en-tête Message Signing, idempotence rejouée |
 | Design system + icônes (`docs/design/`, `assets/`) | ✅ Livré |
 | **Maquettes UX des 3 interfaces** (69 écrans + 4 specs de parcours, `../design/06-maquettes.md`) | ✅ Livrées (18 août 2026) — backlog UX v1.1 : 4 écrans (`02-backlog.md`) |
 | **Monorepo frontend** (`apps/`, `packages/`) | ✅ Livré (25 août, jalon M1) — 6 packages + 3 scaffolds d'apps, Biome, CI `monorepo-ci` |
 | **Infra carto self-hosted** (`infra/`) | ✅ Vérifiée en local de bout en bout (déploiement prod : lot 2) |
-| **3 applications** (client, chauffeur, admin) — code | 🚧 Scaffolds M1 vérifiés sur appareil réel ; écrans : lots 3-5, sur la base des maquettes |
+| **App client** (31 écrans C-01→C-31) | ✅ Livrée (25 août, lot 3) — 104 tests jest, Maestro `course-complete` vert, course réelle E2E validée sur OPPO |
+| **App chauffeur** (20 écrans D-01→D-20) | ✅ Livrée (25 août, lot 4) — 66 tests jest, course réelle E2E validée sur Pixel 3 (offre Realtime → PIN → positions → encaissement, solde vérifié en base) |
+| **Console admin** (A-01→A-10 + AM-01→AM-07) | ✅ Livrée (25 août, lot 5) — 75 tests vitest, build Next prod propre, vérifiée en direct contre la stack locale (dashboard, KYC, finance) |
+| **Dettes & notes produit de sortie** | 📋 `../architecture/12-notes-produit-mvp.md` (re-dispatch absent, positions admin, agrégats stats, etc.) |
 
 ---
 
