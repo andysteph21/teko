@@ -16,6 +16,7 @@ Ce dossier décrit l'architecture technique de Teko, en s'appuyant sur la docume
 8. **[08-ecarts-backend-ux.md](08-ecarts-backend-ux.md)** — confrontation backend ↔ 79 maquettes : couverture, écarts E-01→E-17 (dispatch/offres, jobs, suppression de compte, SOS, grants DML, garde `daily_close`…), vérifiés par les tests e2e (`supabase/tests/e2e/`).
 9. **[09-veille-expo.md](09-veille-expo.md)** — veille écosystème Expo (août 2026) : cibler SDK 57+ (régression Hermes en 56), cadence rapide, API 36/edge-to-edge, FCM v1, dev clients obligatoires (MapLibre), paquets à jour par besoin.
 10. **[10-regles-ingenierie.md](10-regles-ingenierie.md)** — règles d'ingénierie des apps (25 août 2026, actées) : Biome, nommage anglais, architecture d'état (Zustand + TanStack Query + expo-sqlite), styling, stratégie de tests et paliers de couverture, parc d'appareils adb.
+11. **[11-spikes-lot1.md](11-spikes-lot1.md)** — résultats des 2 spikes du lot 1 sur OPPO A15 réel : MapLibre RN **concluant** (stack Expo définitivement confirmée), Realtime **concluant** (0 perte, décrochage unique de ~18 s au verrouillage → service premier plan + push FCM actés).
 
 ## Synthèse des choix structurants
 
