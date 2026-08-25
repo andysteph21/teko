@@ -25,11 +25,17 @@ export { mapApiError, TekoApiError, type TekoApiErrorCode, unwrap } from "./erro
 export {
   createSettlementPayment,
   driverBalance,
+  getPayment,
   invokeCollect,
   listMyLedger,
   listMyStatements,
 } from "./finance";
 export { listNotifications, markNotificationRead } from "./notifications";
+export {
+  listMyLandmarkProposals,
+  listSavedPlaces,
+  searchLandmarksByName,
+} from "./places";
 export {
   createRealtimePositionsChannel,
   type PositionsChannel,
@@ -44,6 +50,7 @@ export {
   type EstimatePriceInput,
   estimatePrice,
   findActiveRide,
+  getRide,
   listMyRides,
   markArrived,
   type RateRideInput,

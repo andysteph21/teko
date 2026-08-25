@@ -134,6 +134,11 @@ export async function rateRide(
   );
 }
 
+/** Une course par id (participant sous RLS) — PIN visible côté client. */
+export async function getRide(client: TekoClient, rideId: string): Promise<RideRow> {
+  return unwrap(await client.from("rides").select("*").eq("id", rideId).single());
+}
+
 /** Statuts d'une course « en cours » (routage C-01 : jamais l'accueil vide
  *  si une course est active côté serveur). */
 export const ACTIVE_RIDE_STATUSES: RideStatus[] = [

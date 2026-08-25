@@ -3,6 +3,8 @@
 
 import { accountFr } from "./account/strings";
 import { bookingFr } from "./booking/strings";
+import { historyFr } from "./history/strings";
+import { paymentFr } from "./payment/strings";
 import { placesFr } from "./places/strings";
 import { rideFr } from "./ride/strings";
 import { settingsFr } from "./settings/strings";
@@ -10,7 +12,9 @@ import { settingsFr } from "./settings/strings";
 export const appFr = {
   account: accountFr,
   booking: bookingFr,
-  ride: rideFr,
+  history: historyFr,
+  payment: paymentFr,
   places: placesFr,
+  ride: rideFr,
   settings: settingsFr,
 };

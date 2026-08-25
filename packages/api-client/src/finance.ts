@@ -30,6 +30,15 @@ export async function invokeCollect(client: TekoClient, paymentId: string): Prom
   if (error) throw mapApiError(error);
 }
 
+/** Statut d'un paiement (C-15/D-14b : la confirmation Airtel arrive en
+ *  asynchrone — interroger, la table n'est pas dans la publication Realtime). */
+export async function getPayment(
+  client: TekoClient,
+  paymentId: string,
+): Promise<TableRow<"payments">> {
+  return unwrap(await client.from("payments").select("*").eq("id", paymentId).single());
+}
+
 /** Écritures du grand livre du compte courant (détail de D-15), RLS-scopé. */
 export async function listMyLedger(client: TekoClient, limit = 50): Promise<TableRow<"ledger">[]> {
   return unwrap(
