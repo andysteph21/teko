@@ -7,19 +7,19 @@ import { borderRadius, color, spacing, typography } from "@teko/ui";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import {
-  categorieLabel,
-  dureeMin,
-  heureFr,
-  kmFr,
-  montantCourse,
-  refCourte,
-} from "./format";
+import { categorieLabel, dureeMin, heureFr, kmFr, montantCourse, refCourte } from "./format";
 import type { PaymentRow } from "./hooks";
 
 function Check({ size, stroke }: { size: number; stroke: string }) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={2.6}>
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={stroke}
+      strokeWidth={2.6}
+    >
       <Path d="M4.5 12.5l5 5 10-11" />
     </Svg>
   );
@@ -132,7 +132,13 @@ const styles = StyleSheet.create({
   },
   dotcol: { alignItems: "center", paddingTop: 5 },
   dot: { width: 8, height: 8, borderRadius: borderRadius.full },
-  vline: { width: 2, flex: 1, minHeight: 16, backgroundColor: color.neutral[200], marginVertical: 2 },
+  vline: {
+    width: 2,
+    flex: 1,
+    minHeight: 16,
+    backgroundColor: color.neutral[200],
+    marginVertical: 2,
+  },
   etapes: { flex: 1 },
   etape: {
     fontSize: typography.fontSize.sm,

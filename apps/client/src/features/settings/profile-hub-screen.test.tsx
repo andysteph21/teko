@@ -1,7 +1,7 @@
 // C-23 : rendu du hub (nom, numéro, compte de repères validés) et
 // déconnexion avec confirmation → signOut → retour à la racine.
 
-import { render, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { act, render, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { Alert } from "react-native";
 
 const mockGetProfile = jest.fn();
@@ -75,7 +75,9 @@ describe("C-23 Profil & paramètres", () => {
     expect(alertSpy).toHaveBeenCalled();
 
     const buttons = alertSpy.mock.calls[0]?.[2];
-    buttons?.[1]?.onPress?.();
+    await act(async () => {
+      buttons?.[1]?.onPress?.();
+    });
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/"));
     expect(mockSignOut).toHaveBeenCalled();
   });

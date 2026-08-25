@@ -172,7 +172,9 @@ export function rideAmountText(ride: RideRow): string {
 
 /** Ligne « quand » C-20 : jour · heure(s) · distance. */
 export function describeWhen(ride: RideRow, now: Date, t: TranslateFn): string {
-  const base = new Date(ride.completed_at ?? ride.started_at ?? ride.scheduled_at ?? ride.created_at);
+  const base = new Date(
+    ride.completed_at ?? ride.started_at ?? ride.scheduled_at ?? ride.created_at,
+  );
   const times =
     ride.started_at && ride.completed_at
       ? `${formatTimeFr(new Date(ride.started_at))} → ${formatTimeFr(new Date(ride.completed_at))}`

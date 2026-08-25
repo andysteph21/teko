@@ -6,12 +6,11 @@ import { rateRide, TekoApiError } from "@teko/api-client";
 import { type Href, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useDriverProfile, useRide } from "../../../src/features/payment/hooks";
-import { nomCourt } from "../../../src/features/payment/format";
-import { RatingForm } from "../../../src/features/payment/rating-form";
-import type { Stars } from "../../../src/features/payment/rating-controls";
-import { ErrorView, LoadingView } from "../../../src/features/payment/state-views";
 import { useSession } from "../../../src/features/auth/use-session";
+import { useDriverCard, useRide } from "../../../src/features/payment/hooks";
+import type { Stars } from "../../../src/features/payment/rating-controls";
+import { RatingForm } from "../../../src/features/payment/rating-form";
+import { ErrorView, LoadingView } from "../../../src/features/payment/state-views";
 import { supabase } from "../../../src/lib/supabase";
 
 export default function RatingScreen() {
@@ -20,7 +19,7 @@ export default function RatingScreen() {
   const { t } = useTranslation();
   const { session } = useSession();
   const rideQ = useRide(rideId);
-  const chauffeur = useDriverProfile(rideQ.data?.driver_id);
+  const chauffeur = useDriverCard(rideQ.data ? rideId : null);
   const [busy, setBusy] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -54,11 +53,10 @@ export default function RatingScreen() {
     }
   };
 
-  if (rideQ.isError)
-    return <ErrorView error={rideQ.error} onRetry={() => void rideQ.refetch()} />;
+  if (rideQ.isError) return <ErrorView error={rideQ.error} onRetry={() => void rideQ.refetch()} />;
   if (!rideQ.data) return <LoadingView />;
 
-  const nom = chauffeur.data?.full_name ? nomCourt(chauffeur.data.full_name) : null;
+  const nom = chauffeur.data?.firstName ?? null;
   return (
     <RatingForm
       ride={rideQ.data}

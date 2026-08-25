@@ -21,12 +21,7 @@ export function ErrorView({ error, onRetry }: { error: unknown; onRetry: () => v
   return (
     <View style={styles.centre}>
       <Text style={styles.texte}>{reseau ? t("erreurs.reseau") : t("erreurs.generique")}</Text>
-      <Button
-        label={t("commun.reessayer")}
-        variant="secondary"
-        onPress={onRetry}
-        testID="retry"
-      />
+      <Button label={t("commun.reessayer")} variant="secondary" onPress={onRetry} testID="retry" />
     </View>
   );
 }

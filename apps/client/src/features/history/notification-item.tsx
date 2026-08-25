@@ -8,9 +8,9 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
+  type NotificationIconKind,
   notificationDetail,
   notificationIconKind,
-  type NotificationIconKind,
   notificationTitle,
 } from "./notification-display";
 import { formatTimeFr } from "./ride-display";

@@ -13,7 +13,7 @@ const mockChannel = {
 };
 jest.mock("@teko/api-client", () => ({
   getRide: (...args: unknown[]) => mockGetRide(...args),
-  getProfile: (...args: unknown[]) => mockGetProfile(...args),
+  rideDriverCard: (...args: unknown[]) => mockGetProfile(...args),
   createTripShare: (...args: unknown[]) => mockCreateTripShare(...args),
   createRealtimePositionsChannel: () => mockChannel,
   TekoApiError: class TekoApiError extends Error {
@@ -93,7 +93,12 @@ beforeEach(() => {
   });
   mockChannel.subscribeRidePositions.mockImplementation(() => async () => {});
   mockGetRide.mockResolvedValue({ ...RIDE });
-  mockGetProfile.mockResolvedValue({ full_name: "Boris Mba" });
+  mockGetProfile.mockResolvedValue({
+    firstName: "Boris",
+    rating: 4.8,
+    plate: "GA-482-LBV",
+    category: "eco",
+  });
   mockFetchRoute.mockResolvedValue({ coordinates: [], distanceM: 1200, durationS: 300 });
 });
 

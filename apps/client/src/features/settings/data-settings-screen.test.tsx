@@ -40,7 +40,9 @@ describe("C-25 Données & mode éco", () => {
     expect(screen.getByText(/budget 100 Mo/)).toBeOnTheScreen();
     expect(screen.getByText(/alerte à 50 Mo, en critique à 80 Mo/)).toBeOnTheScreen();
     // Auto sur réseau 2G → résolu éco, raison affichable telle quelle.
-    await waitFor(() => expect(screen.getByTestId("mode-resolved")).toHaveTextContent("Auto → éco"));
+    await waitFor(() =>
+      expect(screen.getByTestId("mode-resolved")).toHaveTextContent(/Auto → éco/),
+    );
   });
 
   it("choisir « Complet » met à jour la préférence et l'état résolu", async () => {
@@ -51,7 +53,7 @@ describe("C-25 Données & mode éco", () => {
 
     expect(useMapModeStore.getState().preference).toBe("complet");
     await waitFor(() =>
-      expect(screen.getByTestId("mode-resolved")).toHaveTextContent("Complet → complet"),
+      expect(screen.getByTestId("mode-resolved")).toHaveTextContent(/Complet → complet/),
     );
   });
 });

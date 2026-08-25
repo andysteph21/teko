@@ -112,7 +112,11 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
   },
-  noticeFeeText: { fontSize: typography.fontSize.sm + 0.5, color: color.neutral[500], lineHeight: 20 },
+  noticeFeeText: {
+    fontSize: typography.fontSize.sm + 0.5,
+    color: color.neutral[500],
+    lineHeight: 20,
+  },
   noticeFree: { backgroundColor: color.semantic.success.light },
   noticeFreeText: { fontSize: typography.fontSize.sm + 0.5, color: color.semantic.success.dark },
 });

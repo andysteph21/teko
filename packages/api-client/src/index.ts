@@ -49,6 +49,7 @@ export {
   ACTIVE_RIDE_STATUSES,
   cancelRide,
   completeRide,
+  type DriverCardInfo,
   type EstimatePriceInput,
   estimateCancellationFee,
   estimatePrice,
@@ -60,6 +61,7 @@ export {
   type RequestRideInput,
   rateRide,
   requestRide,
+  rideDriverCard,
   startRide,
 } from "./rides";
 export {

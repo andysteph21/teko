@@ -15,20 +15,19 @@ import {
   telephoneAffiche,
 } from "./format";
 
-const iso = (y: number, mo: number, d: number, h: number, mi: number) =>
-  new Date(y, mo, d, h, mi).toISOString();
+const iso = (ymdhm: [number, number, number, number, number]) => new Date(...ymdhm).toISOString();
 
 describe("heureFr / jourFr", () => {
   it("affiche « 14 h 46 » et « 14 h 05 »", () => {
-    expect(heureFr(iso(2026, 7, 26, 14, 46))).toBe("14 h 46");
-    expect(heureFr(iso(2026, 7, 26, 14, 5))).toBe("14 h 05");
+    expect(heureFr(iso([2026, 7, 26, 14, 46]))).toBe("14 h 46");
+    expect(heureFr(iso([2026, 7, 26, 14, 5]))).toBe("14 h 05");
   });
 
   it("jourFr : null aujourd'hui, sinon « 26 août » (+ année si autre)", () => {
     const maintenant = new Date(2026, 7, 26, 18, 0);
-    expect(jourFr(iso(2026, 7, 26, 14, 46), maintenant)).toBeNull();
-    expect(jourFr(iso(2026, 7, 25, 14, 46), maintenant)).toBe("25 août");
-    expect(jourFr(iso(2025, 11, 31, 9, 0), maintenant)).toBe("31 décembre 2025");
+    expect(jourFr(iso([2026, 7, 26, 14, 46]), maintenant)).toBeNull();
+    expect(jourFr(iso([2026, 7, 25, 14, 46]), maintenant)).toBe("25 août");
+    expect(jourFr(iso([2025, 11, 31, 9, 0]), maintenant)).toBe("31 décembre 2025");
   });
 });
 
@@ -37,8 +36,8 @@ describe("numeroRecu", () => {
     expect(
       numeroRecu({
         id: "0147ab00-0000-0000-0000-000000000000",
-        completed_at: iso(2026, 7, 26, 14, 46),
-        created_at: iso(2026, 7, 26, 14, 20),
+        completed_at: iso([2026, 7, 26, 14, 46]),
+        created_at: iso([2026, 7, 26, 14, 20]),
       }),
     ).toBe("TK-2608-0147");
   });
@@ -54,8 +53,8 @@ describe("montants et mesures", () => {
   it("dureeMin : réel started→completed, sinon estimé, plancher 1", () => {
     expect(
       dureeMin({
-        started_at: iso(2026, 7, 26, 14, 29),
-        completed_at: iso(2026, 7, 26, 14, 46),
+        started_at: iso([2026, 7, 26, 14, 29]),
+        completed_at: iso([2026, 7, 26, 14, 46]),
         duration_est_s: 600,
       }),
     ).toBe(17);

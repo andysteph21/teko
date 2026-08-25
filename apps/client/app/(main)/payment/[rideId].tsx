@@ -86,8 +86,7 @@ export default function PaymentScreen() {
     if (modeAirtel && payment?.status === "success") versEvaluation();
   }, [modeAirtel, payment?.status, versEvaluation]);
 
-  if (rideQ.isError)
-    return <ErrorView error={rideQ.error} onRetry={() => void rideQ.refetch()} />;
+  if (rideQ.isError) return <ErrorView error={rideQ.error} onRetry={() => void rideQ.refetch()} />;
   if (!rideQ.data) return <LoadingView />;
 
   const numero = session?.user.phone ? telephoneAffiche(session.user.phone) : null;

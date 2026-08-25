@@ -34,6 +34,7 @@ import {
   markArrived,
   rateRide,
   requestRide,
+  rideDriverCard,
   startRide,
 } from "./rides";
 import { createTripShare, getSharedTrip, reportIncident } from "./safety";
@@ -70,6 +71,7 @@ function tableClient(data: unknown, error: unknown = null): TableClientMock {
   for (const method of CHAIN_METHODS) {
     chain[method] = vi.fn(() => chain);
   }
+  // biome-ignore lint/suspicious/noThenProperty: chaîne PostgREST simulée, résolue par await
   chain.then = (resolve: (v: unknown) => unknown) => resolve({ data, error });
   return chain as unknown as TableClientMock;
 }
@@ -164,6 +166,15 @@ describe("rides", () => {
 
     const none = tableClient([]);
     expect(await findActiveRide(none)).toBeNull();
+  });
+
+  it("rideDriverCard : fiche mappée, null sans chauffeur", async () => {
+    const card = await rideDriverCard(
+      rpcClient({ first_name: "Boris", rating: "4.8", plate: "GA-482-LBV", category: "eco" }),
+      "r1",
+    );
+    expect(card).toEqual({ firstName: "Boris", rating: 4.8, plate: "GA-482-LBV", category: "eco" });
+    expect(await rideDriverCard(rpcClient(null), "r1")).toBeNull();
   });
 
   it("rateRide insère sous RLS ; listMyRides interroge l'historique", async () => {

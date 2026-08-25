@@ -9,14 +9,8 @@ import { useTranslation } from "react-i18next";
 import { ScrollView, Share, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useBookingStore } from "../../../src/features/booking/store";
-import {
-  heureFr,
-  jourFr,
-  montantCourse,
-  nomCourt,
-  numeroRecu,
-} from "../../../src/features/payment/format";
-import { useDriverProfile, useRide, useRideCollection } from "../../../src/features/payment/hooks";
+import { heureFr, jourFr, montantCourse, numeroRecu } from "../../../src/features/payment/format";
+import { useDriverCard, useRide, useRideCollection } from "../../../src/features/payment/hooks";
 import { CheckBadge, ReceiptCard } from "../../../src/features/payment/receipt-card";
 import { ErrorView, LoadingView } from "../../../src/features/payment/state-views";
 
@@ -27,10 +21,9 @@ export default function ReceiptScreen() {
   const rideQ = useRide(rideId);
   const airtel = rideQ.data?.payment_method === "airtel";
   const { payment } = useRideCollection(rideId, airtel, false);
-  const chauffeur = useDriverProfile(rideQ.data?.driver_id);
+  const chauffeur = useDriverCard(rideQ.data ? rideId : null);
 
-  if (rideQ.isError)
-    return <ErrorView error={rideQ.error} onRetry={() => void rideQ.refetch()} />;
+  if (rideQ.isError) return <ErrorView error={rideQ.error} onRetry={() => void rideQ.refetch()} />;
   if (!rideQ.data) return <LoadingView />;
 
   const ride = rideQ.data;
@@ -64,13 +57,9 @@ export default function ReceiptScreen() {
         <ReceiptCard
           ride={ride}
           payment={payment}
-          nomChauffeur={chauffeur.data?.full_name ? nomCourt(chauffeur.data.full_name) : null}
+          nomChauffeur={chauffeur.data?.firstName ?? null}
         />
-        <Button
-          label={t("payment:recu.retour")}
-          onPress={retourAccueil}
-          testID="receipt-home"
-        />
+        <Button label={t("payment:recu.retour")} onPress={retourAccueil} testID="receipt-home" />
         <Button
           label={t("payment:recu.partager")}
           variant="ghost"

@@ -52,7 +52,8 @@ export const placesFr = {
     cta: "Envoyer la proposition",
     succesTitre: "Proposition envoyée",
     succesChip: "En validation",
-    succesTexte: "En validation — vérifié par l'équipe Teko sous 48 h. Vous serez notifiée du résultat.",
+    succesTexte:
+      "En validation — vérifié par l'équipe Teko sous 48 h. Vous serez notifiée du résultat.",
     retour: "Retour",
   },
   mesReperes: {

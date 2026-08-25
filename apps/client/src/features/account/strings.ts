@@ -109,7 +109,8 @@ export const accountFr = {
     confirmTexte:
       "Votre compte sera désactivé immédiatement. Vous aurez 30 jours pour changer d'avis.",
     confirmCta: "Supprimer",
-    erreurCourse: "Impossible pour l'instant : une course est en cours. Terminez-la puis réessayez.",
+    erreurCourse:
+      "Impossible pour l'instant : une course est en cours. Terminez-la puis réessayez.",
     desactiveTitre: "Compte désactivé",
     desactiveTexte:
       "Rétractation possible pendant 30 jours : reconnectez-vous avant le {{date}} et tout sera restauré à l'identique.",

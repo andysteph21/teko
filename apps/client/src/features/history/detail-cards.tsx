@@ -55,7 +55,9 @@ function InfoCard({ ride, driverName }: { ride: RideRow; driverName: string | nu
       ) : null}
       <View style={styles.total}>
         <Text style={styles.totalLabel}>
-          {ride.price_final !== null ? t("history:detail.totalPaye") : t("history:detail.estimation")}
+          {ride.price_final !== null
+            ? t("history:detail.totalPaye")
+            : t("history:detail.estimation")}
         </Text>
         <Text style={styles.totalAmount}>{rideAmountText(ride)}</Text>
       </View>
@@ -118,7 +120,11 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   lineLabel: { fontSize: typography.fontSize.sm + 0.5, color: color.neutral[500] },
-  lineValue: { fontSize: typography.fontSize.sm + 0.5, fontWeight: "600", color: color.neutral[700] },
+  lineValue: {
+    fontSize: typography.fontSize.sm + 0.5,
+    fontWeight: "600",
+    color: color.neutral[700],
+  },
   total: {
     flexDirection: "row",
     justifyContent: "space-between",

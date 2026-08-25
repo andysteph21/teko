@@ -9,7 +9,14 @@ import Svg, { Circle, Rect } from "react-native-svg";
 
 function CashIcon() {
   return (
-    <Svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke={color.neutral[600]} strokeWidth={2}>
+    <Svg
+      width={17}
+      height={17}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color.neutral[600]}
+      strokeWidth={2}
+    >
       <Rect x={3} y={7} width={18} height={12} rx={2} />
       <Circle cx={12} cy={13} r={3} />
     </Svg>

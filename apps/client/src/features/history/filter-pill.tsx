@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.neutral[100],
     overflow: "hidden",
   },
-  fill: { ...StyleSheet.absoluteFillObject },
+  fill: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 },
   label: {
     fontSize: typography.fontSize.sm,
     fontWeight: "600",

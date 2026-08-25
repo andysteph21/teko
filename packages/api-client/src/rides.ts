@@ -136,11 +136,37 @@ export async function rateRide(
 
 /** Montant des frais d'annulation AFFICHÉ avant confirmation (C-21) —
  *  calculé côté serveur (0 avant attribution), jamais la formule en UI. */
-export async function estimateCancellationFee(
+export async function estimateCancellationFee(client: TekoClient, rideId: string): Promise<number> {
+  return Number(unwrap(await client.rpc("estimate_cancellation_fee", { p_ride: rideId })));
+}
+
+/** Fiche chauffeur pour un participant de la course (C-13/C-16/C-17) :
+ *  prénom, note moyenne, plaque, catégorie — jamais le téléphone. Null tant
+ *  qu'aucun chauffeur n'est attribué. */
+export interface DriverCardInfo {
+  firstName: string | null;
+  rating: number | null;
+  plate: string | null;
+  category: VehicleCategory | null;
+}
+
+export async function rideDriverCard(
   client: TekoClient,
   rideId: string,
-): Promise<number> {
-  return Number(unwrap(await client.rpc("estimate_cancellation_fee", { p_ride: rideId })));
+): Promise<DriverCardInfo | null> {
+  const raw = unwrap(await client.rpc("ride_driver_card", { p_ride: rideId })) as {
+    first_name?: string | null;
+    rating?: number | string | null;
+    plate?: string | null;
+    category?: VehicleCategory | null;
+  } | null;
+  if (!raw) return null;
+  return {
+    firstName: raw.first_name ?? null,
+    rating: raw.rating == null ? null : Number(raw.rating),
+    plate: raw.plate ?? null,
+    category: raw.category ?? null,
+  };
 }
 
 /** Une course par id (participant sous RLS) — PIN visible côté client. */

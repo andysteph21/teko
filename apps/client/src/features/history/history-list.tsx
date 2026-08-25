@@ -8,10 +8,10 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import {
   dayLabelText,
+  type RideSection,
   rideAmountText,
   rideChip,
   rideHint,
-  type RideSection,
   rideTitle,
 } from "./ride-display";
 

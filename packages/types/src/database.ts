@@ -2044,6 +2044,7 @@ export type Database = {
         Args: { p_max_m?: number; p_point: unknown }
         Returns: string
       }
+      ride_driver_card: { Args: { p_ride: string }; Returns: Json }
       send_settlement_reminders: { Args: never; Returns: number }
       set_commission: {
         Args: { p_type: string; p_value: number }

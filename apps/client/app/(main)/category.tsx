@@ -4,32 +4,23 @@
 
 import { formatXaf } from "@teko/core";
 import { color, spacing, typography } from "@teko/ui";
-import { BottomPanel, Button, CarIcon, CategoryCard, DataWidget, MotoIcon, PanelTitle } from "@teko/ui/native";
+import { BottomPanel, Button, DataWidget, PanelTitle } from "@teko/ui/native";
 import { type Href, Redirect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useShallow } from "zustand/react/shallow";
-import { TILES_URL } from "../../src/config";
 import { OfflineScreen } from "../../src/components/offline-screen";
+import { TILES_URL } from "../../src/config";
 import { BackChip } from "../../src/features/booking/back-chip";
 import { LandmarkMarker, RouteOverlay } from "../../src/features/booking/booking-map-layers";
+import { CategoryList, SkeletonRows } from "../../src/features/booking/category-cards";
 import { PaymentSelector } from "../../src/features/booking/payment-selector";
 import { useBookingStore } from "../../src/features/booking/store";
 import { useEstimates } from "../../src/features/booking/use-estimates";
 import { useDataUsage, useResolvedMapMode } from "../../src/features/data/data-state";
 import { ClientDot } from "../../src/features/map/client-dot";
 import { TekoMapView } from "../../src/features/map/native-map";
-
-function SkeletonRows() {
-  return (
-    <View style={styles.cards} testID="estimates-skeleton">
-      {["eco", "moto", "confort"].map((k) => (
-        <View key={k} style={styles.skeleton} />
-      ))}
-    </View>
-  );
-}
 
 export default function Category() {
   const router = useRouter();
@@ -60,7 +51,6 @@ export default function Category() {
 
   const minutes = draft.route ? Math.max(1, Math.round(draft.route.durationS / 60)) : 0;
   const price = draft.estimates[draft.category];
-  const categoryLabel = t(`booking:categories.${draft.category}`);
   const loading = estimatesQuery.isPending;
 
   return (
@@ -93,45 +83,18 @@ export default function Category() {
         {loading ? (
           <SkeletonRows />
         ) : (
-          <View style={styles.cards}>
-            <CategoryCard
-              title={t("booking:categories.eco")}
-              meta={t("booking:categorie.metaEco", { min: minutes })}
-              priceText={draft.estimates.eco != null ? formatXaf(draft.estimates.eco, "FCFA") : "—"}
-              icon={<CarIcon />}
-              selected={draft.category === "eco"}
-              onPress={() => setCategory("eco")}
-              testID="cat-eco"
-            />
-            <CategoryCard
-              title={t("booking:categories.moto")}
-              meta={t("booking:categorie.metaMoto")}
-              priceText={
-                draft.estimates.moto != null ? formatXaf(draft.estimates.moto, "FCFA") : "—"
-              }
-              icon={<MotoIcon />}
-              selected={draft.category === "moto"}
-              onPress={() => setCategory("moto")}
-              testID="cat-moto"
-            />
-            <CategoryCard
-              title={t("booking:categories.confort")}
-              meta={t("booking:categorie.metaConfort")}
-              priceText={
-                draft.estimates.confort != null ? formatXaf(draft.estimates.confort, "FCFA") : "—"
-              }
-              icon={<CarIcon />}
-              selected={draft.category === "confort"}
-              onPress={() => setCategory("confort")}
-              testID="cat-confort"
-            />
-          </View>
+          <CategoryList
+            estimates={draft.estimates}
+            selected={draft.category}
+            minutes={minutes}
+            onSelect={setCategory}
+          />
         )}
         <PaymentSelector value={draft.paymentMethod} onChange={setPaymentMethod} />
         <Text style={styles.fixed}>{t("booking:categorie.prixFixe")}</Text>
         <Button
           label={t("booking:categorie.commander", {
-            categorie: categoryLabel,
+            categorie: t(`booking:categories.${draft.category}`),
             prix: price != null ? formatXaf(price, "FCFA") : "—",
           })}
           onPress={() => router.push("/(main)/meeting" as Href)}
@@ -156,12 +119,6 @@ const styles = StyleSheet.create({
   mapWrap: { flex: 1 },
   widget: { position: "absolute", left: spacing[4], bottom: spacing[4] },
   sheet: { marginTop: -spacing[3] },
-  cards: { gap: spacing[2], marginBottom: spacing[3] },
-  skeleton: {
-    height: 62,
-    borderRadius: 16,
-    backgroundColor: color.neutral[100],
-  },
   fixed: {
     fontSize: typography.fontSize.xs,
     color: color.neutral[500],

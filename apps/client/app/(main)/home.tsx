@@ -70,20 +70,7 @@ export default function Home() {
         <ClientDot position={position} />
       </TekoMapView>
 
-      <Pressable
-        style={[styles.chip, { top: insets.top + spacing[3], right: 70 }]}
-        onPress={() => router.push("/(main)/notifications" as Href)}
-        accessibilityLabel="Notifications"
-      >
-        <BellIcon />
-      </Pressable>
-      <Pressable
-        style={[styles.chip, { top: insets.top + spacing[3], right: spacing[4] }]}
-        onPress={() => router.push("/(main)/profile" as Href)}
-        accessibilityLabel="Profil"
-      >
-        <Text style={styles.avatarText}>{initial}</Text>
-      </Pressable>
+      <FloatingChips topInset={insets.top} initial={initial} />
 
       <View style={styles.widgetStack} pointerEvents="box-none">
         {mode.mode === "eco" ? <EcoPill /> : null}
@@ -123,6 +110,28 @@ export default function Home() {
         />
       </BottomPanel>
     </View>
+  );
+}
+
+function FloatingChips({ topInset, initial }: { topInset: number; initial: string }) {
+  const router = useRouter();
+  return (
+    <>
+      <Pressable
+        style={[styles.chip, { top: topInset + spacing[3], right: 70 }]}
+        onPress={() => router.push("/(main)/notifications" as Href)}
+        accessibilityLabel="Notifications"
+      >
+        <BellIcon />
+      </Pressable>
+      <Pressable
+        style={[styles.chip, { top: topInset + spacing[3], right: spacing[4] }]}
+        onPress={() => router.push("/(main)/profile" as Href)}
+        accessibilityLabel="Profil"
+      >
+        <Text style={styles.avatarText}>{initial}</Text>
+      </Pressable>
+    </>
   );
 }
 

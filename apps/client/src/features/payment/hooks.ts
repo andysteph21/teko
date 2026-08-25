@@ -5,10 +5,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getPayment,
-  getProfile,
   getRide,
   invokeCollect,
   listPaymentsForRide,
+  rideDriverCard,
 } from "@teko/api-client";
 import type { TableRow } from "@teko/types";
 import { supabase } from "../../lib/supabase";
@@ -64,14 +64,14 @@ export function useRenvoyerPush(paymentId: string | undefined) {
 
 /** Profil du chauffeur — la RLS `profiles` ne l'expose pas au client :
  *  on tente, et on affiche « Votre chauffeur » si rien ne revient. */
-export function useDriverProfile(driverId: string | null | undefined) {
+export function useDriverCard(rideId: string | null | undefined) {
   return useQuery({
-    queryKey: ["driver-profile", driverId],
-    enabled: Boolean(driverId),
+    queryKey: ["driver-card", rideId],
+    enabled: Boolean(rideId),
     retry: false,
     queryFn: async () => {
       try {
-        return await getProfile(supabase, driverId as string);
+        return await rideDriverCard(supabase, rideId as string);
       } catch {
         return null;
       }

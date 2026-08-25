@@ -3,7 +3,7 @@
 // immédiatement (engagement n° 17). Partage du trajet et appel police 177
 // restent accessibles après l'alerte.
 
-import { createTripShare, reportIncident, TekoApiError } from "@teko/api-client";
+import { createTripShare, reportIncident } from "@teko/api-client";
 import { color, spacing, typography } from "@teko/ui";
 import { useRouter } from "expo-router";
 import { type ReactNode, useState } from "react";
@@ -11,9 +11,7 @@ import { useTranslation } from "react-i18next";
 import { Linking, Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { AlertTriangleIcon, PhoneIcon, ShareIcon } from "./sos-icons";
-
-// TODO domaine réel — aligner avec la page publique de suivi (get_shared_trip).
-const SHARE_BASE_URL = "https://teko.ga/t";
+import { shareErrorLabel, shareLink } from "./use-share-trip";
 
 interface ActionRowProps {
   title: string;
@@ -43,12 +41,6 @@ function ActionRow(props: ActionRowProps) {
   );
 }
 
-function errorLabel(e: unknown, t: (key: string) => string): string {
-  return e instanceof TekoApiError && e.code === "network"
-    ? t("erreurs.reseau")
-    : t("erreurs.generique");
-}
-
 export function SosScreen({ rideId }: { rideId?: string }) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -61,7 +53,7 @@ export function SosScreen({ rideId }: { rideId?: string }) {
       await reportIncident(supabase, { kind: "sos", ...(rideId ? { rideId } : {}) });
       setAlerted(true);
     } catch (e) {
-      setError(errorLabel(e, t));
+      setError(shareErrorLabel(e, t));
     }
   };
 
@@ -71,10 +63,10 @@ export function SosScreen({ rideId }: { rideId?: string }) {
     try {
       const share = await createTripShare(supabase, rideId);
       await Share.share({
-        message: t("ride:suivi.partageMessage", { lien: `${SHARE_BASE_URL}/${share.token}` }),
+        message: t("ride:suivi.partageMessage", { lien: shareLink(share.token) }),
       });
     } catch (e) {
-      setError(errorLabel(e, t));
+      setError(shareErrorLabel(e, t));
     }
   };
 
@@ -94,7 +86,9 @@ export function SosScreen({ rideId }: { rideId?: string }) {
           <ActionRow
             title={t("ride:sos.alerterTitre")}
             subtitle={t("ride:sos.alerterSous")}
-            icon={<AlertTriangleIcon size={17} color={color.semantic.error.default} strokeWidth={2.2} />}
+            icon={
+              <AlertTriangleIcon size={17} color={color.semantic.error.default} strokeWidth={2.2} />
+            }
             iconBackground={color.neutral[0]}
             urgent
             onPress={() => void alertTeko()}

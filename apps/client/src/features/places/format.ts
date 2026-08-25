@@ -39,10 +39,7 @@ export function applyHintPrefix(
 }
 
 /** Puce actuellement « active » : celle dont le libellé préfixe le texte. */
-export function activeHintPrefix(
-  current: string,
-  allPrefixes: readonly string[],
-): string | null {
+export function activeHintPrefix(current: string, allPrefixes: readonly string[]): string | null {
   const lower = current.toLowerCase();
   return allPrefixes.find((p) => lower.startsWith(p.toLowerCase())) ?? null;
 }

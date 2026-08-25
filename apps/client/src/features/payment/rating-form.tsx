@@ -13,8 +13,8 @@ import {
   type Compliment,
   ComplimentChips,
   construireCommentaire,
-  type Stars,
   StarRating,
+  type Stars,
 } from "./rating-controls";
 
 export interface RatingFormProps {

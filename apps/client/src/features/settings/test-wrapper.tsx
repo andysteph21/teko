@@ -11,7 +11,10 @@ const METRICS = {
 };
 
 export function Providers({ children }: { children: ReactNode }) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  // gcTime 0 : pas de timer de cache qui retient le worker jest.
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
   return (
     <SafeAreaProvider initialMetrics={METRICS}>
       <QueryClientProvider client={client}>{children}</QueryClientProvider>

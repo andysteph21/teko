@@ -10,6 +10,7 @@ type Mock = TekoClient & Record<(typeof CHAIN)[number], ReturnType<typeof vi.fn>
 function tableClient(data: unknown): Mock {
   const chain: Record<string, unknown> = {};
   for (const m of CHAIN) chain[m] = vi.fn(() => chain);
+  // biome-ignore lint/suspicious/noThenProperty: chaîne PostgREST simulée, résolue par await
   chain.then = (resolve: (v: unknown) => unknown) => resolve({ data, error: null });
   return chain as unknown as Mock;
 }

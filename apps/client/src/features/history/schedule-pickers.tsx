@@ -19,7 +19,11 @@ export function DayPicker({ days, selectedIndex, now, onSelect }: DayPickerProps
   const { t } = useTranslation();
   const { joursCourts } = historyFr.calendrier;
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.days}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.days}
+    >
       {days.map((day, index) => {
         const active = index === selectedIndex;
         return (

@@ -5,7 +5,7 @@ import { borderRadius, color, typography } from "@teko/ui";
 import { Button, TextField } from "@teko/ui/native";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
-import { type LandmarkCategory, LANDMARK_CATEGORY_VALUES } from "./categories";
+import { LANDMARK_CATEGORY_VALUES, type LandmarkCategory } from "./categories";
 import { ChoiceChips } from "./choice-chips";
 
 export interface ProposeFormProps {

@@ -19,6 +19,7 @@ function LanguageRow({ title, subtitle, selected = false, soonLabel, testID }: L
   return (
     <View
       style={[styles.row, selected && styles.rowOn, !selected && styles.rowSoon]}
+      accessible
       accessibilityRole="radio"
       accessibilityState={{ checked: selected, disabled: !selected }}
       testID={testID}

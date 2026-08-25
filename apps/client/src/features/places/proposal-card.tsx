@@ -2,9 +2,9 @@
 // refusée), nom, « catégorie · proposé le … », StatusChip et ligne de détail.
 // L'état est porté par le LIBELLÉ (StatusChip), la couleur ne fait qu'appuyer.
 
+import type { TableRow } from "@teko/types";
 import { borderRadius, color, spacing, typography } from "@teko/ui";
 import { LandmarkPinIcon, StatusChip, type StatusChipTone } from "@teko/ui/native";
-import type { TableRow } from "@teko/types";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import { formatProposalDate } from "./format";

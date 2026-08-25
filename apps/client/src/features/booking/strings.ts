@@ -37,8 +37,7 @@ export const bookingFr = {
     aucunRepereTexte: "Votre chauffeur viendra directement à votre position.",
     commander: "Commander ma course",
     planifieeTitre: "Course planifiée",
-    planifieeTexte:
-      "Votre course est enregistrée. Nous vous préviendrons juste avant le départ.",
+    planifieeTexte: "Votre course est enregistrée. Nous vous préviendrons juste avant le départ.",
     retourAccueil: "Retour à l'accueil",
   },
   recherche: {

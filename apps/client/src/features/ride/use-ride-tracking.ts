@@ -5,20 +5,14 @@
 
 import {
   createRealtimePositionsChannel,
-  getProfile,
   getRide,
   type RidePositionEvent,
+  rideDriverCard,
 } from "@teko/api-client";
-import {
-  costingForCategory,
-  fetchRoute,
-  type GeomInput,
-  type LonLat,
-  toLonLat,
-} from "@teko/maps";
+import { costingForCategory, fetchRoute, type GeomInput, type LonLat, toLonLat } from "@teko/maps";
 import type { RideRow, RideStatus } from "@teko/types";
 import { type Href, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { VALHALLA_URL } from "../../config";
@@ -47,17 +41,12 @@ export interface RideTracking {
   routeCoords: LonLat[];
   etaMin: number | null;
   positionStale: boolean;
-  /** Prénom du chauffeur — null si le profil est illisible (RLS self-only). */
+  /** Prénom du chauffeur — null si la fiche est indisponible. */
   driverName: string | null;
   origin: LonLat | null;
   destination: LonLat | null;
   loadError: boolean;
   reload: () => void;
-}
-
-function firstName(fullName: string | null): string | null {
-  const name = (fullName ?? "").trim();
-  return name === "" ? null : (name.split(/\s+/)[0] ?? null);
 }
 
 function safeLonLat(geom: unknown): LonLat | null {
@@ -69,14 +58,13 @@ function safeLonLat(geom: unknown): LonLat | null {
   }
 }
 
-/** Prénom du chauffeur — la RLS de `profiles` est « self or admin » : côté
- *  client la lecture échoue tant que le backend n'expose pas de fiche
- *  chauffeur aux participants ; on retombe sur « Votre chauffeur ». */
+/** Prénom du chauffeur via la fiche participant (RPC ride_driver_card) —
+ *  repli « Votre chauffeur » si indisponible. */
 async function fetchDriverName(ride: RideRow): Promise<string | null> {
   if (!ride.driver_id) return null;
   try {
-    const profile = await getProfile(supabase, ride.driver_id);
-    return firstName(profile.full_name);
+    const card = await rideDriverCard(supabase, ride.id);
+    return card?.firstName ?? null;
   } catch {
     return null;
   }
@@ -96,24 +84,13 @@ async function fetchItinerary(ride: RideRow): Promise<LonLat[]> {
   }
 }
 
-export function useRideTracking(rideId: string | undefined): RideTracking {
-  const router = useRouter();
-  const { t } = useTranslation();
+/** Ligne de course + chargements dérivés (prénom chauffeur, itinéraire). */
+function useRideRow(rideId: string | undefined) {
   const [ride, setRide] = useState<RideRow | null>(null);
   const [status, setStatus] = useState<RideStatus | null>(null);
-  const [vehicle, setVehicle] = useState<LonLat | null>(null);
   const [routeCoords, setRouteCoords] = useState<LonLat[]>([]);
-  const [etaMin, setEtaMin] = useState<number | null>(null);
-  const [positionStale, setPositionStale] = useState(false);
   const [driverName, setDriverName] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
-
-  const lastPositionAt = useRef<number | null>(null);
-  const lastEtaAt = useRef(0);
-  const statusRef = useRef<RideStatus | null>(null);
-  const rideRef = useRef<RideRow | null>(null);
-  statusRef.current = status;
-  rideRef.current = ride;
 
   const load = useCallback(async () => {
     if (!rideId) return;
@@ -133,23 +110,73 @@ export function useRideTracking(rideId: string | undefined): RideTracking {
     void load();
   }, [load]);
 
-  /** ETA véhicule → point de rencontre, au fil des positions (≥ 30 s d'écart). */
-  const refreshEta = useCallback(async (from: LonLat) => {
-    const s = statusRef.current;
-    if (s !== "accepted" && s !== "enroute") return;
-    if (Date.now() - lastEtaAt.current < ETA_REFRESH_MS) return;
-    lastEtaAt.current = Date.now();
-    const origin = safeLonLat(rideRef.current?.origin_geom);
-    if (!origin) return;
-    try {
-      const route = await fetchRoute(VALHALLA_URL, from, origin);
-      setEtaMin(Math.max(1, Math.round(route.durationS / 60)));
-    } catch {
-      // Réseau — on garde la dernière ETA connue.
-    }
+  return { ride, status, setStatus, routeCoords, driverName, loadError, load };
+}
+
+/** ETA véhicule → point de rencontre, au fil des positions (≥ 30 s d'écart). */
+function useEta(statusRef: RefObject<RideStatus | null>, rideRef: RefObject<RideRow | null>) {
+  const [etaMin, setEtaMin] = useState<number | null>(null);
+  const lastEtaAt = useRef(0);
+
+  const refreshEta = useCallback(
+    async (from: LonLat) => {
+      const s = statusRef.current;
+      if (s !== "accepted" && s !== "enroute") return;
+      if (Date.now() - lastEtaAt.current < ETA_REFRESH_MS) return;
+      lastEtaAt.current = Date.now();
+      const origin = safeLonLat(rideRef.current?.origin_geom);
+      if (!origin) return;
+      try {
+        const route = await fetchRoute(VALHALLA_URL, from, origin);
+        setEtaMin(Math.max(1, Math.round(route.durationS / 60)));
+      } catch {
+        // Réseau — on garde la dernière ETA connue.
+      }
+    },
+    [statusRef, rideRef],
+  );
+
+  return { etaMin, refreshEta };
+}
+
+/** Positions véhicule + fraîcheur (bandeau « position figée » > 15 s). */
+function useVehiclePositions(refreshEta: (from: LonLat) => Promise<void>) {
+  const [vehicle, setVehicle] = useState<LonLat | null>(null);
+  const [positionStale, setPositionStale] = useState(false);
+  const lastPositionAt = useRef<number | null>(null);
+
+  const handlePosition = useCallback(
+    (event: RidePositionEvent) => {
+      lastPositionAt.current = Date.now();
+      setPositionStale(false);
+      const position = { lon: event.lon, lat: event.lat };
+      setVehicle(position);
+      void refreshEta(position);
+    },
+    [refreshEta],
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const last = lastPositionAt.current;
+      if (last !== null && Date.now() - last > STALE_POSITION_MS) setPositionStale(true);
+    }, STALE_CHECK_MS);
+    return () => clearInterval(timer);
   }, []);
 
-  const handleStatus = useCallback(
+  return { vehicle, positionStale, handlePosition };
+}
+
+/** Réactions aux statuts backend : completed → paiement, annulations → accueil. */
+function useStatusHandler(
+  rideId: string | undefined,
+  setStatus: (s: RideStatus) => void,
+  load: () => Promise<void>,
+  rideRef: RefObject<RideRow | null>,
+) {
+  const router = useRouter();
+  const { t } = useTranslation();
+  return useCallback(
     (next: RideStatus) => {
       setStatus(next);
       if (next === "completed") {
@@ -168,38 +195,40 @@ export function useRideTracking(rideId: string | undefined): RideTracking {
       // Chauffeur attribué après le montage : recharger la ligne (PIN, driver_id).
       if (!rideRef.current?.driver_id) void load();
     },
-    [rideId, router, t, load],
+    [rideId, setStatus, load, rideRef, router, t],
   );
+}
 
-  const handlePosition = useCallback(
-    (event: RidePositionEvent) => {
-      lastPositionAt.current = Date.now();
-      setPositionStale(false);
-      const position = { lon: event.lon, lat: event.lat };
-      setVehicle(position);
-      void refreshEta(position);
-    },
-    [refreshEta],
-  );
-
+/** Abonnements Realtime (statut + positions) — ADR-13, via PositionsChannel. */
+function useRideChannel(
+  rideId: string | undefined,
+  onStatus: (s: RideStatus) => void,
+  onPosition: (e: RidePositionEvent) => void,
+) {
   useEffect(() => {
     if (!rideId) return;
     const channel = createRealtimePositionsChannel(supabase);
-    const offStatus = channel.subscribeRideStatus(rideId, handleStatus);
-    const offPositions = channel.subscribeRidePositions(rideId, handlePosition);
+    const offStatus = channel.subscribeRideStatus(rideId, onStatus);
+    const offPositions = channel.subscribeRidePositions(rideId, onPosition);
     return () => {
       void offStatus();
       void offPositions();
     };
-  }, [rideId, handleStatus, handlePosition]);
+  }, [rideId, onStatus, onPosition]);
+}
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const last = lastPositionAt.current;
-      if (last !== null && Date.now() - last > STALE_POSITION_MS) setPositionStale(true);
-    }, STALE_CHECK_MS);
-    return () => clearInterval(timer);
-  }, []);
+export function useRideTracking(rideId: string | undefined): RideTracking {
+  const { ride, status, setStatus, routeCoords, driverName, loadError, load } = useRideRow(rideId);
+
+  const statusRef = useRef<RideStatus | null>(null);
+  const rideRef = useRef<RideRow | null>(null);
+  statusRef.current = status;
+  rideRef.current = ride;
+
+  const { etaMin, refreshEta } = useEta(statusRef, rideRef);
+  const { vehicle, positionStale, handlePosition } = useVehiclePositions(refreshEta);
+  const handleStatus = useStatusHandler(rideId, setStatus, load, rideRef);
+  useRideChannel(rideId, handleStatus, handlePosition);
 
   return {
     ride,

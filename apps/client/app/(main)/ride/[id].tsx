@@ -3,7 +3,6 @@
 // (véhicule temps réel, itinéraire violet), PIN de prise en charge, partage,
 // SOS. completed → paiement ; cancelled_driver → information + accueil.
 
-import { createTripShare, TekoApiError } from "@teko/api-client";
 import type { LonLat } from "@teko/maps";
 import { color, spacing, typography } from "@teko/ui";
 import { Button, DataWidget, EcoPill } from "@teko/ui/native";
@@ -11,26 +10,22 @@ import * as Location from "expo-location";
 import { type Href, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert, Pressable, Share, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DEFAULT_CENTER, TILES_URL } from "../../../src/config";
 import { useBookingStore } from "../../../src/features/booking/store";
 import { useDataUsage, useResolvedMapMode } from "../../../src/features/data/data-state";
 import { ClientDot } from "../../../src/features/map/client-dot";
 import { TekoMapView } from "../../../src/features/map/native-map";
-import { CoursePanel } from "../../../src/features/ride/course-panel";
-import { ApproachPanel, ArrivedPanel } from "../../../src/features/ride/pin-panels";
 import {
   DestinationFlag,
   OriginPin,
   RouteLine,
   VehicleMarker,
 } from "../../../src/features/ride/ride-map-layers";
+import { RidePanel } from "../../../src/features/ride/ride-panel";
 import { useRideTracking } from "../../../src/features/ride/use-ride-tracking";
-import { supabase } from "../../../src/lib/supabase";
-
-// TODO domaine réel — aligner avec la page publique de suivi (get_shared_trip).
-const SHARE_BASE_URL = "https://teko.ga/t";
+import { useShareTrip } from "../../../src/features/ride/use-share-trip";
 
 /** Position de l'appareil (point client magenta) — meilleure volonté, une fois. */
 function useDevicePosition(): LonLat | null {
@@ -52,6 +47,27 @@ function useDevicePosition(): LonLat | null {
   return position;
 }
 
+function LoadingView({ loadError, onRetry }: { loadError: boolean; onRetry: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.loading}>
+      {loadError ? (
+        <>
+          <Text style={styles.loadError}>{t("ride:suivi.chargementErreur")}</Text>
+          <Button
+            label={t("commun.reessayer")}
+            variant="secondary"
+            onPress={onRetry}
+            testID="ride-retry"
+          />
+        </>
+      ) : (
+        <ActivityIndicator color={color.brand[800]} />
+      )}
+    </View>
+  );
+}
+
 export default function RideScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -62,70 +78,10 @@ export default function RideScreen() {
   const usage = useDataUsage();
   const devicePosition = useDevicePosition();
   const bookingDestination = useBookingStore((s) => s.destination);
-  const [sharing, setSharing] = useState(false);
+  const { sharing, share } = useShareTrip(id);
 
-  const { ride, status } = tracking;
-
-  const share = async () => {
-    if (!ride) return;
-    setSharing(true);
-    try {
-      const trip = await createTripShare(supabase, ride.id);
-      await Share.share({
-        message: t("ride:suivi.partageMessage", { lien: `${SHARE_BASE_URL}/${trip.token}` }),
-      });
-    } catch (e) {
-      Alert.alert(
-        e instanceof TekoApiError && e.code === "network"
-          ? t("erreurs.reseau")
-          : t("erreurs.generique"),
-      );
-    } finally {
-      setSharing(false);
-    }
-  };
-
-  if (!ride) {
-    return (
-      <View style={styles.loading}>
-        {tracking.loadError ? (
-          <>
-            <Text style={styles.loadError}>{t("ride:suivi.chargementErreur")}</Text>
-            <Button
-              label={t("commun.reessayer")}
-              variant="secondary"
-              onPress={tracking.reload}
-              testID="ride-retry"
-            />
-          </>
-        ) : (
-          <ActivityIndicator color={color.brand[800]} />
-        )}
-      </View>
-    );
-  }
-
-  const onCancel = () => router.push(`/(main)/cancel/${ride.id}` as Href);
-  const panel =
-    status === "arrived" ? (
-      <ArrivedPanel driverName={tracking.driverName} pin={ride.pin_code} onCancel={onCancel} />
-    ) : status === "started" ? (
-      <CoursePanel
-        ride={ride}
-        driverName={tracking.driverName}
-        destinationLabel={bookingDestination?.label ?? null}
-        positionStale={tracking.positionStale}
-        sharing={sharing}
-        onShare={() => void share()}
-      />
-    ) : (
-      <ApproachPanel
-        driverName={tracking.driverName}
-        pin={ride.pin_code}
-        etaMin={tracking.etaMin}
-        onCancel={onCancel}
-      />
-    );
+  const { ride } = tracking;
+  if (!ride) return <LoadingView loadError={tracking.loadError} onRetry={tracking.reload} />;
 
   return (
     <View style={styles.screen}>
@@ -161,7 +117,14 @@ export default function RideScreen() {
             testID="data-widget"
           />
         </View>
-        {panel}
+        <RidePanel
+          tracking={tracking}
+          ride={ride}
+          destinationLabel={bookingDestination?.label ?? null}
+          sharing={sharing}
+          onShare={() => void share()}
+          onCancel={() => router.push(`/(main)/cancel/${ride.id}` as Href)}
+        />
       </View>
     </View>
   );

@@ -2,7 +2,7 @@
 // « Compte désactivé » → fermeture = signOut + racine ; erreur dédiée si
 // une course est en cours (TekoApiError.code, jamais de string-match).
 
-import { render, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { act, render, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { Alert } from "react-native";
 
 const mockRequestDeletion = jest.fn();
@@ -42,9 +42,11 @@ beforeAll(async () => {
 
 beforeEach(() => jest.clearAllMocks());
 
-const confirmViaAlert = (alertSpy: jest.SpyInstance) => {
+const confirmViaAlert = async (alertSpy: jest.SpyInstance) => {
   const buttons = alertSpy.mock.calls[0]?.[2];
-  buttons?.[1]?.onPress?.();
+  await act(async () => {
+    buttons?.[1]?.onPress?.();
+  });
 };
 
 describe("C-28 Suppression de compte", () => {
@@ -60,14 +62,14 @@ describe("C-28 Suppression de compte", () => {
 
   it("confirmation → requestAccountDeletion → état désactivé → fermeture", async () => {
     const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
-    mockRequestDeletion.mockResolvedValueOnce("2026-09-24T00:00:00Z");
+    mockRequestDeletion.mockResolvedValueOnce("2026-09-24T12:00:00Z");
     mockSignOut.mockResolvedValueOnce(undefined);
     const user = userEvent.setup();
     render(<DeleteAccount />, { wrapper: Providers });
 
     await user.press(screen.getByTestId("delete-cta"));
     expect(alertSpy).toHaveBeenCalled();
-    confirmViaAlert(alertSpy);
+    await confirmViaAlert(alertSpy);
 
     expect(await screen.findByText("Compte désactivé")).toBeOnTheScreen();
     expect(screen.getByTestId("delete-done")).toHaveTextContent(/24 septembre/);
@@ -84,7 +86,7 @@ describe("C-28 Suppression de compte", () => {
     render(<DeleteAccount />, { wrapper: Providers });
 
     await user.press(screen.getByTestId("delete-cta"));
-    confirmViaAlert(alertSpy);
+    await confirmViaAlert(alertSpy);
 
     expect(await screen.findByTestId("delete-error")).toHaveTextContent(/course est en cours/);
     expect(mockReplace).not.toHaveBeenCalled();

@@ -67,7 +67,8 @@ describe("C-24 Modifier le profil", () => {
     const user = userEvent.setup();
     render(<ProfileEdit />, { wrapper: Providers });
 
-    const first = await screen.findByTestId("edit-firstname");
+    // Attendre le pré-remplissage avant d'éditer (évite la course avec l'effet).
+    const first = await screen.findByDisplayValue("Nadia");
     await user.clear(first);
     await user.type(first, "Awa");
     await user.press(screen.getByTestId("edit-save"));

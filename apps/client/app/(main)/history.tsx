@@ -2,7 +2,7 @@
 // Aujourd'hui / Hier / date), filtres en pastilles ; montant précédé de ≈
 // tant que le prix n'est pas final ; tap → détail C-20.
 
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { listMyRides } from "@teko/api-client";
 import type { RideRow } from "@teko/types";
 import { color, spacing, typography } from "@teko/ui";
@@ -75,7 +75,11 @@ export default function History() {
   const query = useQuery({ queryKey: ["my-rides"], queryFn: () => listMyRides(supabase, 50) });
 
   const sections = useMemo(
-    () => groupRides((query.data ?? []).filter((r) => matchesFilter(r, filter, now)), now),
+    () =>
+      groupRides(
+        (query.data ?? []).filter((r) => matchesFilter(r, filter, now)),
+        now,
+      ),
     [query.data, filter, now],
   );
 

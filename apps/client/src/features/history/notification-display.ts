@@ -4,7 +4,7 @@
 
 import { formatXaf } from "@teko/core";
 import type { NotificationRow } from "@teko/types";
-import { dayLabel, type DayLabel, type TranslateFn } from "./ride-display";
+import { type DayLabel, dayLabel, type TranslateFn } from "./ride-display";
 
 const LABEL_KEYS: Record<string, string> = {
   ride_accepted: "history:notifs.typeRideAccepted",
@@ -25,7 +25,12 @@ export function notificationLabelKey(type: string): string | null {
 
 export type NotificationIconKind = "ride" | "landmark" | "calendar" | "fee" | "default";
 
-const RIDE_TYPES = new Set(["ride_accepted", "driver_arrived", "ride_completed", "no_driver_found"]);
+const RIDE_TYPES = new Set([
+  "ride_accepted",
+  "driver_arrived",
+  "ride_completed",
+  "no_driver_found",
+]);
 
 export function notificationIconKind(type: string): NotificationIconKind {
   if (RIDE_TYPES.has(type)) return "ride";
@@ -45,9 +50,10 @@ export interface NotificationPayload {
 /** Payload Json → champs sûrs. */
 export function notificationPayload(n: NotificationRow): NotificationPayload {
   const raw = n.payload;
-  const p = (
-    typeof raw === "object" && raw !== null && !Array.isArray(raw) ? raw : {}
-  ) as Record<string, unknown>;
+  const p = (typeof raw === "object" && raw !== null && !Array.isArray(raw) ? raw : {}) as Record<
+    string,
+    unknown
+  >;
   const amountRaw = p.fee ?? p.price;
   return {
     rideId: typeof p.ride_id === "string" ? p.ride_id : null,

@@ -64,7 +64,7 @@ const paiement = (status: string) => ({
 });
 
 function renderScreen(ui: ReactElement) {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return render(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>);
 }
 
@@ -125,7 +125,7 @@ describe("C-15 Airtel Money", () => {
 
     await user.press(await screen.findByTestId("pay-cash-alt"));
     expect(await screen.findByTestId("payment-continue")).toBeOnTheScreen();
-    expect(screen.getByText(/Remettez 1 500 FCFA|Remettez/)).toBeOnTheScreen();
+    expect(screen.getByText(/^Remettez/)).toBeOnTheScreen();
   });
 
   it("succès : bascule automatique vers l'évaluation", async () => {
