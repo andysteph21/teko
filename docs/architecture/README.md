@@ -15,6 +15,7 @@ Ce dossier décrit l'architecture technique de Teko, en s'appuyant sur la docume
 7. **[07-evaluation-stack.md](07-evaluation-stack.md)** — évaluation contradictoire de la stack (août 2026) : Supabase + Expo confirmés face aux alternatives (Firebase, backend custom, Flutter…), risques réels, garde-fous, seuils de réévaluation (ADR-12 à 14).
 8. **[08-ecarts-backend-ux.md](08-ecarts-backend-ux.md)** — confrontation backend ↔ 79 maquettes : couverture, écarts E-01→E-17 (dispatch/offres, jobs, suppression de compte, SOS, grants DML, garde `daily_close`…), vérifiés par les tests e2e (`supabase/tests/e2e/`).
 9. **[09-veille-expo.md](09-veille-expo.md)** — veille écosystème Expo (août 2026) : cibler SDK 57+ (régression Hermes en 56), cadence rapide, API 36/edge-to-edge, FCM v1, dev clients obligatoires (MapLibre), paquets à jour par besoin.
+10. **[10-regles-ingenierie.md](10-regles-ingenierie.md)** — règles d'ingénierie des apps (25 août 2026, actées) : Biome, nommage anglais, architecture d'état (Zustand + TanStack Query + expo-sqlite), styling, stratégie de tests et paliers de couverture, parc d'appareils adb.
 
 ## Synthèse des choix structurants
 
