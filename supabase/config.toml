@@ -19,6 +19,16 @@ additional_redirect_urls = ["teko-client://auth", "teko-driver://auth", "http://
 enable_signup = true
 enable_confirmations = true
 
+# Fournisseur factice : la CLI n'active l'auth téléphone que si un
+# fournisseur est déclaré. Les numéros de test court-circuitent AVANT tout
+# appel réel — Twilio n'est jamais contacté en local. TWILIO_AUTH_TOKEN est
+# optionnel (absent → vide, sans incidence).
+[auth.sms.twilio]
+enabled = true
+account_sid = "AC00000000000000000000000000000000"
+message_service_sid = "MG00000000000000000000000000000000"
+auth_token = "env(TWILIO_AUTH_TOKEN)"
+
 # Numéros de test (format E.164 sans « + ») → code OTP accepté.
 # Convention locale : …0001 client, …0002 chauffeur, …0003 admin.
 [auth.sms.test_otp]
