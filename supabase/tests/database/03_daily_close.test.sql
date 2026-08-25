@@ -26,8 +26,10 @@ begin
   perform public.post_ledger('bbbb2222-bbbb-2222-bbbb-222222222222','mobile_credit',  2000);
 end $$;
 
--- Clôture du jour courant : traite nos 2 chauffeurs
-select is( public.daily_close(), 2, 'La clôture traite 2 chauffeurs' );
+-- Clôture du jour courant : traite AU MOINS nos 2 chauffeurs (la base
+-- locale peut contenir des chauffeurs laissés par la suite e2e — en CI
+-- fraîche, c'est exactement 2).
+select cmp_ok( public.daily_close(), '>=', 2, 'La clôture traite au moins nos 2 chauffeurs' );
 
 -- A : désactivé pour solde négatif
 select is( (select is_active from public.drivers where id='aaaa1111-aaaa-1111-aaaa-111111111111'),
