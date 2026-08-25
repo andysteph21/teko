@@ -55,6 +55,7 @@ export {
   createDriverProfile,
   getMyDriver,
   listMyDocuments,
+  listMyVehicles,
   setGpsConsent,
   setPayoutMsisdn,
   uploadKycDocument,

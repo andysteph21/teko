@@ -59,7 +59,8 @@ export async function uploadKycDocument(
   );
 }
 
-/** Véhicule du chauffeur (D-06) — plaque + catégorie. */
+/** Véhicule du chauffeur (D-06) — plaque + catégorie. Vrai upsert : refaire
+ *  l'étape (retour arrière du dossier) remplace la plaque, sans doublon. */
 export async function upsertVehicle(
   client: TekoClient,
   input: { driverId: string; category: VehicleCategory; plate: string },
@@ -67,9 +68,22 @@ export async function upsertVehicle(
   return unwrap(
     await client
       .from("vehicles")
-      .insert({ driver_id: input.driverId, category: input.category, plate: input.plate })
+      .upsert(
+        { driver_id: input.driverId, category: input.category, plate: input.plate },
+        { onConflict: "driver_id,category" },
+      )
       .select()
       .single(),
+  );
+}
+
+/** Véhicules du chauffeur (D-18 « Mon véhicule »). */
+export async function listMyVehicles(
+  client: TekoClient,
+  driverId: string,
+): Promise<TableRow<"vehicles">[]> {
+  return unwrap(
+    await client.from("vehicles").select("*").eq("driver_id", driverId).order("category"),
   );
 }
 
