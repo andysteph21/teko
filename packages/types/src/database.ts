@@ -2045,6 +2045,33 @@ export type Database = {
         Returns: string
       }
       ride_driver_card: { Args: { p_ride: string }; Returns: Json }
+      search_landmarks: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          aliases: string[]
+          category: Database["public"]["Enums"]["landmark_category"]
+          created_at: string
+          created_by: string | null
+          geom: unknown
+          id: string
+          name: string
+          photo_url: string | null
+          provenance: Database["public"]["Enums"]["geo_provenance"]
+          salience: number
+          source: Database["public"]["Enums"]["geo_source"]
+          status: Database["public"]["Enums"]["geo_status"]
+          updated_at: string
+          usage_count: number
+          validated_by: string | null
+          zone_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "landmarks"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       send_settlement_reminders: { Args: never; Returns: number }
       set_commission: {
         Args: { p_type: string; p_value: number }

@@ -6,7 +6,9 @@ import type { TableRow } from "@teko/types";
 import type { TekoClient } from "./client";
 import { unwrap } from "./errors";
 
-/** Recherche de repères VALIDÉS par nom/alias (insensible à la casse). */
+/** Recherche de repères VALIDÉS — RPC search_landmarks : insensible aux
+ *  accents et à la casse, nom ET alias, saillance d'abord (constat appareil
+ *  réel : « Marche » doit trouver « Marché »). */
 export async function searchLandmarksByName(
   client: TekoClient,
   query: string,
@@ -15,13 +17,8 @@ export async function searchLandmarksByName(
   const term = query.trim();
   if (term.length < 2) return [];
   return unwrap(
-    await client
-      .from("landmarks")
-      .select("*")
-      .ilike("name", `%${term}%`)
-      .order("salience", { ascending: false })
-      .limit(limit),
-  );
+    await client.rpc("search_landmarks", { p_query: term, p_limit: limit }),
+  ) as TableRow<"landmarks">[];
 }
 
 /** Lieux enregistrés du compte (Domicile / Travail / favoris). */

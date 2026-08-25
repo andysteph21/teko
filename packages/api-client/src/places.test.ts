@@ -16,15 +16,15 @@ function tableClient(data: unknown): Mock {
 }
 
 describe("places & lectures directes", () => {
-  it("searchLandmarksByName : ilike + tri par saillance ; requête courte → []", async () => {
-    const client = tableClient([{ id: "lm1" }]);
+  it("searchLandmarksByName : RPC search_landmarks ; requête courte → []", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ id: "lm1" }], error: null });
+    const client = { rpc } as unknown as TekoClient;
     await searchLandmarksByName(client, "  pharma ", 5);
-    expect(client.ilike).toHaveBeenCalledWith("name", "%pharma%");
-    expect(client.order).toHaveBeenCalledWith("salience", { ascending: false });
+    expect(rpc).toHaveBeenCalledWith("search_landmarks", { p_query: "pharma", p_limit: 5 });
 
-    const untouched = tableClient([]);
+    const untouched = { rpc: vi.fn() } as unknown as TekoClient;
     expect(await searchLandmarksByName(untouched, "p")).toEqual([]);
-    expect(untouched.from).not.toHaveBeenCalled();
+    expect(untouched.rpc).not.toHaveBeenCalled();
   });
 
   it("listSavedPlaces / listMyLandmarkProposals lisent sous RLS", async () => {
