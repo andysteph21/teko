@@ -7,3 +7,11 @@ export const VALHALLA_URL = process.env.EXPO_PUBLIC_VALHALLA_URL ?? "http://127.
 
 /** Centre par défaut : Libreville (lancement mono-ville, n° 25). */
 export const DEFAULT_CENTER = { lon: 9.4536, lat: 0.4032 };
+
+/** Emprise approximative du Gabon — hors de cette zone, l'app recadre sur
+ *  Libreville (lancement mono-ville ; la couverture réelle par zones arrive
+ *  avec la question n° 13). Indispensable en dev : le GPS de l'appareil
+ *  n'est pas au Gabon, Valhalla ne route que l'extrait gabonais. */
+export function withinGabon(p: { lon: number; lat: number }): boolean {
+  return p.lon >= 8.3 && p.lon <= 14.6 && p.lat >= -4.1 && p.lat <= 2.4;
+}

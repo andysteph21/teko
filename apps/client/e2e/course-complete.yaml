@@ -1,0 +1,36 @@
+# Parcours critique n° 1 — commander une course (C-07 → C-12) contre la
+# stack locale, chauffeur joué par tools/dev/driver-sim.mjs.
+# Pré-requis : session client active sur l'appareil, sim en ligne.
+appId: ga.teko.client
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Où allez-vous ?"
+    timeout: 90000
+- tapOn: "Chercher un repère…"
+- waitForAnimationToEnd:
+    timeout: 3000
+- inputText: "Mont"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    text: ".*Bouët.*"
+- extendedWaitUntil:
+    visible: "DESTINATION"
+    timeout: 15000
+- tapOn: "Continuer"
+- extendedWaitUntil:
+    visible: "Choisissez votre course"
+    timeout: 20000
+- assertVisible: "Éco"
+- assertVisible: "Espèces"
+- tapOn:
+    text: "Commander Éco.*"
+- extendedWaitUntil:
+    visible: ".*rencontre.*|.*Aucun repère.*"
+    timeout: 20000
+- tapOn:
+    text: "Commander ma course|Confirmer le point de rencontre"
+- extendedWaitUntil:
+    visible: "Recherche d'un chauffeur…"
+    timeout: 20000

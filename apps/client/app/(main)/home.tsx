@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { DEFAULT_CENTER, TILES_URL } from "../../src/config";
+import { DEFAULT_CENTER, TILES_URL, withinGabon } from "../../src/config";
 import { useProfile } from "../../src/features/auth/use-profile";
 import { useBookingStore } from "../../src/features/booking/store";
 import { useDataUsage, useResolvedMapMode } from "../../src/features/data/data-state";
@@ -48,7 +48,9 @@ export default function Home() {
         accuracy: Location.Accuracy.Balanced,
       }).catch(() => null);
       if (loc && !cancelled) {
-        const p = { lon: loc.coords.longitude, lat: loc.coords.latitude };
+        const raw = { lon: loc.coords.longitude, lat: loc.coords.latitude };
+        // Hors emprise Gabon (dev, voyageur) : recadrage Libreville.
+        const p = withinGabon(raw) ? raw : DEFAULT_CENTER;
         setPosition(p);
         setOrigin({ position: p, label: "Ma position" });
       }
