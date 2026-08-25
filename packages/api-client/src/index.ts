@@ -8,6 +8,35 @@ export {
   type UpdateProfileInput,
   updateProfile,
 } from "./account";
+export {
+  type DashboardCounts,
+  dashboardCounts,
+  getCommission,
+  getKycFileUrl,
+  inviteAdmin,
+  listAdminInvites,
+  listAppConfig,
+  listAuditLog,
+  listDriverDocuments,
+  listIncidents,
+  listKycQueue,
+  listLandmarkProposals,
+  listPayments,
+  listProfiles,
+  listRecentRides,
+  listRoadProposals,
+  listStatements,
+  type PendingKycRow,
+  reviewDocument,
+  runDailyClose,
+  setCommission,
+  setDriverActive,
+  updateAppConfig,
+  updateIncident,
+  validateKyc,
+  validateLandmarkProposal,
+  validateRoadProposal,
+} from "./admin";
 export { type Session, signInWithPhoneOtp, signOut, verifyPhoneOtp } from "./auth";
 export {
   type CreateTekoClientOptions,
@@ -22,6 +51,15 @@ export {
   offerDetails,
   respondOffer,
 } from "./dispatch";
+export {
+  createDriverProfile,
+  getMyDriver,
+  listMyDocuments,
+  setGpsConsent,
+  setPayoutMsisdn,
+  uploadKycDocument,
+  upsertVehicle,
+} from "./driver";
 export { mapApiError, TekoApiError, type TekoApiErrorCode, unwrap } from "./errors";
 export {
   createSettlementPayment,
@@ -32,7 +70,11 @@ export {
   listMyStatements,
   listPaymentsForRide,
 } from "./finance";
-export { listNotifications, markNotificationRead } from "./notifications";
+export {
+  listNotifications,
+  markNotificationRead,
+  subscribeNotifications,
+} from "./notifications";
 export {
   listMyLandmarkProposals,
   listSavedPlaces,
