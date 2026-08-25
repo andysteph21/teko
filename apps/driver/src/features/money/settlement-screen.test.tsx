@@ -92,6 +92,12 @@ describe("D-16 règlement Airtel", () => {
     expect(mockReplace).toHaveBeenCalledWith("/(main)/balance");
   });
 
+  it("dette non entière : pré-remplie arrondie au franc supérieur (712.5 → 713, jamais 7125)", async () => {
+    mockDriverBalance.mockResolvedValue(-712.5);
+    renderScreen(<SettlementScreen />);
+    await waitFor(() => expect(screen.getByTestId("settle-amount").props.value).toBe("713"));
+  });
+
   it("montant modifié : l'intention part avec la saisie du chauffeur", async () => {
     mockCreateSettlement.mockResolvedValue(paiement("initiated"));
     mockInvokeCollect.mockResolvedValue(undefined);

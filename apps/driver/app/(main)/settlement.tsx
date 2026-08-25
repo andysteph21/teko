@@ -82,7 +82,10 @@ export default function SettlementScreen() {
   const { demarrer, renvoyer, payment, phase } = useSettlementFlow();
   const [saisi, setSaisi] = useState<string | null>(null);
 
-  const dette = balanceQ.data !== undefined && balanceQ.data < 0 ? -balanceQ.data : null;
+  // Dette arrondie au franc supérieur : le XAF n'a pas de décimales, et
+  // « 712.5 » pré-rempli deviendrait 7 125 via parseMontant (point retiré).
+  const dette =
+    balanceQ.data !== undefined && balanceQ.data < 0 ? Math.ceil(-balanceQ.data) : null;
   const texte = saisi ?? (dette !== null ? String(dette) : "");
   const montantAffiche = payment ? Number(payment.amount) : parseMontant(texte);
   const numero = driverQ.data?.payout_msisdn ? telephoneAffiche(driverQ.data.payout_msisdn) : null;
