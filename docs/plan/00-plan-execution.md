@@ -1,6 +1,17 @@
 # Plan d'exécution — Teko (post-backend)
 
-**Version :** 1.2 · **Date :** 25 août 2026 (v1.1 : 18 août · v1.0 : 5 juin) · **Périmètre :** MVP *ride-hailing*
+**Version :** 1.3 · **Date :** 25 août 2026 (v1.2 : 25 août · v1.1 : 18 août · v1.0 : 5 juin) · **Périmètre :** MVP *ride-hailing*
+
+> **v1.3 — LOT 1 LIVRÉ, JALON M1 ATTEINT (25 août 2026)** : monorepo outillé
+> (Biome, règles du doc 10), packages du socle créés et testés (`types`,
+> `core`, `api-client`, `i18n`, `telemetry`, `ui` — 115 tests packages, 100 %
+> de couverture lignes), les 3 apps scaffoldées et **démarrent en lisant des
+> données réelles** : console admin vérifiée au navigateur (OTP + RPC), app
+> client vérifiée **sur OPPO A15 physique** (connexion OTP test → repères
+> Libreville + estimation 1 430 F), exports Hermes + `next build` verts, CI
+> racine `monorepo-ci`. Auth téléphone locale opérationnelle (numéros de
+> test, `supabase/config.toml`). Prochaine étape : **spikes MapLibre RN +
+> Realtime (lot 1), puis lot 3 (app client, parcours A)**.
 
 > **v1.2 — Phase 0 ENGAGÉE (25 août 2026)** : les 26 réponses client sont
 > arrivées, **les 6 bloquantes sont levées** (détail : `04-suivi-client.md`,
@@ -30,9 +41,9 @@ Ce document transforme la liste des 6 prochaines étapes en **plan d'attaque ex�
 | Edge Functions Airtel (`supabase/functions/`) | ✅ Livrées (3 TODO ouverts → lot 6) |
 | Design system + icônes (`docs/design/`, `assets/`) | ✅ Livré |
 | **Maquettes UX des 3 interfaces** (69 écrans + 4 specs de parcours, `../design/06-maquettes.md`) | ✅ Livrées (18 août 2026) — backlog UX v1.1 : 4 écrans (`02-backlog.md`) |
-| **Monorepo frontend** (`apps/`, `packages/`) | ❌ À créer (lot 1) |
-| **Infra carto self-hosted** (`infra/`) | ❌ À créer (lot 2) |
-| **3 applications** (client, chauffeur, admin) — code | ❌ À créer (lots 3-5), sur la base des maquettes |
+| **Monorepo frontend** (`apps/`, `packages/`) | ✅ Livré (25 août, jalon M1) — 6 packages + 3 scaffolds d'apps, Biome, CI `monorepo-ci` |
+| **Infra carto self-hosted** (`infra/`) | ✅ Vérifiée en local de bout en bout (déploiement prod : lot 2) |
+| **3 applications** (client, chauffeur, admin) — code | 🚧 Scaffolds M1 vérifiés sur appareil réel ; écrans : lots 3-5, sur la base des maquettes |
 
 ---
 

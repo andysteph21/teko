@@ -44,15 +44,16 @@ export function DataProbe({ category }: ProbeProps) {
     );
   }
 
-  const names = probe.data.landmarks.features.map(
-    (f) => (f.properties as { name?: string }).name ?? "?",
-  );
+  const landmarks = probe.data.landmarks.features.map((f, index) => ({
+    id: String(f.id ?? index),
+    name: (f.properties as { name?: string }).name ?? "?",
+  }));
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Repères autour de Mont-Bouët</Text>
-      {names.map((name) => (
-        <Text key={name} style={styles.item}>
-          {name}
+      {landmarks.map((landmark) => (
+        <Text key={landmark.id} style={styles.item}>
+          {landmark.name}
         </Text>
       ))}
       <Text style={styles.title}>Estimation 3,19 km / 5 min ({category})</Text>

@@ -2,7 +2,7 @@
 
 Plateforme de transport à la demande conçue pour le Gabon (MVP ride-hailing, ambition super-app). Ce README est la carte du projet — chaque dossier a sa documentation propre.
 
-**État au 25 août 2026 :** backend livré et testé · conception UX des 3 interfaces terminée (79 maquettes, sources dans [docs/design/maquettes/](docs/design/maquettes/)) · paquet de décisions envoyé au client (26 questions) · **réponses client reçues le 25 août — 26/26, les 6 bloquantes levées** ([suivi](docs/plan/04-suivi-client.md), config alignée par migration `20260825`) · stack **Supabase + Expo confirmée** après évaluation contradictoire ([07-evaluation-stack.md](docs/architecture/07-evaluation-stack.md)) · backend confronté aux maquettes : **écarts E-01→E-17 documentés et comblés** (migrations `20260820*`, [08-ecarts-backend-ux.md](docs/architecture/08-ecarts-backend-ux.md)) · **56 tests pgTAP + 52 tests e2e** en CI ([supabase/tests/e2e/](supabase/tests/e2e/README.md)) · **carte complète et animée** : `packages/maps` + backend carto vérifiés, langage UI/UX figé dans [08-carte-langage.md](docs/design/08-carte-langage.md) · **Phase 0 engagée** : séance tarifaire (n° 7), latence hébergeur, devis SMS, puis spikes techniques (MapLibre RN, Realtime), correction R1 (signature Airtel) et développement du lot 1 — **les applications mobiles démarrent**.
+**État au 25 août 2026 (soir) :** backend livré et testé · conception UX des 3 interfaces terminée (79 maquettes, sources dans [docs/design/maquettes/](docs/design/maquettes/)) · **réponses client 26/26, les 6 bloquantes levées** ([suivi](docs/plan/04-suivi-client.md)) · stack **Supabase + Expo confirmée** ([07-evaluation-stack.md](docs/architecture/07-evaluation-stack.md)) · **56 tests pgTAP + 52 tests e2e** en CI ([supabase/tests/e2e/](supabase/tests/e2e/README.md)) · **carte complète et animée** : `packages/maps`, langage figé dans [08-carte-langage.md](docs/design/08-carte-langage.md) · **règles d'ingénierie actées** ([10-regles-ingenierie.md](docs/architecture/10-regles-ingenierie.md) : Biome, nommage anglais, Zustand + TanStack Query + expo-sqlite, paliers de couverture, 3 appareils adb) · **LOT 1 LIVRÉ — jalon M1 atteint** : 6 packages du socle (115 tests, 100 % lignes) + 3 apps scaffoldées ([apps/](apps/)) qui **démarrent et lisent des données réelles** (console admin vérifiée au navigateur ; app client vérifiée sur OPPO A15 physique : OTP de test → repères Libreville + estimation) · CI racine `monorepo-ci` · prochaine étape : **spikes MapLibre RN + Realtime, puis lot 3 (app client)**.
 
 ## Structure du projet
 
@@ -29,12 +29,12 @@ teko/
 ├─ logos/               # Logo source (logos/svg = brouillons IA, ne pas utiliser)
 ├─ templates/           # Templates Taxido achetés — RÉFÉRENCE UNIQUEMENT (décision :
 │                       # construction neuve, cf. 05-questions-ouvertes décision n°1)
-├─ packages/config/     # tsconfig/eslint partagés du monorepo
-├─ packages/maps/       # @teko/maps — style, adaptateur Supabase, contrôleur web, mode éco
-├─ apps/labo-carte/     # Labo Vite TEMPORAIRE de la carte (scénarios, vidéos) — pas un produit
+├─ apps/                # client & driver (Expo SDK 57) · admin (Next.js 16) · labo-carte (TEMPORAIRE)
+├─ packages/            # config (tsconfig) · types (générés) · core · api-client · i18n
+│                       # telemetry · ui (tokens générés) · maps (@teko/maps)
 ├─ infra/               # Carto self-hosted : tuiles Martin, routage Valhalla, conflation OSM
 ├─ misc/                # (hors VCS) vidéos de démonstration, régénérables via LISEZMOI.md
-└─ turbo.json, pnpm-workspace.yaml   # Socle monorepo (apps produit au lot 1)
+└─ CLAUDE.md, biome.json, turbo.json, pnpm-workspace.yaml   # Règles & socle monorepo
 ```
 
 ## Documents de référence par question
