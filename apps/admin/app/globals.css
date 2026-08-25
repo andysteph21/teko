@@ -8,18 +8,40 @@
 @theme inline {
   --color-brand-50: var(--color-brand-50);
   --color-brand-100: var(--color-brand-100);
+  --color-brand-200: var(--color-brand-200);
+  --color-brand-300: var(--color-brand-300);
+  --color-brand-400: var(--color-brand-400);
   --color-brand-500: var(--color-brand-500);
+  --color-brand-600: var(--color-brand-600);
+  --color-brand-700: var(--color-brand-700);
   --color-brand-800: var(--color-brand-800);
   --color-brand-900: var(--color-brand-900);
   --color-neutral-0: var(--color-neutral-0);
   --color-neutral-50: var(--color-neutral-50);
   --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-200: var(--color-neutral-200);
   --color-neutral-300: var(--color-neutral-300);
+  --color-neutral-400: var(--color-neutral-400);
   --color-neutral-500: var(--color-neutral-500);
+  --color-neutral-600: var(--color-neutral-600);
   --color-neutral-700: var(--color-neutral-700);
+  --color-neutral-800: var(--color-neutral-800);
   --color-neutral-900: var(--color-neutral-900);
+  --color-driver-accent: var(--color-role-driver-accent);
+  --color-driver-accent-light: var(--color-role-driver-accent-light);
+  --color-driver-accent-dark: var(--color-role-driver-accent-dark);
+  --color-client-accent: var(--color-role-client-accent);
   --color-error: var(--color-semantic-error-default);
+  --color-error-light: var(--color-semantic-error-light);
+  --color-error-dark: var(--color-semantic-error-dark);
   --color-success: var(--color-semantic-success-default);
+  --color-success-light: var(--color-semantic-success-light);
+  --color-success-dark: var(--color-semantic-success-dark);
+  --color-warning: var(--color-semantic-warning-default);
+  --color-warning-light: var(--color-semantic-warning-light);
+  --color-warning-dark: var(--color-semantic-warning-dark);
+  --color-info: var(--color-semantic-info-default);
+  --color-info-light: var(--color-semantic-info-light);
 }
 
 body {
