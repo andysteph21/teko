@@ -26,6 +26,7 @@ export {
   createSettlementPayment,
   driverBalance,
   getPayment,
+  listPaymentsForRide,
   invokeCollect,
   listMyLedger,
   listMyStatements,

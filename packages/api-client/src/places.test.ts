@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { TekoClient } from "./client";
-import { getPayment } from "./finance";
+import { getPayment, listPaymentsForRide } from "./finance";
 import { listMyLandmarkProposals, listSavedPlaces, searchLandmarksByName } from "./places";
 import { getRide } from "./rides";
 
@@ -44,5 +44,11 @@ describe("places & lectures directes", () => {
     const payment = tableClient({ id: "p1", status: "success" });
     expect((await getPayment(payment, "p1")).status).toBe("success");
     expect(payment.from).toHaveBeenCalledWith("payments");
+  });
+
+  it("listPaymentsForRide filtre par course", async () => {
+    const client = tableClient([{ id: "p1" }]);
+    await listPaymentsForRide(client, "r1");
+    expect(client.eq).toHaveBeenCalledWith("ride_id", "r1");
   });
 });

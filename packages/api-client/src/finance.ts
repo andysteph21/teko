@@ -39,6 +39,20 @@ export async function getPayment(
   return unwrap(await client.from("payments").select("*").eq("id", paymentId).single());
 }
 
+/** Paiements liés à une course (C-15 : retrouver l'encaissement Airtel). */
+export async function listPaymentsForRide(
+  client: TekoClient,
+  rideId: string,
+): Promise<TableRow<"payments">[]> {
+  return unwrap(
+    await client
+      .from("payments")
+      .select("*")
+      .eq("ride_id", rideId)
+      .order("created_at", { ascending: false }),
+  );
+}
+
 /** Écritures du grand livre du compte courant (détail de D-15), RLS-scopé. */
 export async function listMyLedger(client: TekoClient, limit = 50): Promise<TableRow<"ledger">[]> {
   return unwrap(
