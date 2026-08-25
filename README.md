@@ -19,23 +19,29 @@ teko/
 │  │                    # client, chauffeur, admin, admin-mobile)
 │  ├─ plan/             # 00-plan-execution.md (lots, jalons) · 01-registre-risques.md
 │  │                    # 02-backlog.md · 03-estimation-couts-ti.md · 04-suivi-client.md
+│  │                    # 05-reference-taxido.md · 06-demarrage-apps.md (POINT D'ENTRÉE apps)
 │  └─ integrations/     # Évaluations Airtel Money & Moov Money
-├─ supabase/            # Backend livré : 15 migrations (24 tables, ~40 RPC),
-│                       # Edge Functions Airtel, 56 tests pgTAP, seed Libreville
+├─ supabase/            # Backend livré : 21 migrations (~24 tables, ~40 RPC),
+│                       # Edge Functions Airtel, 56 tests pgTAP + 52 e2e, seed Libreville
 ├─ envoi-client/        # Paquet client du 18 août : docx remplissable, 3 vidéos MP4,
 │                       # PDF coûts (client + INTERNE), README avec checklist d'envoi
 ├─ assets/icons/        # Icônes officielles (client anneau+T, chauffeur anneau+T+voiture)
 ├─ logos/               # Logo source (logos/svg = brouillons IA, ne pas utiliser)
 ├─ templates/           # Templates Taxido achetés — RÉFÉRENCE UNIQUEMENT (décision :
 │                       # construction neuve, cf. 05-questions-ouvertes décision n°1)
-├─ packages/config/     # Seul package du monorepo existant (tsconfig/eslint partagés)
-└─ turbo.json, pnpm-workspace.yaml   # Socle monorepo (lot 1 à venir)
+├─ packages/config/     # tsconfig/eslint partagés du monorepo
+├─ packages/maps/       # @teko/maps — style, adaptateur Supabase, contrôleur web, mode éco
+├─ apps/labo-carte/     # Labo Vite TEMPORAIRE de la carte (scénarios, vidéos) — pas un produit
+├─ infra/               # Carto self-hosted : tuiles Martin, routage Valhalla, conflation OSM
+├─ misc/                # (hors VCS) vidéos de démonstration, régénérables via LISEZMOI.md
+└─ turbo.json, pnpm-workspace.yaml   # Socle monorepo (apps produit au lot 1)
 ```
 
 ## Documents de référence par question
 
 | Vous cherchez… | Document |
 |---|---|
+| **Démarrer les applications (3 portails) — point d'entrée** | [docs/plan/06-demarrage-apps.md](docs/plan/06-demarrage-apps.md) |
 | Ce que fait le produit et pourquoi | [docs/product/01-PRD.md](docs/product/01-PRD.md) |
 | Ce qui est décidé / à trancher | [docs/product/05-questions-ouvertes.md](docs/product/05-questions-ouvertes.md) |
 | **Ce qu'on attend du client** | [docs/plan/04-suivi-client.md](docs/plan/04-suivi-client.md) |
