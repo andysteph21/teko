@@ -1,0 +1,20 @@
+{
+  "name": "@teko/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Règles pures d'affichage et d'estimation (formatage XAF, journée métier 04:00, frais d'annulation affichés, PIN, types paiement mobile). AUCUNE logique métier sensible : le backend fait autorité.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@teko/config": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

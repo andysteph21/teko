@@ -1,0 +1,25 @@
+{
+  "name": "@teko/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Client API Teko — SEUL point de contact des apps avec Supabase (doc 10 §3) : client typé, enveloppes RPC par domaine, mapper d'erreurs, canal de positions (ADR-13).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "catalog:",
+    "@teko/maps": "workspace:*",
+    "@teko/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@teko/config": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

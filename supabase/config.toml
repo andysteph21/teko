@@ -8,3 +8,20 @@ major_version = 17
 
 [auth]
 enabled = true
+# Liens profonds des apps Expo (retours d'auth) + admin local.
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["teko-client://auth", "teko-driver://auth", "http://127.0.0.1:3000"]
+
+# Auth téléphone (parcours C-03/C-04, D-03) — en local, PAS de fournisseur
+# SMS : les numéros de test ci-dessous acceptent un code fixe, sans réseau.
+# Le fournisseur réel (question n° 21, CL-03) sera configuré par environnement.
+[auth.sms]
+enable_signup = true
+enable_confirmations = true
+
+# Numéros de test (format E.164 sans « + ») → code OTP accepté.
+# Convention locale : …0001 client, …0002 chauffeur, …0003 admin.
+[auth.sms.test_otp]
+24107000001 = "123456"
+24107000002 = "123456"
+24107000003 = "123456"

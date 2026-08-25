@@ -1,0 +1,23 @@
+{
+  "name": "@teko/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Internationalisation Teko (ADR-08) : français livré, structure prête pour les langues locales. Les apps branchent leur plugin (react-i18next) via createTekoI18n.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --coverage"
+  },
+  "dependencies": {
+    "i18next": "catalog:"
+  },
+  "devDependencies": {
+    "@teko/config": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

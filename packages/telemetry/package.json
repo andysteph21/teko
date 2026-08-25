@@ -1,0 +1,20 @@
+{
+  "name": "@teko/telemetry",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Sobriété data : compteur de consommation (widget flottant, C-25), états du budget 100 Mo (alerte 50 %, critique 80 % — décision client n° 19).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@teko/config": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

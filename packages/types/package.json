@@ -1,0 +1,17 @@
+{
+  "name": "@teko/types",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Types TypeScript générés depuis le schéma Supabase (source de vérité : les migrations). Régénérer via `pnpm gen:types` à la racine.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@teko/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

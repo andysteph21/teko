@@ -13,9 +13,7 @@
   "files": [
     "tsconfig"
   ],
-  "scripts": {
-    "typecheck": "tsc --noEmit -p tsconfig.json"
-  },
+  "scripts": {},
   "devDependencies": {
     "typescript": "catalog:"
   }
