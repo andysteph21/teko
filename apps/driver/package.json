@@ -12,6 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@maplibre/maplibre-react-native": "~11.3.7",
     "@react-native-community/netinfo": "12.0.1",
     "@tanstack/react-query": "catalog:",
     "@teko/api-client": "workspace:*",
