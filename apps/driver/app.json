@@ -16,8 +16,6 @@
     "experiments": {
       "typedRoutes": true
     },
-    "plugins": [
-      "@maplibre/maplibre-react-native"
-    ]
+    "plugins": ["@maplibre/maplibre-react-native"]
   }
 }
