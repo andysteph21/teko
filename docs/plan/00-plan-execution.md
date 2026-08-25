@@ -1,6 +1,18 @@
 # Plan d'exécution — Teko (post-backend)
 
-**Version :** 1.1 · **Date :** 18 août 2026 (v1.0 : 5 juin 2026) · **Périmètre :** MVP *ride-hailing*
+**Version :** 1.2 · **Date :** 25 août 2026 (v1.1 : 18 août · v1.0 : 5 juin) · **Périmètre :** MVP *ride-hailing*
+
+> **v1.2 — Phase 0 ENGAGÉE (25 août 2026)** : les 26 réponses client sont
+> arrivées, **les 6 bloquantes sont levées** (détail : `04-suivi-client.md`,
+> décisions : `../product/05-questions-ouvertes.md`, config alignée :
+> migration `20260825090000`). Restent en parallèle du développement : la
+> **séance tarifaire** (n° 7, CL-01), la mesure de latence hébergeur (CL-02),
+> les devis SMS (CL-03) et les démarches externes client (Airtel, cabinet
+> juridique). Depuis la v1.1, le socle a par ailleurs beaucoup avancé :
+> écarts backend E-01→E-17 comblés, `packages/maps` complet (44 tests),
+> infra carto self-hosted vérifiée de bout en bout, labo de test, templates
+> Taxido en état de marche (« avant-développement »). **Prochain jalon :
+> démarrage des applications mobiles.**
 **Stratégie validée :** pistes parallèles · hébergeur carto à trancher au lot 2 · région **Paris `eu-west-3`** (ADR-11)
 **Nouveau depuis v1.0 :** la **phase maquettes UX est terminée** (69 maquettes des 3 interfaces + 4 spécifications de parcours, réalisées dans Claude Design — voir `../design/06-maquettes.md`). Les lots 3-5 démarrent donc avec des écrans et des flux spécifiés, pas depuis une page blanche. Le covoiturage est **sorti du périmètre MVP** (3 catégories).
 

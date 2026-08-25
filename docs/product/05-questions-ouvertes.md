@@ -25,6 +25,40 @@ Périmètre MVP = ride-hailing seul ; déploiement national progressif ; auth OT
 
 Valeurs **par défaut maquettées, à confirmer avant le go-live** (réglables en admin, A-07) : délai d'acceptation chauffeur **12 s** ; attente passager absent **5 min** ; seuil d'urgence solde **4 h avant clôture** ; frais d'annulation **max(300 FCFA, 20 %)** ; part chauffeur **70 %** ; commission **15 %**.
 
+## Décisions client du 25 août 2026 (réponses au document du 18 août)
+
+Les **26 questions** ont reçu réponse (`docs/plan/04-suivi-client.md` fait
+foi du détail). **Les 6 bloquantes sont levées** — la Phase 0 démarre.
+
+| N° | Décision |
+|---|---|
+| 1 | Commission **identique** espèces et Airtel Money |
+| 2 | Clôture 04 h : **report du résiduel** + suspension automatique |
+| 3 | **Versement quotidien automatique** à la clôture, **sans seuil** (config `payout_threshold = 0`) |
+| 4 | Pas de plafond de dette intrajournalier au lancement |
+| 5 | ⛔ Les six valeurs par défaut **validées** : commission 15 % · annulation max(300 F, 20 %) · part chauffeur 70 % · acceptation 12 s · no-show 5 min · urgence 4 h |
+| 6 | **Prix ferme et garanti**, marge de prudence dans le calcul |
+| 7 | ⛔ Grille tarifaire → **séance de travail dédiée** (simulateur + relevés terrain) — seul point encore ouvert |
+| 8 | Taux d'acceptation : aucun effet en bêta, puis **priorité douce** |
+| 9 | **Destination cachée** jusqu'à acceptation (réévaluée en bêta) |
+| 10 | Règlements manuels validés par le rôle **Finance**, avant la clôture de la nuit |
+| 11 | ⛔ Démarche compte marchand **Airtel lancée immédiatement** côté client |
+| 12 | Route inconnue proposée à validation : **≥ 10 passages, ≥ 5 chauffeurs, 3 semaines** (config) |
+| 13 | Ouverture de zone : axes principaux + repères clés validés ; **seuil chiffré à formaliser** ensemble |
+| 14 | Traces GPS : **anonymisation immédiate, conservation 12 mois** (réserve juridique n° 16) |
+| 15 | Doublon de repères : **50 m** (config `landmark_duplicate_m`) |
+| 16 | ⛔ **Cabinet juridique gabonais mandaté dès maintenant** (protection des données) |
+| 17 | SOS → **équipe opérations** avec engagement de rappel (permanence 24/7 plus tard) |
+| 18 | **Vérification physique** des chauffeurs de la première vague à Libreville |
+| 19 | Budget data confirmé : **100 Mo/mois, alerte 50 %, critique 80 %** |
+| 20 | Mode économie : réglages maquettés **validés** (5 s, carte allégée, initiales) |
+| 21 | ⛔ SMS OTP : **devis parallèles** Twilio/Vonage + acteur régional, décision sur **délivrabilité mesurée** Airtel/Moov |
+| 22 | ⛔ Hébergeur carto : **Scaleway ou OVH (Paris)**, sous réserve d'une **mesure de latence réelle** depuis Libreville |
+| 23 | Cartes de secours : **MapTiler** |
+| 24 | Reconstruction des itinéraires : **chaque nuit + bouton manuel** dans la console |
+| 25 | **Libreville** confirmée première zone |
+| 26 | **Android uniquement** au lancement, iPhone ensuite |
+
 ## 1. Modèle financier
 - La commission s'applique-t-elle **aussi** aux paiements mobile money, ou seulement au cash ? (Hypothèse actuelle : commission dans les deux cas ; le mobile crédite `P − C`.)
 - **Clôture quotidienne** : remise du solde à zéro après règlement, ou **report** du résiduel non réglé ? *(Les maquettes D-15 illustrent un report — à confirmer.)*

@@ -122,3 +122,8 @@ l'École — scène `demo-poi`).
   favoris/routes proposées/hotspots via les setters du contrôleur.
 - Alignements maquettes à faire au passage : C-25 (« sans tuiles » →
   « allégée » ; deux interrupteurs → sélecteur 3 positions).
+- **Décisions client du 25 août** : repli cartes = **MapTiler** (URL de style
+  de secours à configurer, bascule sans mise à jour d'app) ; reconstruction
+  itinéraires **nocturne + bouton manuel** dans la console (A-04, backlog
+  CL-05) ; réglages éco **validés** (position 5 s, carte allégée, initiales) ;
+  budget data confirmé 100 Mo / 50 % / 80 %.

@@ -28,7 +28,7 @@ Soit `P` le prix de la course et `C` la commission Teko *(paramétrable — taux
 
 > **Conséquence voulue :** plus les clients paient en mobile money *vers Teko*, plus le solde du chauffeur monte (Teko lui doit de l'argent) et moins le chauffeur a de cash à reverser. C'est le levier pour **encourager le paiement mobile**.
 
-### 1.3 Exemple chiffré (illustratif, commission = 20 % — à confirmer)
+### 1.3 Exemple chiffré (illustratif — commission confirmée à 15 % le 25 août 2026)
 
 Journée d'un chauffeur, prix en FCFA :
 
@@ -208,3 +208,38 @@ Processus : création compte (OTP) → upload des pièces → **vérification KY
 ## 10. Paramètres administrables (synthèse)
 
 Taux/forme de **commission** ; composantes **tarifaires** par catégorie ; **frais d'annulation** et délai de no-show ; **heure d'échéance** (4h par défaut) et fenêtre de rappel ; **seuil/fréquence de payout** ; **zones** et grille de repli ; **seuils** de détection de routes ; seuil de **badge qualité** (4,5). Toute modification doit être journalisée.
+
+
+## Addendum — règles confirmées par le client (25 août 2026)
+
+Codification des réponses au document « Décisions » (détail :
+`../plan/04-suivi-client.md`) :
+
+- **Commission unique** (15 %) sur tous les modes de paiement — aucune
+  différenciation espèces / Airtel Money.
+- **Report du résiduel** à la clôture de 04 h, suspension automatique tant
+  que la dette n'est pas réglée ; **pas de plafond intrajournalier**.
+- **Versement chauffeur quotidien automatique** à la clôture, **sans seuil
+  minimum** au lancement (`payout_threshold = 0`).
+- **Prix ferme et garanti** : le montant annoncé avant la course est celui
+  payé — la marge de prudence est intégrée au calcul, le risque d'estimation
+  est porté par Teko, jamais par le client.
+- **Destination cachée** au chauffeur jusqu'à acceptation (anti-écrémage) ;
+  le taux d'acceptation n'a **aucun effet en bêta**, puis une **priorité
+  douce** dans l'attribution.
+- **Règlement manuel** (panne Airtel) : validé par le rôle **Finance** avant
+  la clôture de la nuit même — un chauffeur ne doit jamais être suspendu
+  faute de traitement d'une preuve valide.
+- **Carte collaborative** : proposition de route à ≥ 10 passages par
+  ≥ 5 chauffeurs distincts sur 3 semaines ; doublon de repères signalé à
+  moins de **50 m** ; traces GPS **anonymisées à la collecte** et conservées
+  **12 mois** (sous réserve de l'avis juridique) ; reconstruction du calcul
+  d'itinéraires **chaque nuit + à la demande** depuis la console.
+- **KYC renforcé au lancement** : vérification **physique** (rencontre,
+  autocollant, contrôle du véhicule) pour la première vague de chauffeurs
+  à Libreville, en plus des documents.
+- **SOS** : alerte à l'équipe opérations avec **engagement de rappel**.
+- **Compteur data** : budget indicatif 100 Mo/mois, alerte 50 %, critique
+  80 % ; réglages du mode économie tels que spécifiés (position 5 s, carte
+  allégée, initiales à la place des photos).
+- **Périmètre de lancement confirmé** : Libreville, Android uniquement.
