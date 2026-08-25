@@ -3,7 +3,7 @@
 // documentation vivante des appels, règle du 06-demarrage §4).
 
 import { ewktPoint, type LonLat } from "@teko/maps";
-import type { PaymentMethod, RideRow, TableRow, VehicleCategory } from "@teko/types";
+import type { PaymentMethod, RideRow, RideStatus, TableRow, VehicleCategory } from "@teko/types";
 import type { TekoClient } from "./client";
 import { unwrap } from "./errors";
 
@@ -132,6 +132,29 @@ export async function rateRide(
       .select()
       .single(),
   );
+}
+
+/** Statuts d'une course « en cours » (routage C-01 : jamais l'accueil vide
+ *  si une course est active côté serveur). */
+export const ACTIVE_RIDE_STATUSES: RideStatus[] = [
+  "requested",
+  "accepted",
+  "enroute",
+  "arrived",
+  "started",
+];
+
+/** Dernière course active du compte, ou null. */
+export async function findActiveRide(client: TekoClient): Promise<RideRow | null> {
+  const rows = unwrap(
+    await client
+      .from("rides")
+      .select("*")
+      .in("status", ACTIVE_RIDE_STATUSES)
+      .order("created_at", { ascending: false })
+      .limit(1),
+  );
+  return rows[0] ?? null;
 }
 
 /** Historique des courses du compte courant (C-19 / D-20), RLS-scopé. */

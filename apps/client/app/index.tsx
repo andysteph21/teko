@@ -1,65 +1,81 @@
-// Écran de validation M1 (« les 3 apps démarrent et lisent des données
-// réelles ») — remplacé par C-01 Splash + parcours A au lot 3.
+// C-01 Splash — marque + routage de session (parcours A/B) : session valide
+// → accueil (< 3 s sur 3G) ; course active côté serveur → JAMAIS l'accueil
+// vide, directement le suivi ; sans session → onboarding.
 
+import { findActiveRide, touchLastSeen } from "@teko/api-client";
 import { color, spacing, typography } from "@teko/ui";
-import { type Href, Link } from "expo-router";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useSession } from "../src/features/auth/use-session";
-import { DataProbe } from "../src/features/m1/data-probe";
-import { PhoneLogin } from "../src/features/m1/phone-login";
+import { supabase } from "../src/lib/supabase";
 
-export default function Home() {
+export default function Splash() {
   const { session, loading } = useSession();
+  const router = useRouter();
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    if (loading) return;
+    if (!session) {
+      router.replace("/(auth)/onboarding");
+      return;
+    }
+    let cancelled = false;
+    void touchLastSeen(supabase).catch(() => undefined);
+    findActiveRide(supabase)
+      .then((ride) => {
+        if (cancelled) return;
+        if (ride) router.replace({ pathname: "/(main)/ride/[id]", params: { id: ride.id } });
+        else router.replace("/(main)/home");
+      })
+      .catch(() => {
+        if (!cancelled) router.replace("/(main)/home");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, session, router]);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <View style={styles.screen}>
+      <View style={styles.mark}>
+        <Text style={styles.markText}>T</Text>
+      </View>
       <Text style={styles.brand}>Teko</Text>
-      <Text style={styles.subtitle}>Validation M1 — socle du lot 1</Text>
-      {loading ? (
-        <ActivityIndicator color={color.brand[800]} />
-      ) : session ? (
-        <DataProbe category="eco" />
-      ) : (
-        <PhoneLogin />
-      )}
-      {__DEV__ ? (
-        <View style={styles.devLinks}>
-          <Link href={"/dev/map-spike" as Href} style={styles.devLink}>
-            Spike carte
-          </Link>
-          <Link href={"/dev/realtime-spike" as Href} style={styles.devLink}>
-            Spike realtime
-          </Link>
-        </View>
-      ) : null}
-      <View style={styles.spacer} />
-    </SafeAreaView>
+      <Text style={styles.slogan}>{t("account:splash.slogan")}</Text>
+      <ActivityIndicator color={color.neutral[0]} style={styles.spinner} />
+      <Text style={styles.version}>{t("account:splash.version")}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.neutral[50],
-    padding: spacing[4],
-    gap: spacing[4],
+    backgroundColor: color.brand[800],
+    alignItems: "center",
+    justifyContent: "center",
   },
-  brand: {
-    fontSize: typography.fontSize["2xl"],
-    fontWeight: "900",
-    color: color.brand[800],
-    marginTop: spacing[4],
+  mark: {
+    width: 96,
+    height: 96,
+    borderRadius: 9999,
+    borderWidth: 5,
+    borderColor: color.neutral[0],
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing[4],
   },
-  subtitle: {
-    fontSize: typography.fontSize.sm,
-    color: color.neutral[500],
+  markText: { color: color.neutral[0], fontSize: 48, fontWeight: "900" },
+  brand: { color: color.neutral[0], fontSize: typography.fontSize["2xl"], fontWeight: "900" },
+  slogan: { color: color.brand[100], fontSize: typography.fontSize.base, marginTop: spacing[1] },
+  spinner: { marginTop: spacing[8] },
+  version: {
+    position: "absolute",
+    bottom: spacing[8],
+    color: color.brand[200],
+    fontSize: typography.fontSize.xs,
   },
-  devLinks: { flexDirection: "row", gap: spacing[4] },
-  devLink: {
-    color: color.brand[500],
-    fontSize: typography.fontSize.sm,
-    fontWeight: "600",
-  },
-  spacer: { flex: 1 },
 });

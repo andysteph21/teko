@@ -27,6 +27,7 @@ import {
   cancelRide,
   completeRide,
   estimatePrice,
+  findActiveRide,
   listMyRides,
   markArrived,
   rateRide,
@@ -47,6 +48,7 @@ function lastRpcCall(client: TekoClient): [string, Record<string, unknown>] {
 const CHAIN_METHODS = [
   "from",
   "select",
+  "in",
   "insert",
   "update",
   "eq",
@@ -137,6 +139,22 @@ describe("rides", () => {
     const donePrix = rpcClient({ id: "r1", status: "completed" });
     await completeRide(donePrix, "r1", 1300);
     expect(lastRpcCall(donePrix)).toEqual(["complete_ride", { p_ride: "r1", p_price_final: 1300 }]);
+  });
+
+  it("findActiveRide filtre les statuts actifs, null sans course", async () => {
+    const some = tableClient([{ id: "r9", status: "arrived" }]);
+    const active = await findActiveRide(some);
+    expect(active?.id).toBe("r9");
+    expect(some.in).toHaveBeenCalledWith("status", [
+      "requested",
+      "accepted",
+      "enroute",
+      "arrived",
+      "started",
+    ]);
+
+    const none = tableClient([]);
+    expect(await findActiveRide(none)).toBeNull();
   });
 
   it("rateRide insère sous RLS ; listMyRides interroge l'historique", async () => {

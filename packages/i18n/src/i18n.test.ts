@@ -19,6 +19,12 @@ describe("createTekoI18n", () => {
     expect(fr.commun.appNameDriver).toBe("Teko Chauffeur");
   });
 
+  it("fusionne les espaces de noms d'app (extraFr)", async () => {
+    const i18n = await createTekoI18n({ extraFr: { booking: { ouAllezVous: "Où allez-vous ?" } } });
+    expect(i18n.t("booking:ouAllezVous")).toBe("Où allez-vous ?");
+    expect(i18n.t("commun.continuer")).toBe("Continuer");
+  });
+
   it("accepte les plugins de l'app hôte", async () => {
     let installed = false;
     const plugin = {

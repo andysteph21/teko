@@ -12,6 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-community/netinfo": "12.0.1",
     "@tanstack/react-query": "catalog:",
     "@teko/api-client": "workspace:*",
     "@teko/core": "workspace:*",
@@ -22,10 +23,16 @@
     "@teko/ui": "workspace:*",
     "expo": "~57.0.16",
     "expo-constants": "~57.0.14",
+    "expo-image": "~57.0.3",
+    "expo-image-picker": "~57.0.13",
+    "expo-linear-gradient": "~57.0.1",
     "expo-linking": "~57.0.7",
+    "expo-location": "~57.0.13",
     "expo-router": "~57.0.16",
     "expo-secure-store": "~57.0.1",
+    "expo-sqlite": "~57.0.1",
     "expo-status-bar": "~57.0.1",
+    "expo-task-manager": "~57.0.13",
     "react": "19.2.3",
     "react-i18next": "catalog:",
     "react-native": "0.86.2",
@@ -33,6 +40,7 @@
     "react-native-reanimated": "~4.5.1",
     "react-native-safe-area-context": "^5.7.0",
     "react-native-screens": "^4.26.2",
+    "react-native-svg": "15.15.4",
     "react-native-worklets": "~0.10.1",
     "zustand": "catalog:"
   },

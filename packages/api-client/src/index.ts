@@ -38,10 +38,12 @@ export {
   type Unsubscribe,
 } from "./positions";
 export {
+  ACTIVE_RIDE_STATUSES,
   cancelRide,
   completeRide,
   type EstimatePriceInput,
   estimatePrice,
+  findActiveRide,
   listMyRides,
   markArrived,
   type RateRideInput,

@@ -47,5 +47,6 @@ export {
   type ResolvedMapMode,
   resolveMapMode,
 } from "./mode";
+export { costingForCategory, fetchRoute, type RouteCosting, type RouteResult } from "./routing";
 export { buildMapStyle, type MapStyleOptions, TEKO_SOURCES } from "./style";
 export { MAP_COLORS, type MapColorToken } from "./tokens";

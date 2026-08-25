@@ -11,6 +11,9 @@ export interface CreateTekoI18nOptions {
   plugins?: (Module | NewableModule<Module>)[];
   /** Langue initiale (défaut « fr » — seule langue livrée au MVP). */
   lng?: string;
+  /** Espaces de noms français propres à l'app (ex. { booking: {...} } →
+   *  t("booking:ouAllezVous")). Une future langue fournira ses homologues. */
+  extraFr?: Record<string, object>;
 }
 
 /** Instance initialisée, prête pour `t()` — à créer au démarrage de l'app. */
@@ -22,7 +25,7 @@ export async function createTekoI18n(options: CreateTekoI18nOptions = {}): Promi
   await instance.init({
     lng: options.lng ?? "fr",
     fallbackLng: "fr",
-    resources: { fr: { translation: fr } },
+    resources: { fr: { translation: fr, ...(options.extraFr ?? {}) } },
     interpolation: { escapeValue: false },
     returnNull: false,
   });
