@@ -33,6 +33,15 @@ export async function resolveMsisdn(db: SupabaseClient, pmt: PaymentLike): Promi
     userId = pmt.driver_id ?? null;
   }
   if (!userId) return null;
+  // Versement : le numéro Airtel dédié du chauffeur (D-07) prime.
+  if (pmt.kind === "payout" || pmt.kind === "driver_settlement") {
+    const { data: driver } = await db
+      .from("drivers")
+      .select("payout_msisdn")
+      .eq("id", userId)
+      .single();
+    if (driver?.payout_msisdn) return driver.payout_msisdn;
+  }
   const { data } = await db.from("profiles").select("phone").eq("id", userId).single();
   // TODO: formater le MSISDN sans indicatif pays selon l'exigence Airtel.
   return data?.phone ?? null;

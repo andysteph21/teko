@@ -4,6 +4,27 @@
 import type { NotificationRow } from "@teko/types";
 import type { TekoClient } from "./client";
 import { unwrap } from "./errors";
+import type { Unsubscribe } from "./positions";
+
+/** Notifications en direct (publication Realtime, RLS-scopée) — canal de
+ *  livraison des offres chauffeur au premier plan (type ride_offer). */
+export function subscribeNotifications(
+  client: TekoClient,
+  userId: string,
+  onNotification: (n: NotificationRow) => void,
+): Unsubscribe {
+  const channel = client
+    .channel(`notifications-${userId}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+      (payload) => onNotification(payload.new as NotificationRow),
+    )
+    .subscribe();
+  return async () => {
+    await client.removeChannel(channel);
+  };
+}
 
 export async function listNotifications(
   client: TekoClient,

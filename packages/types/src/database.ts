@@ -394,6 +394,7 @@ export type Database = {
           id: string
           is_active: boolean
           kyc_status: Database["public"]["Enums"]["kyc_status"]
+          payout_msisdn: string | null
           rating_avg: number
           updated_at: string
         }
@@ -406,6 +407,7 @@ export type Database = {
           id: string
           is_active?: boolean
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          payout_msisdn?: string | null
           rating_avg?: number
           updated_at?: string
         }
@@ -418,6 +420,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          payout_msisdn?: string | null
           rating_avg?: number
           updated_at?: string
         }
