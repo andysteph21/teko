@@ -7,8 +7,8 @@
 //  · touches de contexte (végétation, bâtiments, eau) en teintes douces
 //    de la palette violette — jamais plus saturées que les données Teko.
 
-import { MAP_COLORS } from "../tokens.js";
-import { expWidth, type Layer, ROADS_MAJEURES } from "./helpers.js";
+import { MAP_COLORS } from "../tokens";
+import { expWidth, type Layer, ROADS_MAJEURES } from "./helpers";
 
 export function fullBasemapLayers(): Layer[] {
   const MAJEURES = ROADS_MAJEURES;

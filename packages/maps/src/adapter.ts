@@ -6,8 +6,8 @@
 // Les composants carte (web/RN) ne voient que du GeoJSON et des callbacks.
 
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
-import { ewktPoint, type GeomInput, type LonLat, roundPosition, toLonLat } from "./geo.js";
-import { type FeatureCollection, type LandmarkRow, landmarksToGeoJson } from "./geojson.js";
+import { ewktPoint, type GeomInput, type LonLat, roundPosition, toLonLat } from "./geo";
+import { type FeatureCollection, type LandmarkRow, landmarksToGeoJson } from "./geojson";
 
 export interface NearestLandmarksOptions {
   maxM?: number;

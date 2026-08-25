@@ -4,9 +4,9 @@ import {
   landmarksToGeoJson,
   routeToGeoJson,
   vehiclesToGeoJson,
-} from "./geojson.js";
-import { buildMapStyle, TEKO_SOURCES } from "./style.js";
-import { MAP_COLORS } from "./tokens.js";
+} from "./geojson";
+import { buildMapStyle, TEKO_SOURCES } from "./style";
+import { MAP_COLORS } from "./tokens";
 
 type Layer = { id: string; type: string; source?: string; paint?: Record<string, unknown> };
 const layers = (s: Record<string, unknown>) => s.layers as Layer[];

@@ -7,7 +7,7 @@ import {
   type NetworkHint,
   type ResolvedMapMode,
   resolveMapMode,
-} from "../mode.js";
+} from "../mode";
 
 interface NavigatorConnection extends EventTarget {
   effectiveType?: string;

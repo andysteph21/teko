@@ -4,8 +4,8 @@
 
 import { ewktPoint, type LonLat } from "@teko/maps";
 import type { PaymentMethod, RideRow, TableRow, VehicleCategory } from "@teko/types";
-import type { TekoClient } from "./client.js";
-import { unwrap } from "./errors.js";
+import type { TekoClient } from "./client";
+import { unwrap } from "./errors";
 
 export interface EstimatePriceInput {
   category: VehicleCategory;

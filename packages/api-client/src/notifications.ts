@@ -2,8 +2,8 @@
 // L'envoi est exclusivement côté serveur (enqueue_notification, service_role).
 
 import type { NotificationRow } from "@teko/types";
-import type { TekoClient } from "./client.js";
-import { unwrap } from "./errors.js";
+import type { TekoClient } from "./client";
+import { unwrap } from "./errors";
 
 export async function listNotifications(
   client: TekoClient,

@@ -10,19 +10,19 @@ import {
   requestAccountDeletion,
   touchLastSeen,
   updateProfile,
-} from "./account.js";
-import type { TekoClient } from "./client.js";
-import { createTekoClient } from "./client.js";
-import { driverHeartbeat, listPendingOffers, offerDetails, respondOffer } from "./dispatch.js";
-import { TekoApiError } from "./errors.js";
+} from "./account";
+import type { TekoClient } from "./client";
+import { createTekoClient } from "./client";
+import { driverHeartbeat, listPendingOffers, offerDetails, respondOffer } from "./dispatch";
+import { TekoApiError } from "./errors";
 import {
   createSettlementPayment,
   driverBalance,
   invokeCollect,
   listMyLedger,
   listMyStatements,
-} from "./finance.js";
-import { listNotifications, markNotificationRead } from "./notifications.js";
+} from "./finance";
+import { listNotifications, markNotificationRead } from "./notifications";
 import {
   cancelRide,
   completeRide,
@@ -32,8 +32,8 @@ import {
   rateRide,
   requestRide,
   startRide,
-} from "./rides.js";
-import { createTripShare, getSharedTrip, reportIncident } from "./safety.js";
+} from "./rides";
+import { createTripShare, getSharedTrip, reportIncident } from "./safety";
 
 function rpcClient(data: unknown, error: unknown = null): TekoClient {
   return { rpc: vi.fn().mockResolvedValue({ data, error }) } as unknown as TekoClient;

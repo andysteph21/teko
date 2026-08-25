@@ -2,9 +2,9 @@
 // proposées, zones de départ) — présentes dans les deux régimes, alimentées
 // par les sources GeoJSON nommées de TEKO_SOURCES.
 
-import { MAP_COLORS } from "../tokens.js";
-import type { FontStacks, Layer } from "./helpers.js";
-import { TEKO_SOURCES } from "./sources.js";
+import { MAP_COLORS } from "../tokens";
+import type { FontStacks, Layer } from "./helpers";
+import { TEKO_SOURCES } from "./sources";
 
 export interface TekoLayerContext {
   fonts: FontStacks;

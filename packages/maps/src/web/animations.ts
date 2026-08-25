@@ -5,7 +5,7 @@
 // vit (pulsation), la voiture s'oriente et avance, l'attente respire.
 
 import type maplibregl from "maplibre-gl";
-import { type LonLat, pointAlong } from "../geo.js";
+import { type LonLat, pointAlong } from "../geo";
 
 /** Image animée « pulsation » (anneau qui s'étend puis s'efface), à passer à
  *  map.addImage(id, makePulse(map, couleur), { pixelRatio: 2 }). */

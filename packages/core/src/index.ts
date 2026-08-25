@@ -1,6 +1,6 @@
-export { businessDay, isBalanceUrgent, msUntilCutoff, nextCutoff } from "./business-day.js";
-export { type CancellationFeeConfig, cancellationFee } from "./cancellation.js";
-export { formatXaf, type XafUnit } from "./money.js";
+export { businessDay, isBalanceUrgent, msUntilCutoff, nextCutoff } from "./business-day";
+export { type CancellationFeeConfig, cancellationFee } from "./cancellation";
+export { formatXaf, type XafUnit } from "./money";
 export type {
   CollectRequest,
   DisburseRequest,
@@ -8,5 +8,5 @@ export type {
   MobileMoneyRail,
   PaymentOutcome,
   PaymentOutcomeStatus,
-} from "./payments.js";
-export { isValidPinFormat, PIN_LENGTH } from "./pin.js";
+} from "./payments";
+export { isValidPinFormat, PIN_LENGTH } from "./pin";

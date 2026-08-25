@@ -11,8 +11,8 @@ type AnyClient = SupabaseClient<any, any, any>;
 import { randomUUID } from "node:crypto";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { TekoMapData } from "./adapter.js";
-import { distanceM } from "./geo.js";
+import { TekoMapData } from "./adapter";
+import { distanceM } from "./geo";
 
 const API_URL = process.env.SUPABASE_URL ?? process.env.API_URL ?? "http://127.0.0.1:54321";
 const ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.ANON_KEY;

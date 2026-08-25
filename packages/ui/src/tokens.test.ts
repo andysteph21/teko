@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { color, spacing, tokens, typography, zIndex } from "./tokens.js";
+import { color, spacing, tokens, typography, zIndex } from "./tokens";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const design = JSON.parse(

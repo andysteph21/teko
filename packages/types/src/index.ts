@@ -1,9 +1,9 @@
 // Point d'entrée de @teko/types — types générés + raccourcis d'usage.
 // `database.ts` est GÉNÉRÉ (pnpm gen:types à la racine) : ne jamais l'éditer.
 
-import type { Database } from "./database.js";
+import type { Database } from "./database";
 
-export type { Database, Json } from "./database.js";
+export type { Database, Json } from "./database";
 
 type PublicSchema = Database["public"];
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveMapMode } from "./mode.js";
+import { resolveMapMode } from "./mode";
 
 describe("resolveMapMode (préférence × réseau, C-25)", () => {
   it("préférences explicites : éco et complet ignorent le réseau", () => {

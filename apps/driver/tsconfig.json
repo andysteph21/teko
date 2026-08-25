@@ -1,0 +1,7 @@
+{
+  "extends": "@teko/config/tsconfig/react-native.json",
+  "include": ["app", "src", "expo-env.d.ts", ".expo/types/**/*.ts"],
+  "compilerOptions": {
+    "types": ["jest"]
+  }
+}

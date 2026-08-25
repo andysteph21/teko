@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapApiError, TekoApiError, unwrap } from "./errors.js";
+import { mapApiError, TekoApiError, unwrap } from "./errors";
 
 describe("mapApiError — messages backend → codes stables", () => {
   const cases: [string, string][] = [

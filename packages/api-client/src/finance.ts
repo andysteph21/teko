@@ -3,8 +3,8 @@
 // règlement (puis l'app invoque l'Edge Function airtel-collect).
 
 import type { TableRow } from "@teko/types";
-import type { TekoClient } from "./client.js";
-import { mapApiError, unwrap } from "./errors.js";
+import type { TekoClient } from "./client";
+import { mapApiError, unwrap } from "./errors";
 
 /** Solde signé du chauffeur : < 0 = il doit à Teko (« Vous devez »). */
 export async function driverBalance(client: TekoClient, driverId: string): Promise<number> {

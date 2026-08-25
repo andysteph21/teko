@@ -10,13 +10,13 @@
 // dans les deux régimes, alimentées par des sources GeoJSON nommées.
 // Détail des couches : src/style/ (eco-basemap, full-basemap, labels, teko-layers).
 
-import { ecoBasemapLayers } from "./style/eco-basemap.js";
-import { fullBasemapLayers } from "./style/full-basemap.js";
-import type { FontStacks, Layer } from "./style/helpers.js";
-import { basemapLabelLayers } from "./style/labels.js";
-import { TEKO_SOURCES } from "./style/sources.js";
-import { tekoOverlayLayers } from "./style/teko-layers.js";
-import { MAP_COLORS } from "./tokens.js";
+import { ecoBasemapLayers } from "./style/eco-basemap";
+import { fullBasemapLayers } from "./style/full-basemap";
+import type { FontStacks, Layer } from "./style/helpers";
+import { basemapLabelLayers } from "./style/labels";
+import { TEKO_SOURCES } from "./style/sources";
+import { tekoOverlayLayers } from "./style/teko-layers";
+import { MAP_COLORS } from "./tokens";
 
 export { TEKO_SOURCES };
 

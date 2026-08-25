@@ -5,8 +5,8 @@
 // (sur-zoom au-delà → zéro requête en zoomant), aucune police (pas de texte),
 // pas de bâtiments ni POI. Hors-ligne total (pas d'URL) : fond uni.
 
-import { MAP_COLORS } from "../tokens.js";
-import { expWidth, type Layer, ROADS_MAJEURES } from "./helpers.js";
+import { MAP_COLORS } from "../tokens";
+import { expWidth, type Layer, ROADS_MAJEURES } from "./helpers";
 
 export function ecoBasemapLayers(): Layer[] {
   const MAJ = ROADS_MAJEURES;

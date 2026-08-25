@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createTekoI18n, fr } from "./index.js";
+import { createTekoI18n, fr } from "./index";
 
 describe("createTekoI18n", () => {
   it("sert les textes français dès l'initialisation", async () => {

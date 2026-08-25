@@ -3,7 +3,7 @@
 // autre : `symbol-sort-key` (rang OSM croissant) décide qui gagne, et
 // `text-padding` règle l'espacement — c'est le curseur `labelDensity`.
 
-import { type LabelContext, type Layer, POI_MAJEURS, POI_QUARTIER } from "./helpers.js";
+import { type LabelContext, type Layer, POI_MAJEURS, POI_QUARTIER } from "./helpers";
 
 export function basemapLabelLayers(ctx: LabelContext): Layer[] {
   const { fonts, padding, zShift, halo } = ctx;

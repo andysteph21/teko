@@ -6,8 +6,8 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { ewktPoint, type GeomInput, type LonLat, roundPosition, toLonLat } from "@teko/maps";
 import type { RideStatus } from "@teko/types";
-import type { TekoClient } from "./client.js";
-import { mapApiError } from "./errors.js";
+import type { TekoClient } from "./client";
+import { mapApiError } from "./errors";
 
 export interface RidePositionEvent extends LonLat {
   rideId: string;

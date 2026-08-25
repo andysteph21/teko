@@ -1,7 +1,7 @@
 // Conversion lignes Supabase → GeoJSON pour les sources MapLibre.
 // Fonctions pures, testées unitairement.
 
-import { type GeomInput, type LonLat, toLonLat } from "./geo.js";
+import { type GeomInput, type LonLat, toLonLat } from "./geo";
 
 export interface LandmarkRow {
   id: string;

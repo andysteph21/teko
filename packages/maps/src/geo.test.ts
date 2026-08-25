@@ -8,7 +8,7 @@ import {
   pointAlong,
   roundPosition,
   toLonLat,
-} from "./geo.js";
+} from "./geo";
 
 // Encodeur polyline6 de référence (test uniquement) — pour l'aller-retour.
 function encodePolyline6(points: Array<{ lon: number; lat: number }>): string {

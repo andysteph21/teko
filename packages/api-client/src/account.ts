@@ -2,8 +2,8 @@
 // recyclés), suppression avec rétractation 30 j (parcours E/F).
 
 import type { ProfileRow } from "@teko/types";
-import type { TekoClient } from "./client.js";
-import { unwrap } from "./errors.js";
+import type { TekoClient } from "./client";
+import { unwrap } from "./errors";
 
 /** À appeler à chaque ouverture d'app (fenêtre d'inactivité d'un mois). */
 export async function touchLastSeen(client: TekoClient): Promise<void> {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { budgetState, DataUsageMeter, DEFAULT_BUDGET, formatMo } from "./index.js";
+import { budgetState, DataUsageMeter, DEFAULT_BUDGET, formatMo } from "./index";
 
 const NBSP = " ";
 

@@ -12,10 +12,10 @@
 //                      + couche teko_roads en direct (avant/après rebuild)
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import { decodePolyline6 } from "../src/geo.js";
-import { type LandmarkRow, landmarksToGeoJson } from "../src/geojson.js";
-import { MAP_COLORS } from "../src/tokens.js";
-import { TekoMapController } from "../src/web/controller.js";
+import { decodePolyline6 } from "../src/geo";
+import { type LandmarkRow, landmarksToGeoJson } from "../src/geojson";
+import { MAP_COLORS } from "../src/tokens";
+import { TekoMapController } from "../src/web/controller";
 
 function ewkbHex(lon: number, lat: number): string {
   const buf = new ArrayBuffer(25);

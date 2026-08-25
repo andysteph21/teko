@@ -6,7 +6,7 @@ export {
   type ProposeLandmarkInput,
   type RidePositionEvent,
   TekoMapData,
-} from "./adapter.js";
+} from "./adapter";
 export {
   bboxAround,
   decodePolyline6,
@@ -18,7 +18,7 @@ export {
   parseEwkbPoint,
   roundPosition,
   toLonLat,
-} from "./geo.js";
+} from "./geo";
 export {
   clientPositionToGeoJson,
   type DepartureHotspot,
@@ -37,13 +37,13 @@ export {
   savedPlacesToGeoJson,
   type VehiclePosition,
   vehiclesToGeoJson,
-} from "./geojson.js";
+} from "./geojson";
 export {
   type MapMode,
   type MapModePreference,
   type NetworkHint,
   type ResolvedMapMode,
   resolveMapMode,
-} from "./mode.js";
-export { buildMapStyle, type MapStyleOptions, TEKO_SOURCES } from "./style.js";
-export { MAP_COLORS, type MapColorToken } from "./tokens.js";
+} from "./mode";
+export { buildMapStyle, type MapStyleOptions, TEKO_SOURCES } from "./style";
+export { MAP_COLORS, type MapColorToken } from "./tokens";

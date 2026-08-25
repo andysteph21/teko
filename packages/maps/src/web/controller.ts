@@ -7,7 +7,7 @@
 //   map.setLandmarks(fc); map.setRoute(fc); map.setClientPosition({lon, lat});
 
 import maplibregl from "maplibre-gl";
-import { bboxAround, type LonLat } from "../geo.js";
+import { bboxAround, type LonLat } from "../geo";
 import {
   clientPositionToGeoJson,
   type DepartureHotspot,
@@ -21,10 +21,10 @@ import {
   savedPlacesToGeoJson,
   type VehiclePosition,
   vehiclesToGeoJson,
-} from "../geojson.js";
-import { buildMapStyle, type MapStyleOptions, TEKO_SOURCES } from "../style.js";
-import { animateAlong, type VehicleAnimation } from "./animations.js";
-import { installPictos } from "./pictos.js";
+} from "../geojson";
+import { buildMapStyle, type MapStyleOptions, TEKO_SOURCES } from "../style";
+import { animateAlong, type VehicleAnimation } from "./animations";
+import { installPictos } from "./pictos";
 
 const LIBREVILLE: [number, number] = [9.4536, 0.4032];
 

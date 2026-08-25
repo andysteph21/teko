@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { TekoClient } from "./client.js";
-import { createRealtimePositionsChannel, type RidePositionEvent } from "./positions.js";
+import type { TekoClient } from "./client";
+import { createRealtimePositionsChannel, type RidePositionEvent } from "./positions";
 
 interface ChannelMock {
   on: ReturnType<typeof vi.fn>;

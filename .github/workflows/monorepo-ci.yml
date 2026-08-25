@@ -1,0 +1,51 @@
+# CI racine du monorepo — lint Biome + typecheck/tests/builds turbo sur les
+# apps et packages. Les tests d'intégration Supabase restent dans maps-ci
+# (stack locale) ; ici les suites unitaires portent les gates de couverture.
+
+name: monorepo-ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "biome.json"
+      - "turbo.json"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/monorepo-ci.yml"
+  pull_request:
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "biome.json"
+      - "turbo.json"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/monorepo-ci.yml"
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Installer les dépendances
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm exec biome ci .
+
+      - name: Typecheck, tests (gates de couverture), builds
+        run: pnpm exec turbo run typecheck test build

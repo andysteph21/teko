@@ -1,0 +1,33 @@
+{
+  "name": "@teko/app-admin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Console d'administration Teko (Next.js, responsive + PWA mobile) — écrans A-01→A-10, AM-01→AM-07.",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "catalog:",
+    "@teko/api-client": "workspace:*",
+    "@teko/core": "workspace:*",
+    "@teko/i18n": "workspace:*",
+    "@teko/types": "workspace:*",
+    "@teko/ui": "workspace:*",
+    "next": "^16.3.2",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "zustand": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@teko/config": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "~19.2.0",
+    "@types/react-dom": "~19.2.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "catalog:"
+  }
+}

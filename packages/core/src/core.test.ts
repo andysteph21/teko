@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { businessDay, isBalanceUrgent, msUntilCutoff, nextCutoff } from "./business-day.js";
-import { cancellationFee } from "./cancellation.js";
-import { formatXaf } from "./money.js";
-import { isValidPinFormat, PIN_LENGTH } from "./pin.js";
+import { businessDay, isBalanceUrgent, msUntilCutoff, nextCutoff } from "./business-day";
+import { cancellationFee } from "./cancellation";
+import { formatXaf } from "./money";
+import { isValidPinFormat, PIN_LENGTH } from "./pin";
 
 const NBSP = " ";
 const MINUS = "−";

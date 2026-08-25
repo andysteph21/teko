@@ -13,4 +13,4 @@ export {
   tokens,
   typography,
   zIndex,
-} from "./tokens.js";
+} from "./tokens";

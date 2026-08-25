@@ -3,9 +3,9 @@
 // l'arrivée, position qui pulse, attente qui respire, voiture orientée.
 
 import type maplibregl from "maplibre-gl";
-import { LANDMARK_LETTERS } from "../geojson.js";
-import { TEKO_SOURCES } from "../style.js";
-import { makeLetterImage, makePin, makePulse } from "./animations.js";
+import { LANDMARK_LETTERS } from "../geojson";
+import { TEKO_SOURCES } from "../style";
+import { makeLetterImage, makePin, makePulse } from "./animations";
 
 export function installPictos(m: maplibregl.Map): void {
   m.addImage("teko-pin-depart", makePin("person", "#8C238A"), { pixelRatio: 2 });

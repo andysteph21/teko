@@ -2,8 +2,8 @@
 // SOS et signalements (C-27 — le SOS alerte immédiatement les ops).
 
 import type { DbEnum, TableRow } from "@teko/types";
-import type { TekoClient } from "./client.js";
-import { unwrap } from "./errors.js";
+import type { TekoClient } from "./client";
+import { unwrap } from "./errors";
 
 /** Lien de partage : jeton public, expire à la fin de course (TTL 24 h). */
 export async function createTripShare(

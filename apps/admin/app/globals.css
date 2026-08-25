@@ -1,0 +1,28 @@
+/* Tokens Teko (générés) + Tailwind v4. Les variables --color-* etc. viennent
+   de @teko/ui/tokens.css ; @theme inline les expose aux utilitaires Tailwind
+   (ex. bg-brand-800, text-neutral-500) — source d'autorité inchangée. */
+
+@import "tailwindcss";
+@import "@teko/ui/tokens.css";
+
+@theme inline {
+  --color-brand-50: var(--color-brand-50);
+  --color-brand-100: var(--color-brand-100);
+  --color-brand-500: var(--color-brand-500);
+  --color-brand-800: var(--color-brand-800);
+  --color-brand-900: var(--color-brand-900);
+  --color-neutral-0: var(--color-neutral-0);
+  --color-neutral-50: var(--color-neutral-50);
+  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-300: var(--color-neutral-300);
+  --color-neutral-500: var(--color-neutral-500);
+  --color-neutral-700: var(--color-neutral-700);
+  --color-neutral-900: var(--color-neutral-900);
+  --color-error: var(--color-semantic-error-default);
+  --color-success: var(--color-semantic-success-default);
+}
+
+body {
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-700);
+}

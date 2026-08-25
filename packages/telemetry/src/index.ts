@@ -7,4 +7,4 @@ export {
   DEFAULT_BUDGET,
   DEFAULT_BUDGET_BYTES,
   formatMo,
-} from "./data-usage.js";
+} from "./data-usage";

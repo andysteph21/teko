@@ -2,9 +2,9 @@
 // MVP ; ajouter une langue = ajouter un module de ressources, zéro refonte.
 
 import { createInstance, type i18n, type Module, type NewableModule } from "i18next";
-import { fr } from "./fr.js";
+import { fr } from "./fr";
 
-export { type FrResources, fr } from "./fr.js";
+export { type FrResources, fr } from "./fr";
 
 export interface CreateTekoI18nOptions {
   /** Plugins de l'app hôte (ex. initReactI18next de react-i18next). */

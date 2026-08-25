@@ -3,8 +3,8 @@
 
 import { ewktPoint, type GeomInput, type LonLat, roundPosition, toLonLat } from "@teko/maps";
 import type { PaymentMethod, RideRow, TableRow, VehicleCategory } from "@teko/types";
-import type { TekoClient } from "./client.js";
-import { unwrap } from "./errors.js";
+import type { TekoClient } from "./client";
+import { unwrap } from "./errors";
 
 /** Toggle « en ligne » (D-09) — à rappeler périodiquement : la présence
  *  expire après `presence_ttl_s` (300 s). Position arrondie (sobriété). */

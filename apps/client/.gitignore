@@ -1,0 +1,4 @@
+# Projets natifs générés (CNG/prebuild) — régénérés par `expo run:android`.
+/android
+/ios
+dist/
