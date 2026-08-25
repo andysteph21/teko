@@ -1,7 +1,7 @@
 // Fournisseur simulé : déterministe, piloté par le partnerTxnId.
 // Utilisé pour les tests et le développement local (PAYMENT_PROVIDER=mock).
 import type {
-  CallbackResult, CollectParams, DisburseParams, MobileMoneyProvider, TxnResult, TxnStatus,
+  CallbackResult, CollectParams, DisburseParams, MobileMoneyProvider, TxnKind, TxnResult, TxnStatus,
 } from "./provider.ts";
 
 function outcomeFor(partnerTxnId: string): TxnStatus {
@@ -18,7 +18,7 @@ function result(partnerTxnId: string): TxnResult {
 export class MockProvider implements MobileMoneyProvider {
   collect(p: CollectParams): Promise<TxnResult> { return Promise.resolve(result(p.partnerTxnId)); }
   disburse(p: DisburseParams): Promise<TxnResult> { return Promise.resolve(result(p.partnerTxnId)); }
-  enquire(partnerTxnId: string): Promise<TxnResult> { return Promise.resolve(result(partnerTxnId)); }
+  enquire(partnerTxnId: string, _kind: TxnKind): Promise<TxnResult> { return Promise.resolve(result(partnerTxnId)); }
   verifyCallback(_headers: Headers, body: string): Promise<CallbackResult> {
     try {
       const j = JSON.parse(body);

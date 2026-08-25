@@ -8,14 +8,16 @@ Deno.serve(async () => {
     const db = admin();
     const { data: list } = await db
       .from("payments")
-      .select("id, partner_txn_id, status")
+      .select("id, partner_txn_id, status, kind")
       .in("status", ["pending", "ambiguous", "initiated"]);
 
     const provider = getProvider();
     let confirmed = 0, failed = 0, pending = 0;
 
     for (const pmt of list ?? []) {
-      const r = await provider.enquire(pmt.partner_txn_id);
+      // Enquiry côté disbursement pour les payouts, côté collection sinon
+      // (ride_collection, driver_settlement) — chemins distincts chez Airtel.
+      const r = await provider.enquire(pmt.partner_txn_id, pmt.kind === "payout" ? "disburse" : "collect");
       const outcome = resolveOutcome(r.status);
       if (outcome === "confirm") { await db.rpc("confirm_payment", { p_payment: pmt.id }); confirmed++; }
       else if (outcome === "fail") { await db.rpc("fail_payment", { p_payment: pmt.id, p_reason: "reconcile" }); failed++; }

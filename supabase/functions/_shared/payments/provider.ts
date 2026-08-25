@@ -25,10 +25,14 @@ export interface CallbackResult {
   status?: TxnStatus;
 }
 
+/** Côté de la transaction — les chemins d'Enquiry diffèrent chez Airtel
+ *  (collection vs disbursement) et les statuts ne se lisent pas pareil. */
+export type TxnKind = "collect" | "disburse";
+
 export interface MobileMoneyProvider {
   collect(p: CollectParams): Promise<TxnResult>;
   disburse(p: DisburseParams): Promise<TxnResult>;
-  enquire(partnerTxnId: string): Promise<TxnResult>;
+  enquire(partnerTxnId: string, kind: TxnKind): Promise<TxnResult>;
   verifyCallback(headers: Headers, body: string): Promise<CallbackResult>;
 }
 

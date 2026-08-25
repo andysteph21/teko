@@ -33,8 +33,11 @@ functions/
 | `AIRTEL_BASE_URL` | `https://openapiuat.airtel.ga` (staging) / `https://openapi.airtel.ga` (prod) |
 | `AIRTEL_CLIENT_ID`, `AIRTEL_CLIENT_SECRET` | OAuth2 |
 | `AIRTEL_X_COUNTRY`, `AIRTEL_X_CURRENCY` | en-têtes pays/devise (**à confirmer** : GA / XAF) |
-| `AIRTEL_DISBURSE_PIN_ENC` | PIN de décaissement **chiffré RSA** |
-| `AIRTEL_CALLBACK_SECRET` | vérification de signature des callbacks (à implémenter) |
+| `AIRTEL_RSA_PUBLIC_KEY` | clé publique Airtel (PEM, SPKI ou PKCS#1) — chiffrement du PIN à chaque appel |
+| `AIRTEL_DISBURSE_PIN` | PIN de décaissement en clair (chiffré RSA PKCS#1 v1.5 par la fonction) |
+| `AIRTEL_DISBURSE_PIN_ENC` | variante : PIN **déjà chiffré** (prioritaire sur les deux précédentes) |
+| `AIRTEL_CALLBACK_TOKEN` | jeton « Callback With Authentication » (portail Airtel) — **sans lui, tout callback est rejeté** |
+| `AIRTEL_CALLBACK_HMAC_SECRET` | optionnel : HMAC-SHA256 du corps attendue dans `X-Signature` (Message Signing — en-tête/format à confirmer en sandbox) |
 
 ## Tests
 ```bash
