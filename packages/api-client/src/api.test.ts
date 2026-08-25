@@ -262,7 +262,7 @@ describe("finance", () => {
     const ledger = tableClient([{ id: "l1" }]);
     await listMyLedger(ledger);
     expect(ledger.from).toHaveBeenCalledWith("ledger");
-    expect(ledger.order).toHaveBeenCalledWith("at", { ascending: false });
+    expect(ledger.order).toHaveBeenCalledWith("created_at", { ascending: false });
 
     const statements = tableClient([{ id: "s1" }]);
     await listMyStatements(statements, 7);

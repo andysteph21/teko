@@ -33,7 +33,7 @@ export async function invokeCollect(client: TekoClient, paymentId: string): Prom
 /** Écritures du grand livre du compte courant (détail de D-15), RLS-scopé. */
 export async function listMyLedger(client: TekoClient, limit = 50): Promise<TableRow<"ledger">[]> {
   return unwrap(
-    await client.from("ledger").select("*").order("at", { ascending: false }).limit(limit),
+    await client.from("ledger").select("*").order("created_at", { ascending: false }).limit(limit),
   );
 }
 
@@ -46,7 +46,7 @@ export async function listMyStatements(
     await client
       .from("daily_statements")
       .select("*")
-      .order("day", { ascending: false })
+      .order("business_day", { ascending: false })
       .limit(limit),
   );
 }

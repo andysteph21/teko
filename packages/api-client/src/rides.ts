@@ -137,6 +137,6 @@ export async function rateRide(
 /** Historique des courses du compte courant (C-19 / D-20), RLS-scopé. */
 export async function listMyRides(client: TekoClient, limit = 30): Promise<RideRow[]> {
   return unwrap(
-    await client.from("rides").select("*").order("requested_at", { ascending: false }).limit(limit),
+    await client.from("rides").select("*").order("created_at", { ascending: false }).limit(limit),
   );
 }

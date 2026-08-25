@@ -9,6 +9,7 @@ export {
 } from "./adapter";
 export {
   bboxAround,
+  bearingBetween,
   decodePolyline6,
   distanceM,
   ewktPoint,
@@ -16,6 +17,7 @@ export {
   type GeomInput,
   type LonLat,
   parseEwkbPoint,
+  pointAlong,
   roundPosition,
   toLonLat,
 } from "./geo";

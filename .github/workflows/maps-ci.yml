@@ -1,21 +1,26 @@
 name: Maps CI
 
-# @teko/maps : typecheck + tests unitaires (purs), puis tests d'intégration
-# contre la stack Supabase locale (repères, heartbeat, positions Realtime).
+# @teko/maps + @teko/api-client : typecheck + tests unitaires (purs), puis
+# tests d'intégration contre la stack Supabase locale (repères, heartbeat,
+# positions Realtime, auth OTP de test, listes RLS).
 
 on:
   pull_request:
     paths:
       - "packages/maps/**"
+      - "packages/api-client/**"
       - "packages/config/**"
       - "supabase/migrations/**"
+      - "supabase/config.toml"
       - ".github/workflows/maps-ci.yml"
   push:
     branches: [main]
     paths:
       - "packages/maps/**"
+      - "packages/api-client/**"
       - "packages/config/**"
       - "supabase/migrations/**"
+      - "supabase/config.toml"
       - ".github/workflows/maps-ci.yml"
 
 jobs:
@@ -58,6 +63,10 @@ jobs:
 
       - name: Tests d'intégration (repères, heartbeat, Realtime)
         working-directory: packages/maps
+        run: pnpm test
+
+      - name: Tests d'intégration api-client (auth OTP, listes RLS)
+        working-directory: packages/api-client
         run: pnpm test
 
       - name: Stop Supabase
