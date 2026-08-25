@@ -13,9 +13,11 @@ Index de la phase maquettes : où tout se trouve, ce qui a été décidé en cou
 
 ## Spécifications de parcours
 
-- **Parcours client (A–F)** — inscription, connexion, commande, quotidien, récupération, suppression : https://claude.ai/code/artifact/4d753dea-a21f-47f6-b2b9-a35b9eea858f
-- **Parcours chauffeur (G–J) + synchronisation client↔chauffeur** (table état par état alignée sur les RPC `request/accept/mark_arrived/start/complete/cancel_ride`) : https://claude.ai/code/artifact/20f6e347-c7de-4b1e-837f-10f92198d9e7
-- **Flux globaux des 3 acteurs (4 boucles), parcours admin (K–O) & audit de cohérence** (48 transitions : 41 conformes, 3 corrigées, 4 en backlog) : https://claude.ai/code/artifact/4c410203-9c41-4abd-bf66-afcb806ce813
+**Copies locales dans [parcours/](parcours/)** (rapatriées le 25 août 2026, HTML autonomes ; voir leur [README](parcours/README.md) pour les points datés vs décisions du 25 août) :
+
+- **Parcours client (A–F)** — inscription, connexion, commande, quotidien, récupération, suppression : [parcours/parcours-client-A-F.html](parcours/parcours-client-A-F.html) · [artifact](https://claude.ai/code/artifact/4d753dea-a21f-47f6-b2b9-a35b9eea858f)
+- **Parcours chauffeur (G–J) + synchronisation client↔chauffeur** (table état par état alignée sur les RPC `request/accept/mark_arrived/start/complete/cancel_ride`) : [parcours/parcours-chauffeur-G-J.html](parcours/parcours-chauffeur-G-J.html) · [artifact](https://claude.ai/code/artifact/20f6e347-c7de-4b1e-837f-10f92198d9e7)
+- **Flux globaux des 3 acteurs (4 boucles), parcours admin (K–O) & audit de cohérence** (48 transitions : 41 conformes, 3 corrigées, 4 en backlog) : [parcours/parcours-globaux-K-O.html](parcours/parcours-globaux-K-O.html) · [artifact](https://claude.ai/code/artifact/4c410203-9c41-4abd-bf66-afcb806ce813)
 
 ## Conventions établies pendant la phase (complètent le design system)
 

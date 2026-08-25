@@ -56,7 +56,7 @@ teko/
 
 ## Livrables publiés (artifacts — liens de partage)
 
-Spécifications de parcours : [client A–F](https://claude.ai/code/artifact/4d753dea-a21f-47f6-b2b9-a35b9eea858f) · [chauffeur G–J + synchronisation](https://claude.ai/code/artifact/20f6e347-c7de-4b1e-837f-10f92198d9e7) · [flux globaux K–O + audit](https://claude.ai/code/artifact/4c410203-9c41-4abd-bf66-afcb806ce813)
+Spécifications de parcours (**copies locales : [docs/design/parcours/](docs/design/parcours/)**) : [client A–F](https://claude.ai/code/artifact/4d753dea-a21f-47f6-b2b9-a35b9eea858f) · [chauffeur G–J + synchronisation](https://claude.ai/code/artifact/20f6e347-c7de-4b1e-837f-10f92198d9e7) · [flux globaux K–O + audit](https://claude.ai/code/artifact/4c410203-9c41-4abd-bf66-afcb806ce813)
 Galeries : [client](https://claude.ai/code/artifact/76d6647b-6379-4162-a4ef-2e5e00a564d3) · [chauffeur](https://claude.ai/code/artifact/0c31f836-509a-4860-b46b-192cda4b248c) · [admin desktop](https://claude.ai/code/artifact/61b8ae7e-6a3d-4d78-a1ea-56c1799fa9a5) · [admin mobile/PWA](https://claude.ai/code/artifact/b7f005bd-159f-43fa-998d-1d68288ca316)
 Client : [questions (web)](https://claude.ai/code/artifact/8369716b-e607-420c-bb0f-f2c1a6111961) · [coûts TI (web)](https://claude.ai/code/artifact/44482fb3-3687-4c58-8203-e44cf74b575b)
 Design system éditable : projet **« Teko Design System »** sur claude.ai/design (source de vérité des maquettes, doublée en local dans `docs/design/maquettes/`).

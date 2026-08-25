@@ -4,11 +4,11 @@
 
 Les trois portails à construire :
 
-| Portail | Forme | Maquettes | Spécification de parcours |
+| Portail | Forme | Maquettes | Spécification de parcours (copies locales : [docs/design/parcours/](../design/parcours/)) |
 |---|---|---|---|
-| **Client** | App Expo/React Native (Android d'abord) | `docs/design/maquettes/client/` (32, C-01→C-31) | [client A–F](https://claude.ai/code/artifact/4d753dea-a21f-47f6-b2b9-a35b9eea858f) |
-| **Chauffeur** | App Expo/React Native (Android d'abord) | `docs/design/maquettes/chauffeur/` (23, D-01→D-20) | [chauffeur G–J](https://claude.ai/code/artifact/20f6e347-c7de-4b1e-837f-10f92198d9e7) |
-| **Admin** | Web responsive + PWA mobile | `docs/design/maquettes/admin/` (10) + `admin-mobile/` (7) | [flux K–O + audit](https://claude.ai/code/artifact/4c410203-9c41-4abd-bf66-afcb806ce813) |
+| **Client** | App Expo/React Native (Android d'abord) | `docs/design/maquettes/client/` (32, C-01→C-31) | [client A–F](../design/parcours/parcours-client-A-F.html) |
+| **Chauffeur** | App Expo/React Native (Android d'abord) | `docs/design/maquettes/chauffeur/` (23, D-01→D-20) | [chauffeur G–J](../design/parcours/parcours-chauffeur-G-J.html) |
+| **Admin** | Web responsive + PWA mobile | `docs/design/maquettes/admin/` (10) + `admin-mobile/` (7) | [flux K–O + audit](../design/parcours/parcours-globaux-K-O.html) |
 
 ## 1. Décisions déjà prises — ne pas re-débattre
 
@@ -18,12 +18,13 @@ Les trois portails à construire :
 - **Français uniquement · Android d'abord (iOS hors MVP) · pas de covoiturage · Libreville seulement.**
 - **26/26 réponses client reçues le 25 août** ([04-suivi-client.md](04-suivi-client.md)). Seul point encore ouvert : la **grille tarifaire** (n° 7 → séance dédiée CL-01). Elle ne bloque pas : les tarifs vivent dans `pricing_rules`/`app_config`, modifiables sans redéploiement.
 - Les règles métier font foi dans [02-regles-metier.md](../product/02-regles-metier.md) (+ addendum du 25 août qui codifie chaque réponse client).
+- **Règles d'ingénierie actées le 25 août** ([10-regles-ingenierie.md](../architecture/10-regles-ingenierie.md)) : code/dossiers en **anglais** (`apps/driver`), **Biome** (remplace ESLint/Prettier), état mobile **Zustand 5 + TanStack Query v5 + file expo-sqlite**, styling StyleSheet-tokens (mobile) / Tailwind v4 (admin), couverture par paliers (95 % packages / ~90 % apps / e2e critiques), tests sur **3 appareils Android réels via adb**.
 
 ## 2. Ordre de marche
 
 Le plan détaillé (lots, critères, jalons) est dans [00-plan-execution.md](00-plan-execution.md) (v1.2). Résumé opérationnel :
 
-1. **Lot 1 — socle monorepo (bloquant)** : scaffolder `apps/client`, `apps/chauffeur`, `apps/admin` ; créer `packages/ui` **dérivé de `docs/design/design-tokens.json`** ; générer les types Supabase ; CI build/lint/typecheck/test. Jalon M1 : « les 3 apps démarrent ».
+1. **Lot 1 — socle monorepo (bloquant)** : scaffolder `apps/client`, `apps/driver`, `apps/admin` (nommage anglais acté le 25 août, [10-regles-ingenierie.md](../architecture/10-regles-ingenierie.md) §1) ; créer `packages/ui` **dérivé de `docs/design/design-tokens.json`** ; générer les types Supabase ; CI build/lint/typecheck/test. Jalon M1 : « les 3 apps démarrent ».
 2. **Spikes au lot 1** (risques identifiés) : **MapLibre React Native sur un Android d'entrée de gamme** (nécessite un *dev client* — pas d'Expo Go) et **Realtime en arrière-plan/écran verrouillé**.
 3. **Lots 3-5 — les portails**, en consommant `@teko/maps` et les RPC.
 4. **Lot 6 — durcissement Airtel** avant go-live (dont **R1 : vérification de signature du callback**, toujours ouvert).
