@@ -3,8 +3,8 @@
 // formule — règle produit). Confirmée → retour accueil + brouillon vidé.
 
 import { useQuery } from "@tanstack/react-query";
-import { cancelRide, getRide, TekoApiError } from "@teko/api-client";
-import { cancellationFee, formatXaf } from "@teko/core";
+import { cancelRide, estimateCancellationFee, getRide, TekoApiError } from "@teko/api-client";
+import { formatXaf } from "@teko/core";
 import { color, spacing, typography } from "@teko/ui";
 import { Button } from "@teko/ui/native";
 import { type Href, useLocalSearchParams, useRouter } from "expo-router";
@@ -22,11 +22,6 @@ import { CANCELLABLE_STATUSES } from "../../../src/features/history/ride-display
 import { ScreenHeader } from "../../../src/features/history/screen-header";
 import { supabase } from "../../../src/lib/supabase";
 
-// TODO(backend) : valeurs par défaut actées le 25 août (fixe 300 F, 20 %)
-// codées en dur faute de mieux — app_config n'est PAS lisible côté client.
-// Exposer une RPC estimate_cancellation_fee et remplacer ce calcul local.
-const FEE_DEFAULTS = { fixed: 300, percent: 20 };
-
 export default function CancelScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -43,10 +38,13 @@ export default function CancelScreen() {
 
   const free = ride.data?.status === "requested";
   const cancellable = ride.data ? CANCELLABLE_STATUSES.includes(ride.data.status) : false;
-  const feeText = formatXaf(
-    free || !ride.data ? 0 : cancellationFee(Number(ride.data.price_est ?? 0), FEE_DEFAULTS),
-    "FCFA",
-  );
+  // Montant SERVEUR (RPC) — la config des frais n'est pas lisible côté client.
+  const fee = useQuery({
+    queryKey: ["cancel-fee", id, ride.data?.status],
+    enabled: Boolean(id && ride.data && !free),
+    queryFn: () => estimateCancellationFee(supabase, id as string),
+  });
+  const feeText = formatXaf(free || !ride.data ? 0 : (fee.data ?? 0), "FCFA");
 
   const confirm = async () => {
     if (!id || !reason) return;

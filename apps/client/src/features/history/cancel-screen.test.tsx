@@ -6,10 +6,12 @@ import type { RideRow } from "@teko/types";
 import { screen, userEvent, waitFor } from "@testing-library/react-native";
 
 const mockGetRide = jest.fn();
+const mockEstimateFee = jest.fn().mockResolvedValue(500);
 const mockCancelRide = jest.fn();
 jest.mock("@teko/api-client", () => ({
   getRide: (...args: unknown[]) => mockGetRide(...args),
   cancelRide: (...args: unknown[]) => mockCancelRide(...args),
+  estimateCancellationFee: () => mockEstimateFee(),
   TekoApiError: class TekoApiError extends Error {
     code = "unknown";
   },
@@ -58,7 +60,7 @@ describe("C-21 Annulation", () => {
     // max(300, 20 % de 2 500) = 500 — montant seul, jamais la formule.
     expect(await screen.findByText(/des frais d'annulation de/)).toBeOnTheScreen();
     expect(
-      screen.getByText(`Confirmer l'annulation · ${formatXaf(500, "FCFA")}`),
+      await screen.findByText(`Confirmer l'annulation · ${formatXaf(500, "FCFA")}`),
     ).toBeOnTheScreen();
   });
 
