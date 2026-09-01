@@ -8,10 +8,18 @@ import { color, spacing, typography } from "@teko/ui";
 import { BottomPanel, DriverCard } from "@teko/ui/native";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function initialsOf(name: string | null): string {
   const trimmed = (name ?? "").trim();
   return trimmed === "" ? "•" : trimmed.charAt(0).toUpperCase();
+}
+
+/** Réserve l'inset bas : sans lui, l'annulation passe sous la barre système
+ * (bounds accessibilité [0,0] → taps avalés par home/recents, vécu OPPO A15). */
+function usePanelInsetStyle() {
+  const insets = useSafeAreaInsets();
+  return { paddingBottom: insets.bottom + spacing[5] };
 }
 
 export interface PinPanelProps {
@@ -24,11 +32,12 @@ export interface PinPanelProps {
 /** C-13 — fiche chauffeur, ETA, PIN 34 px, annulation gratuite. */
 export function ApproachPanel({ driverName, pin, etaMin, onCancel }: PinPanelProps) {
   const { t } = useTranslation();
+  const insetStyle = usePanelInsetStyle();
   const title = driverName
     ? t("ride:suivi.titreApproche", { name: driverName })
     : t("ride:suivi.titreApprocheSansNom");
   return (
-    <BottomPanel>
+    <BottomPanel style={insetStyle} testID="ride-panel">
       <View style={styles.head}>
         <Text style={styles.title}>{title}</Text>
         {etaMin !== null ? (
@@ -53,6 +62,7 @@ export function ApproachPanel({ driverName, pin, etaMin, onCancel }: PinPanelPro
       <Pressable
         onPress={onCancel}
         style={styles.cancel}
+        hitSlop={spacing[2]}
         accessibilityRole="button"
         testID="ride-cancel"
       >
@@ -65,6 +75,7 @@ export function ApproachPanel({ driverName, pin, etaMin, onCancel }: PinPanelPro
 /** C-13b — bandeau « arrivé », PIN énorme (56 px), frais d'annulation possibles. */
 export function ArrivedPanel({ driverName, pin, onCancel }: Omit<PinPanelProps, "etaMin">) {
   const { t } = useTranslation();
+  const insetStyle = usePanelInsetStyle();
   const title = driverName
     ? t("ride:suivi.arriveTitre", { name: driverName })
     : t("ride:suivi.arriveTitreSansNom");
@@ -72,7 +83,7 @@ export function ArrivedPanel({ driverName, pin, onCancel }: Omit<PinPanelProps, 
     ? t("ride:suivi.pinAideArrive", { name: driverName })
     : t("ride:suivi.pinAideArriveSansNom");
   return (
-    <BottomPanel>
+    <BottomPanel style={insetStyle} testID="ride-panel">
       <View style={styles.arrivedBanner} testID="arrived-banner">
         <Text style={styles.arrivedCheck}>✓</Text>
         <View>
@@ -90,6 +101,7 @@ export function ArrivedPanel({ driverName, pin, onCancel }: Omit<PinPanelProps, 
       <Pressable
         onPress={onCancel}
         style={styles.cancel}
+        hitSlop={spacing[2]}
         accessibilityRole="button"
         testID="ride-cancel"
       >

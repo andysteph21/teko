@@ -15,12 +15,16 @@ export interface BottomPanelProps {
   /** Poignée de préhension (écrans carte). */
   handle?: boolean;
   style?: ViewStyle;
+  testID?: string;
 }
 
-/** Panneau ancré en bas (au-dessus de la carte) — rayon 20 haut, ombre. */
-export function BottomPanel({ children, title, handle = true, style }: BottomPanelProps) {
+/** Panneau ancré en bas (au-dessus de la carte) — rayon 20 haut, ombre.
+ * Ancré à bottom:0 en edge-to-edge : l'appelant doit réserver l'inset bas
+ * (`paddingBottom: insets.bottom + spacing[5]`), sinon la dernière ligne
+ * passe sous la barre système (zone tactile morte, vécu OPPO A15). */
+export function BottomPanel({ children, title, handle = true, style, testID }: BottomPanelProps) {
   return (
-    <View style={[styles.panel, style]}>
+    <View style={[styles.panel, style]} testID={testID}>
       {handle ? <View style={styles.handle} /> : null}
       {title ? <Text style={styles.title}>{title}</Text> : null}
       {children}
