@@ -3,6 +3,7 @@
 // paiement Airtel confirmé.
 
 import { formatXaf } from "@teko/core";
+import { spacing } from "@teko/ui";
 import { fireEvent, render, screen, userEvent, waitFor } from "@testing-library/react-native";
 
 const mockGetRide = jest.fn();
@@ -76,8 +77,9 @@ jest.mock("expo-location", () => ({
   })),
   Accuracy: { Balanced: 3 },
 }));
+let mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
 jest.mock("react-native-safe-area-context", () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  useSafeAreaInsets: () => mockInsets,
   SafeAreaView: require("react-native").View,
 }));
 jest.mock("@react-native-community/netinfo", () => ({
@@ -121,6 +123,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
   useWorkStore.setState({ online: false, toast: null });
   mockGetRide.mockResolvedValue({ ...RIDE });
   mockChannel.subscribeRideStatus.mockImplementation(() => async () => {});
@@ -193,6 +196,30 @@ describe("D-11b attente / D-12 PIN", () => {
 
     expect(mockCancelRide).toHaveBeenCalledWith({}, "ride-1", "passager absent");
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/(main)/home"));
+  });
+});
+
+describe("inset bas edge-to-edge (régression OPPO A15, barre 3 boutons)", () => {
+  // Sans réserve d'inset, le panneau colle à bottom:0 et sa dernière rangée
+  // (ride-arrive / ride-noshow / ride-complete) passe sous la barre système —
+  // rognée (48 px visibles sur 80, libellé 23 px, mesuré OPPO A15) jusqu'au
+  // rognage total [0,0][0,0] selon la hauteur du contenu du panneau.
+  it.each([
+    ["accepted", "ride-arrive"],
+    ["arrived", "ride-request-pin"],
+    ["started", "ride-complete"],
+  ])("le panneau réserve insets.bottom en %s", async (status, cta) => {
+    mockInsets = { top: 28, bottom: 84, left: 0, right: 0 };
+    mockGetRide.mockResolvedValue({
+      ...RIDE,
+      status,
+      started_at: status === "started" ? new Date().toISOString() : null,
+      updated_at: new Date().toISOString(),
+    });
+    render(<DriverRideScreen />);
+
+    expect(await screen.findByTestId(cta)).toBeOnTheScreen();
+    expect(screen.getByTestId("ride-panel")).toHaveStyle({ paddingBottom: 84 + spacing[5] });
   });
 });
 

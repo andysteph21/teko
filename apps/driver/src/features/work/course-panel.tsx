@@ -8,6 +8,7 @@ import { BottomPanel, Button } from "@teko/ui/native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { collectAmount } from "./complete-panel";
 
 function useChrono(startedAt: string | null): string {
@@ -35,11 +36,18 @@ export interface CoursePanelProps {
 
 export function CoursePanel({ ride, busy, onComplete }: CoursePanelProps) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const chrono = useChrono(ride.started_at);
   const payment = ride.payment_method ?? "cash";
 
   return (
-    <BottomPanel style={styles.panel}>
+    // Inset bas obligatoire : ancré à bottom:0 en edge-to-edge, le bouton
+    // terminer passerait sous la barre système (même piège que ride-cancel
+    // côté client, vécu OPPO A15).
+    <BottomPanel
+      style={{ ...styles.panel, paddingBottom: insets.bottom + spacing[5] }}
+      testID="ride-panel"
+    >
       <View style={styles.row}>
         <View style={styles.body}>
           <Text style={styles.title}>{t("work:course.courseEnCours")}</Text>
