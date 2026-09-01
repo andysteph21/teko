@@ -25,6 +25,7 @@ Validées avec le parseur officiel Postgres (libpg_query / `pglast`).
 - **Clés** : `gen_random_uuid()` (natif PG17) pour les entités métier ; `identity` pour les journaux à fort volume.
 - **`updated_at`** maintenu par trigger `set_updated_at()`.
 - **Jour ouvré** : `business_day(ts)` rattache une transaction au bon jour (coupure 04:00 Africa/Libreville) — socle du solde journalier.
+- **Téléphones** : stockés en **chiffres seuls** (« 24107000005 », le format que GoTrue expose — jamais de « + » ni d'espaces). `invite_admin` normalise toute entrée (contrainte `admin_invites_phone_digits` en garde-fou) et une **seule invitation en attente** existe par numéro (index unique partiel ; ré-inviter rafraîchit rôle et expiration).
 
 ## Modèle RLS (résumé)
 

@@ -59,6 +59,7 @@ Le plan détaillé (lots, critères, jalons) est dans [00-plan-execution.md](00-
 - MapLibre RN exige un **dev client** Expo (pas d'Expo Go).
 - Templates Taxido : builds Android avec **JDK 17 portable** (`~/.local/jdk/`) — le JDK 25 système casse AGP ; pas de `/dev/kvm` sur cette machine (pas d'émulateur, APK sur appareil réel).
 - En plpgsql, `row is not null` est faux dès qu'un champ est null — utiliser `found`.
+- GoTrue expose les numéros **sans « + »** (`new.phone` = « 24107000005 ») : tout rapprochement par téléphone côté SQL se fait en **chiffres seuls**, normalisés à l'écriture (cf. `invite_admin`, 1er sept.) — jamais d'égalité avec un E.164 brut (vécu : invitation admin jamais réclamée, l'invité restait `client`).
 - Martin : variables d'environnement **non guillemetées** dans la config ; rôle `martin_tiles` avec `search_path` incluant `extensions`.
 - Valhalla (docker) garde silencieusement ses vieilles tuiles sans `force_rebuild=True`.
 

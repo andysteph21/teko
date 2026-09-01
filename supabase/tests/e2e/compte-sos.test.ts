@@ -208,6 +208,64 @@ describe("équipe admin (E-09) et KYC (E-14)", () => {
     expect(claimed.rows[0].accepted_by).toBe(created.data.user!.id);
   });
 
+  it("invitation E.164 avec « + » (format console) : normalisée puis réclamée", async () => {
+    // Bug réel A-08 : la console envoyait « +241… », GoTrue expose new.phone
+    // sans « + » — l'invitation restait non réclamée, l'invité restait client.
+    const national = `071${String(Math.floor(Math.random() * 900000) + 100000)}`;
+    const inv = await superadmin.client.rpc("invite_admin", {
+      p_phone: `+241 ${national}`,
+      p_role: "finance",
+    });
+    expect(inv.error).toBeNull();
+    expect(inv.data.phone).toBe(`241${national}`);
+
+    const created = await admin.auth.admin.createUser({
+      phone: `241${national}`,
+      phone_confirm: true,
+      password: "e2e-Passw0rd!",
+    });
+    expect(created.error).toBeNull();
+    const prof = await serviceSql(
+      `select role, admin_role from public.profiles where id = $1`,
+      [created.data.user!.id],
+    );
+    expect(prof.rows[0]).toEqual({ role: "admin", admin_role: "finance" });
+    const claimed = await serviceSql(
+      `select accepted_at from public.admin_invites where id = $1`,
+      [inv.data.id],
+    );
+    expect(claimed.rows[0].accepted_at).not.toBeNull();
+  });
+
+  it("ré-inviter le même numéro : pas de doublon, rôle et expiration rafraîchis", async () => {
+    const phone = `241072${String(Math.floor(Math.random() * 900000) + 100000)}`;
+    const first = await superadmin.client.rpc("invite_admin", {
+      p_phone: phone,
+      p_role: "ops",
+    });
+    expect(first.error).toBeNull();
+    const second = await superadmin.client.rpc("invite_admin", {
+      p_phone: `+${phone}`,
+      p_role: "carto",
+    });
+    expect(second.error).toBeNull();
+    expect(second.data.id).toBe(first.data.id);
+    const rows = await serviceSql(
+      `select admin_role from public.admin_invites where phone = $1 and accepted_at is null`,
+      [phone],
+    );
+    expect(rows.rows).toHaveLength(1);
+    expect(rows.rows[0].admin_role).toBe("carto");
+  });
+
+  it("numéro illisible refusé par la garde serveur", async () => {
+    const { error } = await superadmin.client.rpc("invite_admin", {
+      p_phone: "+241 xx",
+      p_role: "ops",
+    });
+    expect(error?.message).toMatch(/numéro de téléphone invalide/i);
+  });
+
   it("un simple admin ops ne peut pas inviter", async () => {
     const { error } = await ops.client.rpc("invite_admin", {
       p_phone: "24107999999",

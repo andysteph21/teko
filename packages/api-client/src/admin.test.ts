@@ -152,10 +152,14 @@ describe("utilisateurs & équipe (A-06/A-08)", () => {
     expect(client.update).toHaveBeenLastCalledWith({ is_active: true, deactivated_reason: null });
   });
 
-  it("invitations : création RPC + liste", async () => {
+  it("invitations : création RPC + liste, numéro envoyé en chiffres seuls", async () => {
     const client = tableClient({ id: "i1", admin_role: "ops" });
-    const invite = await inviteAdmin(client, "+24107000009", "ops");
+    const invite = await inviteAdmin(client, "+241 07 00 00 09", "ops");
     expect(invite.id).toBe("i1");
+    expect(client.rpc).toHaveBeenCalledWith("invite_admin", {
+      p_phone: "24107000009",
+      p_role: "ops",
+    });
     await listAdminInvites(tableClient([]));
   });
 });

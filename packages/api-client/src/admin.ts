@@ -206,8 +206,10 @@ export async function inviteAdmin(
   phone: string,
   role: DbEnum<"admin_role">,
 ): Promise<TableRow<"admin_invites">> {
+  // GoTrue stocke les numéros sans « + » : chiffres seuls, comme la
+  // normalisation serveur d'invite_admin (défense en profondeur).
   return unwrap(
-    await client.rpc("invite_admin", { p_phone: phone, p_role: role }),
+    await client.rpc("invite_admin", { p_phone: phone.replace(/\D/g, ""), p_role: role }),
   ) as TableRow<"admin_invites">;
 }
 
