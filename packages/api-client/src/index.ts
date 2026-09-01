@@ -4,6 +4,7 @@ export {
   needsReverification,
   registerDevice,
   requestAccountDeletion,
+  restoreAccountIfDeletionPending,
   touchLastSeen,
   type UpdateProfileInput,
   updateProfile,

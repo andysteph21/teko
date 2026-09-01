@@ -114,5 +114,8 @@ export const accountFr = {
     desactiveTitre: "Compte désactivé",
     desactiveTexte:
       "Rétractation possible pendant 30 jours : reconnectez-vous avant le {{date}} et tout sera restauré à l'identique.",
+    restaureTitre: "Compte restauré",
+    restaureTexte:
+      "Bon retour ! Votre demande de suppression est annulée : votre compte est restauré à l'identique.",
   },
 } as const;
