@@ -38,6 +38,7 @@ Plateforme de transport à la demande pour le Gabon (MVP ride-hailing Libreville
 - Auth téléphone locale : GoTrue ne l'active que si un **fournisseur SMS est déclaré** — bloc twilio factice dans `config.toml`, les numéros `test_otp` court-circuitent tout appel réel.
 - Builds Android : `-PreactNativeArchitectures=arm64-v8a` (le parc est 100 % arm64) + `--max-workers=2-3` (28 Go partagés avec Docker) — build ×3 plus court.
 - `expo prebuild --clean` **efface `android/local.properties`** → gradle échoue en « SDK location not found » : recréer `sdk.dir=$HOME/Android/Sdk` après chaque prebuild propre (vécu, lot 4).
+- **Nouvelle Edge Function = invisible pour la stack locale** tant que `supabase start` n'a pas été relancé : le runtime fige la liste des fonctions au démarrage (`docker restart` ne suffit pas → 404 « Function not found »). En attendant : harnais `Deno.serve` jetable + `TEKO_FUNCTIONS_URL` côté e2e (vécu, account-purge).
 - Edge-to-edge Android (obligatoire, RN 0.86) : tout panneau ancré `bottom: 0` doit réserver `paddingBottom: insets.bottom + spacing[5]`, sinon sa dernière rangée passe **sous la barre système** — peinte mais intouchable (bounds accessibilité [0,0], taps → home/recents ; vécu OPPO A15, P1 ride-cancel).
 
 ## Interdits

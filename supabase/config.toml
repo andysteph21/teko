@@ -47,3 +47,8 @@ auth_token = "env(TWILIO_AUTH_TOKEN)"
 # pas par un client authentifié — le JWT est vérifié par le secret x-teko.
 [functions.notify-push]
 verify_jwt = false
+
+# Webhook de purge (désactivation auth des comptes purgés) : même schéma —
+# déclenché par pg_net/pg_cron, secret partagé x-teko-purge-secret.
+[functions.account-purge]
+verify_jwt = false

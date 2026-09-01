@@ -5,16 +5,20 @@
 import { createClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
-  type TestUser,
   admin,
+  allOffline,
+  API_URL,
   createDriver,
   createUser,
   goOnline,
   point,
   requestRide,
   serviceSql,
-  allOffline,
+  type TestUser,
 } from "./helpers";
+
+// Runtime de fonctions alternatif (code non encore servi par la stack locale).
+const FUNCTIONS_URL = process.env.TEKO_FUNCTIONS_URL ?? `${API_URL}/functions/v1`;
 
 const anon = createClient(
   process.env.SUPABASE_URL ?? process.env.API_URL ?? "http://127.0.0.1:54321",
@@ -183,6 +187,42 @@ describe("suppression de compte (E-04)", () => {
     expect(row.rows[0].phone).toBeNull();
     expect(row.rows[0].email).toBeNull();
     expect(row.rows[0].deleted_at).not.toBeNull();
+  });
+
+  it("après la purge : l'identité auth est désactivée (Edge Function account-purge)", async () => {
+    // Trou constaté le 1er sept. 2026 : un compte purgé restait utilisable.
+    const u = await createUser();
+    await u.client.rpc("request_account_deletion", {});
+    await serviceSql(
+      `update public.profiles set deletion_requested_at = now() - interval '31 days' where id = $1`,
+      [u.id],
+    );
+    await serviceSql(`select public.purge_deleted_accounts()`);
+    const pending = await serviceSql(`select id from public.pending_auth_purges() as t(id)`);
+    expect(pending.rows.map((r) => r.id)).toContain(u.id);
+
+    // Déclencheur explicite (le webhook pg_net fait la même chose, en asynchrone).
+    const res = await fetch(`${FUNCTIONS_URL}/account-purge`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source: "e2e" }),
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { failed: unknown[] };
+    expect(body.failed).toEqual([]);
+
+    const auth = await serviceSql(
+      `select deleted_at, email from auth.users where id = $1`,
+      [u.id],
+    );
+    expect(auth.rows[0].deleted_at).not.toBeNull();
+    expect(auth.rows[0].email).not.toBe(u.email); // identifiant obfusqué → réinscription possible
+    const still = await serviceSql(`select id from public.pending_auth_purges() as t(id)`);
+    expect(still.rows.map((r) => r.id)).not.toContain(u.id);
+
+    // La session existante ne se renouvelle plus.
+    const refreshed = await u.client.auth.refreshSession();
+    expect(refreshed.error).not.toBeNull();
   });
 });
 

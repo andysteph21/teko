@@ -17,13 +17,16 @@ functions/
 ├─ airtel-collect/              # encaissement (client/chauffeur -> Teko) : USSD Push
 ├─ airtel-disburse/             # décaissement (Teko -> chauffeur) : payout
 ├─ airtel-callback/             # callback Airtel -> confirm/fail
-└─ payments-reconcile/          # rattrape les paiements pending/ambigus (enquiry)
+├─ payments-reconcile/          # rattrape les paiements pending/ambigus (enquiry)
+├─ notify-push/                 # webhook pg_net -> push FCM (_shared/push)
+└─ account-purge/               # webhook pg_net/pg_cron -> soft-delete GoTrue des comptes purgés (_shared/purge)
 ```
 
 ## Flux
 - **Encaissement** : une RPC (`complete_ride` mobile, ou `create_settlement_payment`) crée une ligne `payments` (status `initiated`). `airtel-collect` initie le USSD Push ; la confirmation arrive par **callback** ou par **réconciliation**.
 - **Payout** : `daily_close` enqueue un paiement `payout` ; `airtel-disburse` l'exécute.
 - **Confirmation** : seules `confirm_payment`/`fail_payment` (Postgres) modifient le solde. Idempotence garantie par `partner_txn_id` (unique) et le court-circuit `status='success'`.
+- **Purge de compte** : `purge_deleted_accounts` (pg_cron 02:30) anonymise côté métier puis POSTe sur `account-purge` (`app_config.purge_webhook_url`, secret `purge_webhook_secret`) ; rattrapage quotidien 02:45. La fonction soft-delete via `auth.admin.deleteUser(id, true)` chaque `pending_auth_purges()` : numéro/e-mail obfusqués (réinscription possible), sessions et refresh tokens révoqués — un jeton d'accès déjà émis reste valable jusqu'à son expiration (≤ 1 h).
 
 ## Variables d'environnement
 | Variable | Rôle |
@@ -38,6 +41,7 @@ functions/
 | `AIRTEL_DISBURSE_PIN_ENC` | variante : PIN **déjà chiffré** (prioritaire sur les deux précédentes) |
 | `AIRTEL_CALLBACK_TOKEN` | jeton « Callback With Authentication » (portail Airtel) — **sans lui, tout callback est rejeté** |
 | `AIRTEL_CALLBACK_HMAC_SECRET` | optionnel : HMAC-SHA256 du corps attendue dans `X-Signature` (Message Signing — en-tête/format à confirmer en sandbox) |
+| `PUSH_TRIGGER_SECRET` / `PURGE_TRIGGER_SECRET` | secrets partagés des webhooks `notify-push` / `account-purge` (doivent égaler `app_config.push_webhook_secret` / `purge_webhook_secret` ; absents en local → non vérifiés) |
 
 ## Tests
 ```bash
