@@ -20,7 +20,13 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      # Lancés depuis supabase/functions : deno ne découvre la carte d'imports
+      # (deno.json) que depuis ce dossier — depuis la racine, le package.json
+      # pnpm du monorepo prend la main et « @std/assert » ne se résout plus.
+      # --allow-env : les tests fixent PAYMENT_PROVIDER / AIRTEL_CALLBACK_* .
       - name: Lint
-        run: deno lint supabase/functions
+        working-directory: supabase/functions
+        run: deno lint .
       - name: Tests unitaires
-        run: deno test supabase/functions
+        working-directory: supabase/functions
+        run: deno test --allow-env .

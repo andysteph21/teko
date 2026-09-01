@@ -1,5 +1,7 @@
 // Tests unitaires (Deno) de la logique de paiement, indépendants de la base et d'Airtel.
-// Lancer : deno test supabase/functions/
+// Lancer : cd supabase/functions && deno test --allow-env .
+// (depuis ce dossier : la carte d'imports de deno.json n'est pas découverte
+// depuis la racine pnpm ; --allow-env : les tests fixent PAYMENT_PROVIDER etc.)
 import { assertEquals } from "@std/assert";
 import { resolveOutcome } from "./provider.ts";
 import { MockProvider } from "./mock.ts";
