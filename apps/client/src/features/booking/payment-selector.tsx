@@ -1,11 +1,13 @@
-// Sélecteur de paiement C-10 — deux pastilles (Espèces / Airtel Money),
-// bordure magenta + fond brand-50 quand actif, comme la maquette.
+// Sélecteur de paiement C-10 — pastilles Espèces / Airtel Money (bordure
+// magenta + fond brand-50 quand actif, comme la maquette), limitées aux modes
+// réellement proposés (payment-methods.ts : Airtel masqué pour l'instant).
 
 import type { PaymentMethod } from "@teko/types";
 import { borderRadius, color, typography } from "@teko/ui";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
+import { OFFERED_PAYMENT_METHODS } from "./payment-methods";
 
 function CashIcon({ active }: { active: boolean }) {
   const stroke = active ? color.brand[800] : color.neutral[600];
@@ -30,14 +32,21 @@ function PhoneIcon({ active }: { active: boolean }) {
 export interface PaymentSelectorProps {
   value: PaymentMethod;
   onChange: (method: PaymentMethod) => void;
+  /** Modes proposés — par défaut ceux de payment-methods.ts. */
+  methods?: readonly PaymentMethod[];
 }
 
-export function PaymentSelector({ value, onChange }: PaymentSelectorProps) {
+export function PaymentSelector({
+  value,
+  onChange,
+  methods = OFFERED_PAYMENT_METHODS,
+}: PaymentSelectorProps) {
   const { t } = useTranslation();
-  const chips: { method: PaymentMethod; label: string; icon: typeof CashIcon }[] = [
+  const all: { method: PaymentMethod; label: string; icon: typeof CashIcon }[] = [
     { method: "cash", label: t("booking:categorie.especes"), icon: CashIcon },
     { method: "airtel", label: t("booking:categorie.airtel"), icon: PhoneIcon },
   ];
+  const chips = all.filter((chip) => methods.includes(chip.method));
   return (
     <View style={styles.row}>
       {chips.map(({ method, label, icon: Icon }) => {

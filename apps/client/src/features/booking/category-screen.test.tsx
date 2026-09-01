@@ -81,8 +81,11 @@ describe("C-10 Catégorie", () => {
     await user.press(screen.getByTestId("cat-moto"));
     expect(useBookingStore.getState().category).toBe("moto");
 
-    await user.press(screen.getByTestId("pay-airtel"));
-    expect(useBookingStore.getState().paymentMethod).toBe("airtel");
+    // Airtel Money masqué pour l'instant (payment-methods.ts) : seule la
+    // pastille Espèces est proposée, déjà sélectionnée.
+    expect(screen.queryByTestId("pay-airtel")).toBeNull();
+    expect(screen.getByTestId("pay-cash").props.accessibilityState).toEqual({ selected: true });
+    expect(useBookingStore.getState().paymentMethod).toBe("cash");
 
     await user.press(screen.getByTestId("order-cta"));
     expect(mockPush).toHaveBeenCalledWith("/(main)/meeting");
