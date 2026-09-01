@@ -2,7 +2,7 @@
 
 Points à trancher pour finaliser le produit. Regroupés par thème. Les décisions arrêtées sont déplacées dans la section « Décisions tranchées » avec leur date — on ne supprime jamais une question, on la clôt.
 
-**Dernière mise à jour : 18 août 2026** (clôture de la phase maquettes UX — voir `../design/06-maquettes.md`).
+**Dernière mise à jour : 1ᵉʳ septembre 2026** (ajout §3 : plancher d'affichage des offres presque échues ; précédente : 18 août, clôture de la phase maquettes UX — voir `../design/06-maquettes.md`).
 
 ## Décisions déjà validées (5 juin 2026 — rappel)
 Périmètre MVP = ride-hailing seul ; déploiement national progressif ; auth OTP SMS (Supabase) ; **modèle solde journalier** ; paiements client = **cash + Airtel Money** (Moov Money reporté en version future) ; tarif estimé distance/temps GPS ; carte custom complète dès le MVP ; courses immédiates + programmées ; sécurité SOS + partage trajet + code PIN ; français d'abord (i18n prête) ; widget data + mode économie ; KYC avec casier judiciaire obligatoire ; frais d'annulation sur no-show/no-answer.
@@ -81,6 +81,7 @@ foi du détail). **Les 6 bloquantes sont levées** — la Phase 0 démarre.
 - Valeurs par défaut : base, prix/km, prix/min, **minimum**, multiplicateurs par catégorie, suppléments (nuit, zone) ? *(Le seed contient des valeurs de travail.)*
 - Effet des **refus répétés** côté chauffeur : le taux d'acceptation (affiché en D-18) influence-t-il la priorité de cascade ?
 - Réévaluation éventuelle de la **destination cachée** avant acceptation (décision 11) selon la liquidité au lancement.
+- **Plancher d'affichage d'une offre presque échue** (chauffeur, ajout 1ᵉʳ sept. 2026) : le repli au retour au premier plan peut présenter une offre à moins de 2 s de l'échéance — modal éclair, illisible et inacceptable à temps (cf. doc ingénierie 10, §8 Q1). Ne pas l'afficher sous un seuil (~2-3 s) et la compter « manquée » ? Seuil à trancher.
 
 ## 4. Cartographie
 - Confirmation du **fond OSM** et des conditions d'utilisation/tuiles (auto-hébergement pour la sobriété data).
