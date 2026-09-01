@@ -1,8 +1,10 @@
-// D-09 : solde du jour + toggle hors ligne/en ligne (heartbeat), modal
-// d'offre D-10 (accepter → navigation course), état suspendu.
+// D-09 : solde du jour + toggle hors ligne/en ligne (heartbeat), permission
+// localisation demandée au premier passage en ligne (bandeau si refus/GPS
+// muet), modal d'offre D-10 (accepter → navigation course), état suspendu.
 
 import { formatXaf } from "@teko/core";
 import { act, render, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { Linking } from "react-native";
 
 const mockHeartbeat = jest.fn();
 const mockGetMyDriver = jest.fn();
@@ -58,11 +60,13 @@ jest.mock("@maplibre/maplibre-react-native", () => {
     Layer: () => null,
   };
 });
+const mockGetPermissions = jest.fn();
+const mockRequestPermissions = jest.fn();
+const mockGetPosition = jest.fn();
 jest.mock("expo-location", () => ({
-  getForegroundPermissionsAsync: jest.fn(async () => ({ status: "granted" })),
-  getCurrentPositionAsync: jest.fn(async () => ({
-    coords: { longitude: 9.45, latitude: 0.4 },
-  })),
+  getForegroundPermissionsAsync: (...args: unknown[]) => mockGetPermissions(...args),
+  requestForegroundPermissionsAsync: (...args: unknown[]) => mockRequestPermissions(...args),
+  getCurrentPositionAsync: (...args: unknown[]) => mockGetPosition(...args),
   Accuracy: { Balanced: 3 },
 }));
 jest.mock("react-native-safe-area-context", () => ({
@@ -113,7 +117,10 @@ beforeAll(async () => {
 beforeEach(() => {
   jest.clearAllMocks();
   notifCb = undefined;
-  useWorkStore.setState({ online: false, toast: null });
+  useWorkStore.setState({ online: false, toast: null, locationIssue: null, devicePosition: null });
+  mockGetPermissions.mockResolvedValue({ status: "granted", canAskAgain: true });
+  mockRequestPermissions.mockResolvedValue({ status: "granted", canAskAgain: true });
+  mockGetPosition.mockResolvedValue({ coords: { longitude: 9.45, latitude: 0.4 } });
   mockHeartbeat.mockResolvedValue(undefined);
   mockGetMyDriver.mockResolvedValue({ id: "drv-1", is_active: true, kyc_status: "validated" });
   mockDriverBalance.mockResolvedValue(12_500);
@@ -142,7 +149,7 @@ describe("D-09 Accueil", () => {
 
     await user.press(screen.getByTestId("online-toggle"));
 
-    expect(screen.getByText("En ligne")).toBeOnTheScreen();
+    expect(await screen.findByText("En ligne")).toBeOnTheScreen();
     await waitFor(() =>
       expect(mockHeartbeat).toHaveBeenCalledWith({}, { lon: 9.45, lat: 0.4 }, { eco: false }),
     );
@@ -157,6 +164,89 @@ describe("D-09 Accueil", () => {
     await user.press(screen.getByTestId("online-toggle"));
     expect(screen.getByText("Hors ligne")).toBeOnTheScreen();
     expect(mockHeartbeat).not.toHaveBeenCalled();
+  });
+});
+
+describe("D-09 Permission localisation", () => {
+  it("installation fraîche : permission demandée au premier passage en ligne, accord → battement", async () => {
+    mockGetPermissions.mockResolvedValue({ status: "undetermined", canAskAgain: true });
+    mockRequestPermissions.mockImplementation(async () => {
+      // Comme sur l'appareil : une fois accordée, la lecture suivante la voit.
+      mockGetPermissions.mockResolvedValue({ status: "granted", canAskAgain: true });
+      return { status: "granted", canAskAgain: true };
+    });
+    const user = userEvent.setup();
+    render(<DriverHome />);
+
+    await user.press(await screen.findByTestId("online-toggle"));
+
+    expect(await screen.findByText("En ligne")).toBeOnTheScreen();
+    expect(mockRequestPermissions).toHaveBeenCalledTimes(1);
+    await waitFor(() =>
+      expect(mockHeartbeat).toHaveBeenCalledWith({}, { lon: 9.45, lat: 0.4 }, { eco: false }),
+    );
+    expect(screen.queryByTestId("location-banner")).toBeNull();
+  });
+
+  it("refus au popup : reste hors ligne, bandeau explicite, aucun battement", async () => {
+    mockGetPermissions.mockResolvedValue({ status: "undetermined", canAskAgain: true });
+    mockRequestPermissions.mockResolvedValue({ status: "denied", canAskAgain: true });
+    const user = userEvent.setup();
+    render(<DriverHome />);
+
+    await user.press(await screen.findByTestId("online-toggle"));
+
+    expect(await screen.findByTestId("location-banner")).toBeOnTheScreen();
+    expect(screen.getByText("Localisation requise")).toBeOnTheScreen();
+    expect(screen.getByText("Hors ligne")).toBeOnTheScreen();
+    expect(screen.queryByTestId("location-settings")).toBeNull();
+    expect(mockHeartbeat).not.toHaveBeenCalled();
+  });
+
+  it("refus « ne plus demander » au popup : bandeau avec lien réglages", async () => {
+    mockGetPermissions.mockResolvedValue({ status: "undetermined", canAskAgain: true });
+    mockRequestPermissions.mockResolvedValue({ status: "denied", canAskAgain: false });
+    const user = userEvent.setup();
+    render(<DriverHome />);
+
+    await user.press(await screen.findByTestId("online-toggle"));
+
+    expect(await screen.findByTestId("location-settings")).toBeOnTheScreen();
+    expect(screen.getByText("Localisation désactivée")).toBeOnTheScreen();
+    expect(screen.getByText("Hors ligne")).toBeOnTheScreen();
+  });
+
+  it("déjà refusée définitivement : pas de re-popup, lien vers les réglages du téléphone", async () => {
+    mockGetPermissions.mockResolvedValue({ status: "denied", canAskAgain: false });
+    const openSettings = jest.spyOn(Linking, "openSettings").mockResolvedValue(undefined as never);
+    const user = userEvent.setup();
+    render(<DriverHome />);
+
+    await user.press(await screen.findByTestId("online-toggle"));
+
+    expect(await screen.findByTestId("location-settings")).toBeOnTheScreen();
+    expect(mockRequestPermissions).not.toHaveBeenCalled();
+    expect(screen.getByText("Hors ligne")).toBeOnTheScreen();
+
+    await user.press(screen.getByTestId("location-settings"));
+    expect(openSettings).toHaveBeenCalled();
+  });
+
+  it("permission accordée mais GPS muet : en ligne avec bandeau « Position introuvable »", async () => {
+    mockGetPosition.mockRejectedValue(new Error("gps off"));
+    const user = userEvent.setup();
+    render(<DriverHome />);
+
+    await user.press(await screen.findByTestId("online-toggle"));
+
+    expect(await screen.findByText("En ligne")).toBeOnTheScreen();
+    expect(await screen.findByTestId("location-banner")).toBeOnTheScreen();
+    expect(screen.getByText("Position introuvable")).toBeOnTheScreen();
+    expect(mockHeartbeat).not.toHaveBeenCalled();
+
+    await user.press(screen.getByTestId("online-toggle"));
+    await waitFor(() => expect(screen.queryByTestId("location-banner")).toBeNull());
+    expect(screen.getByText("Hors ligne")).toBeOnTheScreen();
   });
 });
 

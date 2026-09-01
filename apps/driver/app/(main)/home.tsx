@@ -13,7 +13,12 @@ import { useSession } from "../../src/features/auth/use-session";
 import { TekoMapView } from "../../src/features/map/native-map";
 import { useDataUsage, useResolvedMapMode } from "../../src/features/work/data-state";
 import { HomeHeader } from "../../src/features/work/home-header";
-import { BalanceCard, HomeTabs, SuspendedBanner } from "../../src/features/work/home-panel";
+import {
+  BalanceCard,
+  HomeTabs,
+  LocationBanner,
+  SuspendedBanner,
+} from "../../src/features/work/home-panel";
 import { VehicleDot } from "../../src/features/work/map-layers";
 import { OfferModal } from "../../src/features/work/offer-modal";
 import { useWorkStore } from "../../src/features/work/store";
@@ -22,6 +27,7 @@ import { useDevicePosition } from "../../src/features/work/use-device-position";
 import { useDriverHome } from "../../src/features/work/use-driver-home";
 import { useHeartbeat } from "../../src/features/work/use-heartbeat";
 import { useOfferFeed } from "../../src/features/work/use-offer-feed";
+import { useOnlineToggle } from "../../src/features/work/use-online-toggle";
 
 export default function DriverHome() {
   const router = useRouter();
@@ -30,7 +36,7 @@ export default function DriverHome() {
   const userId = session?.user.id;
   const { balance, suspended } = useDriverHome(userId);
   const online = useWorkStore((s) => s.online);
-  const setOnline = useWorkStore((s) => s.setOnline);
+  const toggleOnline = useOnlineToggle();
   const mode = useResolvedMapMode();
   const usage = useDataUsage();
   const position = useDevicePosition();
@@ -46,7 +52,7 @@ export default function DriverHome() {
         balance={balance}
         online={effectiveOnline}
         disabled={suspended}
-        onToggle={setOnline}
+        onToggle={toggleOnline}
         topInset={insets.top}
       />
       <View style={styles.mapZone}>
@@ -68,6 +74,7 @@ export default function DriverHome() {
         </View>
       </View>
       <View style={styles.panel}>
+        <LocationBanner />
         {suspended ? <SuspendedBanner /> : <BalanceCard balance={balance} />}
       </View>
       <HomeTabs bottomInset={insets.bottom} />

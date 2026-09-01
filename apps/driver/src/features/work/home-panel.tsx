@@ -1,13 +1,15 @@
 // Bas d'écran D-09 : carte solde (« Teko vous doit » / « Vous devez ») avec
-// lien D-15, bandeau de suspension explicite avec lien règlement (D-16), et
-// barre d'onglets de l'app chauffeur.
+// lien D-15, bandeau de suspension explicite avec lien règlement (D-16),
+// bandeau localisation (permission refusée / GPS muet), et barre d'onglets
+// de l'app chauffeur.
 
 import { formatXaf } from "@teko/core";
 import { borderRadius, color, spacing, typography } from "@teko/ui";
 import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
+import { type LocationIssue, useWorkStore } from "./store";
 
 export function BalanceCard({ balance }: { balance: number | null }) {
   const { t } = useTranslation();
@@ -34,6 +36,37 @@ export function BalanceCard({ balance }: { balance: number | null }) {
       >
         <Text style={styles.detailsText}>{t("work:accueil.details")}</Text>
       </Pressable>
+    </View>
+  );
+}
+
+const LOCATION_KEYS: Record<LocationIssue, string> = {
+  denied: "refus",
+  blocked: "bloquee",
+  lost: "introuvable",
+};
+
+/** Position manquante (refus, refus définitif, GPS muet) : bandeau explicite
+ *  — jamais d'« En ligne » silencieusement sans présence. */
+export function LocationBanner() {
+  const { t } = useTranslation();
+  const issue = useWorkStore((s) => s.locationIssue);
+  if (!issue) return null;
+  const key = LOCATION_KEYS[issue];
+  return (
+    <View style={styles.location} testID="location-banner">
+      <Text style={styles.locationTitle}>{t(`work:accueil.localisation.${key}.titre`)}</Text>
+      <Text style={styles.locationText}>{t(`work:accueil.localisation.${key}.texte`)}</Text>
+      {issue === "blocked" ? (
+        <Pressable
+          style={styles.locationLink}
+          onPress={() => void Linking.openSettings()}
+          accessibilityRole="button"
+          testID="location-settings"
+        >
+          <Text style={styles.locationLinkText}>{t("work:accueil.localisation.reglages")}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -164,6 +197,32 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   detailsText: { color: color.neutral[0], fontSize: typography.fontSize.sm, fontWeight: "700" },
+  location: {
+    backgroundColor: color.semantic.warning.light,
+    borderWidth: 1,
+    borderColor: color.semantic.warning.default,
+    borderRadius: borderRadius.lg,
+    padding: 14,
+    marginBottom: spacing[3],
+  },
+  locationTitle: {
+    fontSize: typography.fontSize.base,
+    fontWeight: "700",
+    color: color.semantic.warning.dark,
+  },
+  locationText: {
+    fontSize: typography.fontSize.sm,
+    color: color.neutral[600],
+    marginTop: 2,
+    lineHeight: 18,
+  },
+  locationLink: { marginTop: spacing[2], alignSelf: "flex-start" },
+  locationLinkText: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: "700",
+    color: color.semantic.warning.dark,
+    textDecorationLine: "underline",
+  },
   suspended: {
     backgroundColor: color.semantic.error.light,
     borderWidth: 1,
