@@ -30,11 +30,18 @@ message_service_sid = "MG00000000000000000000000000000000"
 auth_token = "env(TWILIO_AUTH_TOKEN)"
 
 # Numéros de test (format E.164 sans « + ») → code OTP accepté.
-# Convention locale : …0001 client, …0002 chauffeur, …0003 admin.
+# Convention locale : …0001 client, …0002 chauffeur, …0003 admin,
+# …0004 client 2, …0005 admin ops, …0006 admin carto, …0007 admin finance,
+# …0008 réserve (changement de numéro / récupération).
 [auth.sms.test_otp]
 24107000001 = "123456"
 24107000002 = "123456"
 24107000003 = "123456"
+24107000004 = "123456"
+24107000005 = "123456"
+24107000006 = "123456"
+24107000007 = "123456"
+24107000008 = "123456"
 
 # Fonction webhook du push : appelée par pg_net (secret partagé applicatif),
 # pas par un client authentifié — le JWT est vérifié par le secret x-teko.
