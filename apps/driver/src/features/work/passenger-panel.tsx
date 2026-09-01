@@ -8,6 +8,7 @@ import { BottomPanel, Button } from "@teko/ui/native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle, Path } from "react-native-svg";
 
 /** Délai avant annulation sans pénalité (question ouverte n° 5 : 5 min). */
@@ -92,12 +93,19 @@ function WaitBox({ remaining }: { remaining: number }) {
 export function PassengerPanel(props: PassengerPanelProps) {
   const { status, originHint, arrivedAt, busy, onArrive, onRequestPin, onNoShow } = props;
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const remaining = useNoShowCountdown(arrivedAt);
   const waiting = status === "arrived";
   const noShowReady = waiting && remaining <= 0;
 
   return (
-    <BottomPanel style={styles.panel}>
+    // Inset bas obligatoire : ancré à bottom:0 en edge-to-edge, la dernière
+    // rangée (ride-arrive / ride-noshow) passerait sous la barre système
+    // (même piège que ride-cancel côté client, vécu OPPO A15).
+    <BottomPanel
+      style={{ ...styles.panel, paddingBottom: insets.bottom + spacing[5] }}
+      testID="ride-panel"
+    >
       <PassengerRow originHint={originHint} />
       {waiting ? (
         <>
