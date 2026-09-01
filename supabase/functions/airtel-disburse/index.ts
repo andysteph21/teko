@@ -1,37 +1,8 @@
-// Décaissement (Teko -> chauffeur) pour un paiement 'payout' (créé par daily_close).
-import { admin, json, resolveMsisdn } from "../_shared/db.ts";
-import { getProvider, resolveOutcome } from "../_shared/payments/index.ts";
+// Point d'entrée servi — la logique vit dans handler.ts (module pur, testé
+// sans base). Seul cet index charge supabase-js et injecte le vrai client ;
+// le rétrécissement vers la surface Db est volontaire.
+import { admin } from "../_shared/db.ts";
+import type { Db } from "../_shared/db_types.ts";
+import { handleDisburse } from "./handler.ts";
 
-Deno.serve(async (req) => {
-  try {
-    const { payment_id } = await req.json();
-    if (!payment_id) return json({ error: "payment_id requis" }, 400);
-
-    const db = admin();
-    const { data: pmt } = await db.from("payments").select("*").eq("id", payment_id).single();
-    if (!pmt) return json({ error: "paiement introuvable" }, 404);
-    if (pmt.kind !== "payout") return json({ error: "type de paiement invalide" }, 400);
-    if (pmt.status === "success") return json({ status: "success" }); // idempotent
-
-    const msisdn = await resolveMsisdn(db, pmt);
-    if (!msisdn) return json({ error: "MSISDN introuvable" }, 422);
-
-    const r = await getProvider().disburse({
-      msisdn, amount: Number(pmt.amount), reference: "payout", partnerTxnId: pmt.partner_txn_id,
-    });
-
-    const outcome = resolveOutcome(r.status);
-    await db.from("payments").update({
-      provider_txn_id: r.providerTxnId ?? pmt.provider_txn_id,
-      status: outcome === "confirm" ? "success" : outcome === "fail" ? "failed" : "pending",
-      raw: r.raw ?? {},
-    }).eq("id", pmt.id);
-
-    if (outcome === "confirm") await db.rpc("confirm_payment", { p_payment: pmt.id });
-    else if (outcome === "fail") await db.rpc("fail_payment", { p_payment: pmt.id, p_reason: "disburse failed" });
-
-    return json({ status: r.status });
-  } catch (e) {
-    return json({ error: String(e) }, 500);
-  }
-});
+Deno.serve((req) => handleDisburse(req, admin() as unknown as Db));

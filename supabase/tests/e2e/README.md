@@ -34,6 +34,7 @@ touchant `supabase/`.
 | `dispatch.test.ts` | offre au plus proche, cascade sur refus, expiration par job, épuisement (client prévenu), rejeu d'offre refusé |
 | `security-rls.test.ts` | isolation RLS effective (grants posés), anonyme sans accès, gardes anti-escalade, fonctions internes verrouillées, `daily_close` gardée, immuabilité du ledger |
 | `finance-daily-close.test.ts` | solde négatif après course cash, `daily_close`, règlement Airtel simulé (callback service), idempotence |
+| `finance-collect-edge.test.ts` | règlement à travers l'**Edge Function `airtel-collect` réelle** (provider mock) : ledger `settlement` posté, solde soldé, chauffeur réactivé, rejeu sans double crédit — régression « payé mais toujours suspendu ». Sans effet sur l'état partagé (pas de `goOnline`/`daily_close`) |
 | `compte-sos.test.ts` | lieux favoris, partage de trajet public à jeton, SOS/incidents + alerte ops, suppression de compte (30 j, purge anonymisante), invitations admin, `validate_kyc`, re-vérification d'inactivité |
 | `landmarks.test.ts` | proposition de repère, refus client, validation admin carto, notification du proposant, visibilité `nearest_landmarks` |
 

@@ -33,6 +33,7 @@ Validées avec le parseur officiel Postgres (libpg_query / `pglast`).
 - **Chauffeur** : sa fiche `drivers` (champs KYC/activation/solde **protégés** par trigger), ses documents, son `ledger` et ses `daily_statements`, ses `gps_traces` (si consentement).
 - **Admin** : accès élargi (sous-rôles ops/carto/finance via `admin_role`), actions journalisées (`audit_log`).
 - **Finance** : `ledger` **append-only** (UPDATE/DELETE interdits) ; écritures financières réalisées par les **Edge Functions** (service role, hors RLS). Aucune écriture directe ouverte aux clients/chauffeurs.
+- **Transitions de statut de paiement : RPC uniquement.** Une Edge Function ne pose jamais `payments.status = 'success'/'failed'` elle-même — seuls `confirm_payment`/`fail_payment` font la transition (écriture grand livre + `maybe_reactivate_driver`). Pré-positionner `success` arme la garde d'idempotence de `confirm_payment` : paiement encaissé mais ledger jamais posté, chauffeur « payé mais toujours suspendu » (régression vécue, corrigée le 1ᵉʳ sept. 2026 — invariant verrouillé par `_shared/payments/apply.ts` + ses tests et `tests/e2e/finance-collect-edge.test.ts`).
 
 ## À faire ensuite (hors de ce lot)
 

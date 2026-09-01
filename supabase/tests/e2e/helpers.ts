@@ -11,9 +11,9 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import pg from "pg";
 
-const API_URL =
+export const API_URL =
   process.env.SUPABASE_URL ?? process.env.API_URL ?? "http://127.0.0.1:54321";
-const ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.ANON_KEY;
+export const ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.ANON_KEY;
 const SERVICE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SERVICE_ROLE_KEY;
 const DB_URL =

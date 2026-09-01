@@ -31,6 +31,7 @@ Plateforme de transport à la demande pour le Gabon (MVP ride-hailing Libreville
 - Erreurs backend = messages français + code `42501` — passer par le mapper d'erreurs d'`api-client`, jamais de string-match dans l'UI.
 - MapLibre refuse toute couche texte sans `glyphs` ; le style généré les dérive de l'origine des tuiles.
 - En plpgsql, `row is not null` est faux dès qu'un champ est null — utiliser `found`.
+- **Statut de paiement : jamais `success`/`failed` posé hors RPC** — `confirm_payment`/`fail_payment` seuls font la transition (ledger + réactivation) ; les Edge Functions passent par `_shared/payments/apply.ts`. Pré-positionner `success` arme la garde d'idempotence → « payé mais toujours suspendu » (vécu, D-16).
 - **Metro ne résout PAS `./x.js` → `x.ts`** : dans les packages livrés en source, imports internes **sans extension** (seul format commun Metro/Vite/vitest/Turbopack).
 - **Libs natives Expo : épingler aux versions de `expo/bundledNativeModules.json`** (reanimated, worklets, gesture-handler…). `auto-install-peers` tire sinon la dernière version → erreurs C++ (`executeSync` absent de WorkletRuntime, vécu).
 - Auth téléphone locale : GoTrue ne l'active que si un **fournisseur SMS est déclaré** — bloc twilio factice dans `config.toml`, les numéros `test_otp` court-circuitent tout appel réel.
