@@ -2,7 +2,7 @@
 
 Points à trancher pour finaliser le produit. Regroupés par thème. Les décisions arrêtées sont déplacées dans la section « Décisions tranchées » avec leur date — on ne supprime jamais une question, on la clôt.
 
-**Dernière mise à jour : 1ᵉʳ septembre 2026** (ajout §3 : plancher d'affichage des offres presque échues ; précédente : 18 août, clôture de la phase maquettes UX — voir `../design/06-maquettes.md`).
+**Dernière mise à jour : 2 septembre 2026** (arbitrages post-validation générale : part chauffeur 70 % appliquée, no-show payé, Airtel masqué côté client, purge → désactivation auth ; précédente : 1ᵉʳ septembre, plancher d'affichage des offres presque échues).
 
 ## Décisions déjà validées (5 juin 2026 — rappel)
 Périmètre MVP = ride-hailing seul ; déploiement national progressif ; auth OTP SMS (Supabase) ; **modèle solde journalier** ; paiements client = **cash + Airtel Money** (Moov Money reporté en version future) ; tarif estimé distance/temps GPS ; carte custom complète dès le MVP ; courses immédiates + programmées ; sécurité SOS + partage trajet + code PIN ; français d'abord (i18n prête) ; widget data + mode économie ; KYC avec casier judiciaire obligatoire ; frais d'annulation sur no-show/no-answer.
@@ -58,6 +58,17 @@ foi du détail). **Les 6 bloquantes sont levées** — la Phase 0 démarre.
 | 24 | Reconstruction des itinéraires : **chaque nuit + bouton manuel** dans la console |
 | 25 | **Libreville** confirmée première zone |
 | 26 | **Android uniquement** au lancement, iPhone ensuite |
+
+## Arbitrages du 2 septembre 2026 (suite de la validation générale du 1ᵉʳ septembre)
+
+Écarts code/produit relevés en validation de bout en bout, tranchés **dans le sens des décisions client déjà validées** (aucune règle nouvelle) :
+
+| # | Écart constaté | Arbitrage |
+|---|---|---|
+| A | `cancel_ride` créditait **100 %** du frais d'annulation au chauffeur ; la décision n° 5 (25 août) fixe la **part chauffeur à 70 %**. | **Le code s'aligne sur la décision** (migration `20260902090000`) : le client doit le frais entier (C-21, notification, encaissement Airtel inchangés) ; le chauffeur est crédité de `driver_share_percent` (70 %, clé `cancellation_fee`, réglable A-07), arrondi à l'unité ; le reste revient à Teko. Appliqué à tous les frais (annulation client après acceptation, no-show, no-answer). Au passage : `confirm_payment` ne recréditait plus le frais Airtel une seconde fois (double crédit latent). |
+| B | « Passager absent » partait en `cancelled_driver` avec motif texte : le frais no-show (1 000 F) **n'était jamais appliqué** (dette n° 3 du doc 12 — perte de paie chauffeur). | **Statut `no_show` exposé** dans `@teko/api-client` (`cancelRide(..., status)`) et utilisé par l'app chauffeur (D-11b). 1 000 F dus par le client, 700 F crédités au chauffeur. |
+| C | Airtel Money proposé en C-10 alors que le compte marchand n'est pas ouvert hors sandbox (R1 signature des callbacks + idempotence rejouée non validées). | **Airtel masqué côté client, temporairement** (`apps/client/src/features/booking/payment-methods.ts`, une ligne à remettre). Pas une décision produit : le MVP reste « cash + Airtel Money » (5 juin). Le règlement chauffeur D-16 par Airtel n'est pas touché (fournisseur simulé en local). |
+| D | Un compte purgé (J+30) restait **pleinement utilisable** : l'identité GoTrue survivait à l'anonymisation. | Edge Function `account-purge` (migration `20260902100000`) : soft-delete GoTrue (numéro libéré, sessions révoquées), déclenchée à la fin de la purge et par un job de rattrapage quotidien. |
 
 ## 1. Modèle financier
 - La commission s'applique-t-elle **aussi** aux paiements mobile money, ou seulement au cash ? (Hypothèse actuelle : commission dans les deux cas ; le mobile crédite `P − C`.)

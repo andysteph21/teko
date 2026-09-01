@@ -29,6 +29,7 @@ Le plan détaillé (lots, critères, jalons) est dans [00-plan-execution.md](00-
 3. **Lots 3-5 — les portails**, en consommant `@teko/maps` et les RPC.
 4. **Lot 6 — durcissement Airtel** avant go-live (dont **R1 : vérification de signature du callback**, toujours ouvert).
 5. En parallèle, hors code : CL-01 séance tarifaire, CL-02 latence hébergeur, CL-03 devis SMS ([02-backlog.md](02-backlog.md) §2c), comptes Expo/EAS, sandbox Airtel.
+6. **Passe de validation sur build release** (à planifier après la validation générale du 1ᵉʳ sept. 2026, menée en dev client) : hors-ligne C-29 (file de mutations, reprise), verrouillage OTP (tentatives, délais), push FCM réel (offre chauffeur écran verrouillé, D-09), PWA admin (installation, session). Ces quatre points ne sont pas observables en dev client ou avec les fournisseurs simulés.
 
 **Versions :** suivre [09-veille-expo.md](../architecture/09-veille-expo.md) — re-figer sur le **dernier SDK Expo stable au jour du kick-off** (SDK 57 minimum : régression mémoire Hermes/Reanimated en 56), New Architecture, `expo-audio`/`expo-video` (jamais `expo-av`), cible Android API 36, FCM HTTP v1.
 
