@@ -15,6 +15,24 @@ export const workFr = {
     suspenduTexte:
       "Votre solde n'a pas été réglé avant la clôture. Réglez-le pour repasser en ligne immédiatement.",
     suspenduLien: "Régler mon solde",
+    localisation: {
+      refus: {
+        titre: "Localisation requise",
+        texte:
+          "Teko a besoin de votre position pour vous envoyer les demandes proches. Repassez en ligne pour l'autoriser.",
+      },
+      bloquee: {
+        titre: "Localisation désactivée",
+        texte:
+          "Autorisez la localisation de Teko dans les réglages du téléphone, puis repassez en ligne.",
+      },
+      introuvable: {
+        titre: "Position introuvable",
+        texte:
+          "Activez la localisation (GPS) du téléphone. Sans position, vous ne recevez plus de demandes.",
+      },
+      reglages: "Ouvrir les réglages",
+    },
     onglets: {
       accueil: "Accueil",
       courses: "Courses",
