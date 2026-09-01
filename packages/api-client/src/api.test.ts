@@ -9,6 +9,7 @@ import {
   needsReverification,
   registerDevice,
   requestAccountDeletion,
+  restoreAccountIfDeletionPending,
   touchLastSeen,
   updateProfile,
 } from "./account";
@@ -276,6 +277,35 @@ describe("compte", () => {
     await getProfile(client, "u1");
     expect(client.from).toHaveBeenCalledWith("profiles");
     expect(client.eq).toHaveBeenCalledWith("id", "u1");
+  });
+
+  it("restoreAccountIfDeletionPending : suppression en attente → rétractation", async () => {
+    const client = tableClient({
+      id: "u1",
+      deletion_requested_at: "2026-08-25T00:00:00Z",
+      deleted_at: null,
+    });
+    client.rpc = vi
+      .fn()
+      .mockResolvedValue({ data: null, error: null }) as unknown as TekoClient["rpc"];
+    expect(await restoreAccountIfDeletionPending(client, "u1")).toBe(true);
+    expect(lastRpcCall(client)[0]).toBe("cancel_account_deletion");
+  });
+
+  it("restoreAccountIfDeletionPending : compte sain ou déjà purgé → aucun appel", async () => {
+    const sain = tableClient({ id: "u1", deletion_requested_at: null, deleted_at: null });
+    sain.rpc = vi.fn() as unknown as TekoClient["rpc"];
+    expect(await restoreAccountIfDeletionPending(sain, "u1")).toBe(false);
+    expect(sain.rpc).not.toHaveBeenCalled();
+
+    const purge = tableClient({
+      id: "u1",
+      deletion_requested_at: "2026-07-01T00:00:00Z",
+      deleted_at: "2026-08-01T00:00:00Z",
+    });
+    purge.rpc = vi.fn() as unknown as TekoClient["rpc"];
+    expect(await restoreAccountIfDeletionPending(purge, "u1")).toBe(false);
+    expect(purge.rpc).not.toHaveBeenCalled();
   });
 });
 

@@ -3,11 +3,12 @@
 // → D-08 ; validé → accueil ; course active → suivi direct.
 
 import type { TekoClient } from "@teko/api-client";
-import { findActiveRide, getMyDriver } from "@teko/api-client";
+import { findActiveRide, getMyDriver, restoreAccountIfDeletionPending } from "@teko/api-client";
 import { color, spacing, typography } from "@teko/ui";
 import { type Href, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
 import { useSession } from "../src/features/auth/use-session";
 import { supabase } from "../src/lib/supabase";
 
@@ -27,6 +28,7 @@ async function resolveEntryRoute(client: TekoClient, userId: string): Promise<Hr
 export default function Splash() {
   const { session, loading } = useSession();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (loading) return;
@@ -35,13 +37,26 @@ export default function Splash() {
       return;
     }
     let cancelled = false;
+    // Parcours F : revenir pendant la fenêtre de 30 j rétracte la demande de
+    // suppression — confirmé par Alert, retenté à la prochaine ouverture si
+    // le réseau lâche (d'où le catch silencieux).
+    void restoreAccountIfDeletionPending(supabase, session.user.id)
+      .then((restored) => {
+        if (restored) {
+          Alert.alert(
+            t("account:suppression.restaureTitre"),
+            t("account:suppression.restaureTexte"),
+          );
+        }
+      })
+      .catch(() => undefined);
     void resolveEntryRoute(supabase, session.user.id).then((route) => {
       if (!cancelled) router.replace(route);
     });
     return () => {
       cancelled = true;
     };
-  }, [loading, session, router]);
+  }, [loading, session, router, t]);
 
   return (
     <View style={styles.screen}>

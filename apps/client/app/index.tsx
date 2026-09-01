@@ -2,12 +2,12 @@
 // → accueil (< 3 s sur 3G) ; course active côté serveur → JAMAIS l'accueil
 // vide, directement le suivi ; sans session → onboarding.
 
-import { findActiveRide, touchLastSeen } from "@teko/api-client";
+import { findActiveRide, restoreAccountIfDeletionPending, touchLastSeen } from "@teko/api-client";
 import { color, spacing, typography } from "@teko/ui";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
 import { useSession } from "../src/features/auth/use-session";
 import { supabase } from "../src/lib/supabase";
 
@@ -24,6 +24,19 @@ export default function Splash() {
     }
     let cancelled = false;
     void touchLastSeen(supabase).catch(() => undefined);
+    // Parcours F : revenir pendant la fenêtre de 30 j rétracte la demande de
+    // suppression — confirmé par Alert, retenté à la prochaine ouverture si
+    // le réseau lâche (d'où le catch silencieux, comme touchLastSeen).
+    void restoreAccountIfDeletionPending(supabase, session.user.id)
+      .then((restored) => {
+        if (restored) {
+          Alert.alert(
+            t("account:suppression.restaureTitre"),
+            t("account:suppression.restaureTexte"),
+          );
+        }
+      })
+      .catch(() => undefined);
     findActiveRide(supabase)
       .then((ride) => {
         if (cancelled) return;
@@ -36,7 +49,7 @@ export default function Splash() {
     return () => {
       cancelled = true;
     };
-  }, [loading, session, router]);
+  }, [loading, session, router, t]);
 
   return (
     <View style={styles.screen}>

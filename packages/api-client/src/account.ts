@@ -27,6 +27,20 @@ export async function cancelAccountDeletion(client: TekoClient): Promise<void> {
   unwrap(await client.rpc("cancel_account_deletion"));
 }
 
+/** Parcours F : la reconnexion pendant la fenêtre de 30 jours vaut
+ *  rétractation (« tout sera restauré à l'identique », C-28). À appeler au
+ *  routage de session (splash) ; renvoie true si une restauration a eu
+ *  lieu — l'app doit alors la confirmer explicitement à l'utilisateur. */
+export async function restoreAccountIfDeletionPending(
+  client: TekoClient,
+  userId: string,
+): Promise<boolean> {
+  const profile = await getProfile(client, userId);
+  if (!profile.deletion_requested_at || profile.deleted_at) return false;
+  await cancelAccountDeletion(client);
+  return true;
+}
+
 /** Enregistre le jeton push de l'appareil (FCM) — la livraison des offres
  *  et notifications passe par lui (spike doc 11 : Realtime ≠ arrière-plan). */
 export async function registerDevice(

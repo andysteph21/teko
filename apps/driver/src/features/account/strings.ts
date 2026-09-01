@@ -101,6 +101,9 @@ export const accountFr = {
       "Votre profil et vos documents seront supprimés après 30 jours de rétractation. Les écritures financières sont conservées anonymisées (obligation légale).",
     confirmCta: "Supprimer",
     erreurCourse: "Impossible pendant une course. Terminez-la puis réessayez.",
+    restaureTitre: "Compte restauré",
+    restaureTexte:
+      "Bon retour ! Votre demande de suppression est annulée : votre compte est restauré à l'identique.",
   },
   historique: {
     titre: "Mes courses",

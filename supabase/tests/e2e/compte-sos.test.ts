@@ -141,6 +141,11 @@ describe("suppression de compte (E-04)", () => {
     const u = await createUser();
     const req = await u.client.rpc("request_account_deletion", {});
     expect(req.error).toBeNull();
+    // Le RPC renvoie la date de PURGE (fin de la fenêtre, J+30) — pas celle
+    // de la demande : l'écran « Compte désactivé » l'affiche telle quelle.
+    const purgeMs = new Date(req.data as string).getTime();
+    expect(purgeMs - Date.now()).toBeGreaterThan(29 * 24 * 3_600_000);
+    expect(purgeMs - Date.now()).toBeLessThan(31 * 24 * 3_600_000);
     let row = await serviceSql(
       `select deletion_requested_at from public.profiles where id = $1`,
       [u.id],
