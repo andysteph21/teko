@@ -71,14 +71,14 @@ export function useRideActions(
     [rideId, applyRide, t],
   );
 
-  // TODO backend : statut dédié `no_show` — le RPC cancel_ride accepte
-  // p_status côté SQL mais l'enveloppe api-client ne l'expose pas encore.
-  // En attendant : annulation chauffeur, motif « passager absent ».
+  // Statut dédié `no_show` : le backend applique le frais de non-présentation
+  // (part chauffeur créditée au grand livre) et les stats distinguent les
+  // non-présentations des annulations chauffeur.
   const noShow = useCallback(async () => {
     if (!rideId) return;
     setBusy(true);
     try {
-      await cancelRide(supabase, rideId, "passager absent");
+      await cancelRide(supabase, rideId, "passager absent", "no_show");
       showToast(t("work:course.annuleeAbsent"));
       router.replace("/(main)/home" as Href);
     } catch {

@@ -65,17 +65,24 @@ export async function requestRide(client: TekoClient, input: RequestRideInput): 
   ) as RideRow;
 }
 
+/** Statuts qu'un chauffeur peut déclarer en annulant (D-11b) — `no_show` /
+ *  `no_answer` déclenchent le frais dédié (1 000 F par défaut, config). Le
+ *  client n'en passe jamais : le backend force `cancelled_client`. */
+export type DriverCancelStatus = "cancelled_driver" | "no_show" | "no_answer";
+
 /** Annulation — gratuite avant attribution ; après, le backend applique les
  *  frais et les affiche via la notification `cancellation_fee` (C-21). */
 export async function cancelRide(
   client: TekoClient,
   rideId: string,
   reason?: string,
+  status?: DriverCancelStatus,
 ): Promise<RideRow> {
   return unwrap(
     await client.rpc("cancel_ride", {
       p_ride: rideId,
       ...(reason ? { p_reason: reason } : {}),
+      ...(status ? { p_status: status } : {}),
     }),
   ) as RideRow;
 }

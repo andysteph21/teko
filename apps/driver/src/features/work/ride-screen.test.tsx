@@ -183,10 +183,10 @@ describe("D-11b attente / D-12 PIN", () => {
     expect(await screen.findByTestId("ride-complete")).toBeOnTheScreen();
   });
 
-  it("passager absent : disponible après le délai → cancel_ride motif dédié", async () => {
+  it("passager absent : disponible après le délai → cancel_ride statut no_show", async () => {
     const sixMinAgo = new Date(Date.now() - 6 * 60_000).toISOString();
     mockGetRide.mockResolvedValue({ ...RIDE, status: "arrived", updated_at: sixMinAgo });
-    mockCancelRide.mockResolvedValue({ ...RIDE, status: "cancelled_driver" });
+    mockCancelRide.mockResolvedValue({ ...RIDE, status: "no_show" });
     const user = userEvent.setup();
     render(<DriverRideScreen />);
 
@@ -194,7 +194,7 @@ describe("D-11b attente / D-12 PIN", () => {
     expect(screen.getByText("Passager absent")).toBeOnTheScreen();
     await user.press(noShow);
 
-    expect(mockCancelRide).toHaveBeenCalledWith({}, "ride-1", "passager absent");
+    expect(mockCancelRide).toHaveBeenCalledWith({}, "ride-1", "passager absent", "no_show");
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/(main)/home"));
   });
 });

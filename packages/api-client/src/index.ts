@@ -93,6 +93,7 @@ export {
   ACTIVE_RIDE_STATUSES,
   cancelRide,
   completeRide,
+  type DriverCancelStatus,
   type DriverCardInfo,
   type EstimatePriceInput,
   estimateCancellationFee,

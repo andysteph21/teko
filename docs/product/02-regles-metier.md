@@ -173,7 +173,8 @@ Processus : création compte (OTP) → upload des pièces → **vérification KY
 - **Annulation client** avant acceptation : **sans frais**.
 - **No-show / no-answer** : des **frais d'annulation** s'appliquent *(paramétrables)* lorsque le client ne se présente pas ou ne répond pas après l'arrivée du chauffeur (délai d'attente avant déclenchement à définir).
 - **Annulation chauffeur** : suivie statistiquement ; un taux excessif peut entraîner une mise en revue.
-- L'impact financier des frais d'annulation sur le solde suit la même mécanique que les courses (selon le mode de paiement applicable). *(Modalités précises à confirmer.)*
+- **Répartition** *(décision n° 5, 25 août 2026 ; appliquée en base le 2 sept. 2026)* : le client doit le frais entier ; le chauffeur mobilisé en reçoit la **part chauffeur** (70 % par défaut, `cancellation_fee.driver_share_percent`, réglable par l'admin), créditée à son solde dès l'annulation ; le reste revient à Teko.
+- L'impact financier des frais d'annulation sur le solde suit la même mécanique que les courses (selon le mode de paiement applicable) ; en espèces, le recouvrement auprès du client est différé (v1).
 
 ---
 

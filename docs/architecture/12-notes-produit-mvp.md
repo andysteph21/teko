@@ -15,10 +15,13 @@ signalé par un `TODO` dans le code concerné. Classés par gravité produit.
    admin vers `driver_presence`/positions de course — la carte en direct
    n'affiche que le fond. Prévoir un canal Realtime dédié (ADR-13 étendu) ou
    une vue lisible admin.
-3. **Statut `no_show` côté app chauffeur** : `cancel_ride` accepte un statut
+3. ~~**Statut `no_show` côté app chauffeur** : `cancel_ride` accepte un statut
    dédié côté SQL mais l'api-client ne l'expose pas — « Passager absent »
-   part aujourd'hui en `cancelled` avec motif texte. À exposer pour que les
-   stats d'annulation distinguent les non-présentations.
+   part aujourd'hui en `cancelled` avec motif texte.~~ **Traité le 2 sept. 2026** :
+   `cancelRide(client, rideId, reason, status)` expose `no_show`/`no_answer`,
+   l'app chauffeur l'utilise — le frais de non-présentation (1 000 F, part
+   chauffeur 70 %) est enfin appliqué (il ne l'était jamais : perte de paie
+   chauffeur constatée en validation générale).
 
 ## Améliorations visibles à l'écran (données manquantes en base)
 

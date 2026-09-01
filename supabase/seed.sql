@@ -7,7 +7,7 @@
 -- Commission d'exemple : 15 % (paramétrable via app_config)
 update public.app_config set value = '{"type":"percent","value":15}'::jsonb where key = 'commission';
 update public.app_config set value = '0'::jsonb                                where key = 'payout_threshold';  -- versement quotidien sans seuil (réponse client n° 3)
-update public.app_config set value = '{"fixed":300,"percent":20,"no_show":1000,"no_answer":1000,"wait_min":5}'::jsonb where key = 'cancellation_fee';
+update public.app_config set value = '{"fixed":300,"percent":20,"no_show":1000,"no_answer":1000,"wait_min":5,"driver_share_percent":70}'::jsonb where key = 'cancellation_fee';  -- part chauffeur 70 % (réponse client n° 5)
 update public.app_config set value = '{"min_passes":10,"min_distinct_drivers":5,"window_days":21}'::jsonb where key = 'road_detect_thresholds';  -- réponse client n° 12
 
 -- Zone de lancement : Libreville (polygone approximatif)
@@ -44,3 +44,7 @@ where not exists (select 1 from public.landmarks);
 -- docker interne). En CI/dev sans besoin de push, le meilleur-effort ignore
 -- les échecs. Prod/staging : URL réelle + secret via la console (A-07).
 update public.app_config set value = to_jsonb('http://supabase_kong_teko:8000/functions/v1/notify-push'::text) where key = 'push_webhook_url';
+-- Webhook de purge local (dev) : désactivation auth des comptes purgés par
+-- l'Edge Function account-purge (même réseau docker). Prod/staging : URL
+-- réelle + secret via la console (A-07).
+update public.app_config set value = to_jsonb('http://supabase_kong_teko:8000/functions/v1/account-purge'::text) where key = 'purge_webhook_url';

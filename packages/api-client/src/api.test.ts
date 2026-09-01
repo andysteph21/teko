@@ -139,6 +139,15 @@ describe("rides", () => {
     ]);
   });
 
+  it("cancelRide transmet le statut chauffeur (no_show → frais dédié)", async () => {
+    const client = rpcClient({ id: "r1", status: "no_show" });
+    await cancelRide(client, "r1", "passager absent", "no_show");
+    expect(lastRpcCall(client)).toEqual([
+      "cancel_ride",
+      { p_ride: "r1", p_reason: "passager absent", p_status: "no_show" },
+    ]);
+  });
+
   it("markArrived / completeRide (avec et sans prix final)", async () => {
     const arrived = rpcClient({ id: "r1", status: "arrived" });
     await markArrived(arrived, "r1");
