@@ -1,6 +1,7 @@
 // C-13/C-13b/C-14 : PIN affiché, bascules pilotées par le statut backend,
 // completed → paiement, partage du trajet (createTripShare + Share natif).
 
+import { spacing } from "@teko/ui";
 import { act, render, screen, userEvent } from "@testing-library/react-native";
 import { Share } from "react-native";
 
@@ -51,8 +52,9 @@ jest.mock("expo-location", () => ({
   getCurrentPositionAsync: jest.fn(),
   Accuracy: { Balanced: 3 },
 }));
+let mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
 jest.mock("react-native-safe-area-context", () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  useSafeAreaInsets: () => mockInsets,
   SafeAreaView: require("react-native").View,
 }));
 jest.mock("../data/network", () => ({ fetchNetworkHint: jest.fn(async () => ({})) }));
@@ -86,6 +88,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
   statusCb = undefined;
   mockChannel.subscribeRideStatus.mockImplementation((_id: string, cb: StatusCb) => {
     statusCb = cb;
@@ -140,6 +143,28 @@ describe("bascules pilotées par le statut backend", () => {
     act(() => statusCb?.("completed"));
 
     expect(mockReplace).toHaveBeenCalledWith("/(main)/payment/ride-1");
+  });
+});
+
+describe("inset bas edge-to-edge (régression OPPO A15, barre 3 boutons)", () => {
+  // Sans réserve d'inset, le panneau colle à bottom:0 et sa dernière ligne
+  // (ride-cancel / ride-share) passe sous la barre système : peinte mais
+  // intouchable (bounds accessibilité [0,0][0,0], taps → home/recents).
+  it("le panneau réserve insets.bottom sur les trois états", async () => {
+    mockInsets = { top: 28, bottom: 84, left: 0, right: 0 };
+    render(<RideScreen />);
+    await screen.findByTestId("ride-pin");
+    expect(screen.getByTestId("ride-panel")).toHaveStyle({ paddingBottom: 84 + spacing[5] });
+    expect(screen.getByTestId("ride-cancel")).toBeOnTheScreen();
+
+    act(() => statusCb?.("arrived"));
+    expect(await screen.findByTestId("arrived-banner")).toBeOnTheScreen();
+    expect(screen.getByTestId("ride-panel")).toHaveStyle({ paddingBottom: 84 + spacing[5] });
+    expect(screen.getByTestId("ride-cancel")).toBeOnTheScreen();
+
+    act(() => statusCb?.("started"));
+    expect(await screen.findByText("En course")).toBeOnTheScreen();
+    expect(screen.getByTestId("ride-panel")).toHaveStyle({ paddingBottom: 84 + spacing[5] });
   });
 });
 

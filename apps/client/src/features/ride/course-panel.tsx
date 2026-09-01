@@ -8,6 +8,7 @@ import { color, spacing, typography } from "@teko/ui";
 import { BottomPanel, Button, DriverCard } from "@teko/ui/native";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /** « Arrivée 14 h 46 » — départ réel + durée estimée backend. */
 export function arrivalTimeText(startedAtIso: string | null, durationS: number | null) {
@@ -29,6 +30,7 @@ export interface CoursePanelProps {
 export function CoursePanel(props: CoursePanelProps) {
   const { ride, driverName, destinationLabel, positionStale, sharing, onShare } = props;
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const heure = arrivalTimeText(ride.started_at, ride.duration_est_s);
   const payment =
     ride.payment_method === "airtel"
@@ -36,7 +38,9 @@ export function CoursePanel(props: CoursePanelProps) {
       : t("ride:suivi.paiementEspeces");
   const name = driverName ?? t("ride:suivi.chauffeurFallback");
   return (
-    <BottomPanel>
+    // Inset bas obligatoire : ancré à bottom:0 en edge-to-edge, le bouton
+    // partager passerait sous la barre système (même piège que ride-cancel).
+    <BottomPanel style={{ paddingBottom: insets.bottom + spacing[5] }} testID="ride-panel">
       {positionStale ? (
         <View style={styles.stale} testID="stale-banner">
           <Text style={styles.staleText}>{t("ride:suivi.positionFigee")}</Text>
