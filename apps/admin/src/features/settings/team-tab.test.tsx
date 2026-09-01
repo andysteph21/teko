@@ -26,7 +26,7 @@ import { TeamTab } from "./team-tab";
 const superadmin = {
   id: "admin-1",
   full_name: "Serge O.",
-  phone: "+24106552109",
+  phone: "24106552109",
   role: "admin",
   admin_role: "superadmin",
   last_seen_at: new Date().toISOString(),
@@ -34,7 +34,7 @@ const superadmin = {
 
 const pendingInvite = {
   id: "inv-1",
-  phone: "+24106127703",
+  phone: "24106127703",
   admin_role: "finance",
   accepted_at: null,
   accepted_by: null,
