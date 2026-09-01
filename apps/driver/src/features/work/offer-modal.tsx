@@ -2,6 +2,9 @@
 // depuis expires_at, course/commission/net (net EN GRAND), point de rencontre
 // + indication du client. JAMAIS la destination avant acceptation
 // (anti-écrémage, décision n° 9 — la maquette D-10 antérieure la montrait).
+// À l'échéance : grâce de 600 ms actions désarmées avant fermeture — la
+// rangée de boutons recouvre HomeTabs, un démontage sec laissait passer un
+// tap en vol vers les onglets (doc 10 §8, Q1).
 
 import type { OfferDetails } from "@teko/api-client";
 import { formatXaf } from "@teko/core";
@@ -11,8 +14,10 @@ import { Button } from "@teko/ui/native";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { VALHALLA_URL } from "../../config";
 import { fetchDevicePosition } from "./use-device-position";
+import { offerRemainingMs, useOfferCountdown } from "./use-offer-countdown";
 
 export interface OfferModalProps {
   offer: OfferDetails;
@@ -20,30 +25,6 @@ export interface OfferModalProps {
   onAccept: () => void;
   onDecline: () => void;
   onExpire: () => void;
-}
-
-function remainingMs(expiresAt: string): number {
-  return Math.max(0, Date.parse(expiresAt) - Date.now());
-}
-
-/** Secondes restantes, tic 250 ms ; déclenche onExpire une seule fois à 0. */
-function useCountdown(expiresAt: string, onExpire: () => void): number {
-  const [seconds, setSeconds] = useState(() => Math.ceil(remainingMs(expiresAt) / 1000));
-  const expired = useRef(false);
-  const expireRef = useRef(onExpire);
-  expireRef.current = onExpire;
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const ms = remainingMs(expiresAt);
-      setSeconds(Math.ceil(ms / 1000));
-      if (ms <= 0 && !expired.current) {
-        expired.current = true;
-        expireRef.current();
-      }
-    }, 250);
-    return () => clearInterval(timer);
-  }, [expiresAt]);
-  return seconds;
 }
 
 /** ETA de prise en charge (position → point de rencontre), meilleure volonté. */
@@ -69,7 +50,7 @@ function CountBar({ expiresAt }: { expiresAt: string }) {
   useEffect(() => {
     const animation = Animated.timing(progress, {
       toValue: 0,
-      duration: remainingMs(expiresAt),
+      duration: offerRemainingMs(expiresAt),
       easing: Easing.linear,
       useNativeDriver: false,
     });
@@ -106,9 +87,43 @@ function OfferStats({ offer }: { offer: OfferDetails }) {
   );
 }
 
+/** Rangée Refuser/Accepter — désarmée pendant la grâce d'expiration. */
+function OfferActions(props: {
+  busy: boolean;
+  expired: boolean;
+  onAccept: () => void;
+  onDecline: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.actions}>
+      <Pressable
+        style={styles.refuse}
+        onPress={props.onDecline}
+        disabled={props.expired}
+        accessibilityRole="button"
+        testID="offer-refuse"
+      >
+        <Text style={styles.refuseText}>{t("work:offre.refuser")}</Text>
+      </Pressable>
+      <View style={styles.acceptWrap}>
+        <Button
+          label={t("work:offre.accepter")}
+          accent="driver"
+          busy={props.busy}
+          disabled={props.expired}
+          onPress={props.onAccept}
+          testID="offer-accept"
+        />
+      </View>
+    </View>
+  );
+}
+
 export function OfferModal({ offer, busy, onAccept, onDecline, onExpire }: OfferModalProps) {
   const { t } = useTranslation();
-  const seconds = useCountdown(offer.expiresAt, onExpire);
+  const insets = useSafeAreaInsets();
+  const { seconds, expired } = useOfferCountdown(offer.expiresAt, busy, onExpire);
   const etaMin = usePickupEta(offer);
   const km = (offer.distanceEstM / 1000).toFixed(1).replace(".", ",");
   const courseMin = Math.max(1, Math.round(offer.durationEstS / 60));
@@ -116,7 +131,7 @@ export function OfferModal({ offer, busy, onAccept, onDecline, onExpire }: Offer
   return (
     <View style={styles.overlay} pointerEvents="box-none" testID="offer-modal">
       <View style={styles.scrim} />
-      <View style={styles.modal}>
+      <View style={[styles.modal, { marginBottom: 18 + insets.bottom }]} testID="offer-sheet">
         <CountBar expiresAt={offer.expiresAt} />
         <View style={styles.head}>
           <Text style={styles.title}>
@@ -144,25 +159,7 @@ export function OfferModal({ offer, busy, onAccept, onDecline, onExpire }: Offer
         </View>
         <OfferStats offer={offer} />
         <Text style={styles.distance}>{t("work:offre.distanceDuree", { km, min: courseMin })}</Text>
-        <View style={styles.actions}>
-          <Pressable
-            style={styles.refuse}
-            onPress={onDecline}
-            accessibilityRole="button"
-            testID="offer-refuse"
-          >
-            <Text style={styles.refuseText}>{t("work:offre.refuser")}</Text>
-          </Pressable>
-          <View style={styles.acceptWrap}>
-            <Button
-              label={t("work:offre.accepter")}
-              accent="driver"
-              busy={busy}
-              onPress={onAccept}
-              testID="offer-accept"
-            />
-          </View>
-        </View>
+        <OfferActions busy={busy} expired={expired} onAccept={onAccept} onDecline={onDecline} />
       </View>
     </View>
   );
@@ -187,7 +184,6 @@ const styles = StyleSheet.create({
   },
   modal: {
     marginHorizontal: 14,
-    marginBottom: 18,
     backgroundColor: color.neutral[0],
     borderRadius: borderRadius.xl,
     paddingHorizontal: 18,

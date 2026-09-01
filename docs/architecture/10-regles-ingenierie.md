@@ -101,6 +101,22 @@ CI (lot 1) : workflow racine `turbo lint typecheck test build` + `biome ci` + ga
 
 Le parc fixe le **minSdk plancher : 29** (défaut Expo 24 — ne pas le relever au-delà de 29). Boucle de dev : dev client EAS/local (JDK 17 portable, cf. pièges 06-demarrage §6) + `adb reverse` par appareil : Metro 8081, Supabase 54321, Martin 3333, Valhalla 8002.
 
+## 8. Registre des questions d'ingénierie
+
+Signalements et questions techniques transverses : datés, jamais supprimés, clôturés avec l'analyse retenue (pendant du registre produit `docs/product/05-questions-ouvertes.md`).
+
+### Q1 — 1ᵉʳ septembre 2026 · D-10 : tap « Accepter » atterri sur la barre d'onglets (OPPO A15) — **clôturée**
+
+**Signalement** (session teko-c5, reproduit une fois après ~3 h d'app au premier plan, non systématique) : sur le modal d'offre, un tap sur « Accepter la course » a déclenché un onglet de D-09.
+
+**Analyse (lecture de code ; non reproduit sur appareil — la fenêtre est fermée par construction, voir correctif).** L'overlay du modal (`apps/driver/src/features/work/offer-modal.tsx`) est le dernier enfant de l'écran D-09 : il couvre tout l'écran, **`HomeTabs` compris**, et la rangée Refuser/Accepter recouvre les pressables des onglets (de l'ordre de 20-30 dp selon `insets.bottom`, l'app étant edge-to-edge). Tant que le modal est monté, le scrim avale tout tap — aucun chemin vers les onglets. Mais à l'échéance, l'ancien `useCountdown` appelait `onExpire` au tic (250 ms) → `setOffer(null)` dans `use-offer-feed` → **démontage synchrone de tout l'overlay, sans grâce ni animation de sortie**. Un tap engagé (le doigt part 100-200 ms avant le contact) atterrit alors sur `tab-*` → navigation. Fenêtre aggravée par le repli `listPendingOffers` au focus, qui peut monter une offre à moins de 2 s de l'échéance (modal éclair).
+
+**Hypothèse (a) inset manquant — écartée comme cause du symptôme** : ce motif est déterministe et viserait la barre système, pas les onglets de l'app. L'inset manquait néanmoins réellement (marge basse fixe de 18 dp : bas du panneau derrière la barre système en edge-to-edge) → corrigé au passage (`marginBottom: 18 + insets.bottom`, même pattern que les écrans client). **Hypothèse (b) cycle de vie — retenue** : démontage instantané à l'expiration, concurrent du tap, sur fond de recouvrement géométrique actions/onglets.
+
+**Correctif** (`use-offer-countdown.ts`, testé unitairement + tests du modal) : à 0, le modal reste monté **600 ms actions désarmées** (`OFFER_EXPIRE_GRACE_MS` — le tap en vol est avalé par les vues encore en place, le chrono affiche « 0 s ») avant d'appeler `onExpire` ; si un « Accepter » est déjà en vol (`busy`), l'issue revient à la réponse du serveur, jamais au chrono local.
+
+**Si récidive malgré la grâce** : `adb shell uiautomator dump` au moment du symptôme — bounds du bouton nuls ou décalés = problème de layout ; bounds corrects mais tap perdu = cycle de vie/hit-test (vérifier alors la dérive d'horloge appareil↔serveur : `expires_at` est côté serveur, un client en avance ferme tôt). Question produit dérivée — plancher d'affichage d'une offre presque échue — portée au registre produit (05, §3).
+
 ---
 
 *Sources des vérifications (25 août 2026) : registre npm (zustand, @tanstack/react-query, @biomejs/biome, @legendapp/state, tinybase), biomejs.dev (changelog, règles, domaines), docs.expo.dev (local-first, sqlite, using-eslint), tanstack.com (network-mode, persistQueryClient, react-native), turborepo.dev (boundaries, guide Biome), dépôts GitHub des bibliothèques (issues citées).*
