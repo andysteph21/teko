@@ -62,6 +62,8 @@ describe("C-28 Suppression de compte", () => {
 
   it("confirmation → requestAccountDeletion → état désactivé → fermeture", async () => {
     const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
+    // Le RPC renvoie la date de la DEMANDE — l'écran doit afficher J+30
+    // (vécu : la date du jour s'affichait comme limite de rétractation).
     mockRequestDeletion.mockResolvedValueOnce("2026-09-24T12:00:00Z");
     mockSignOut.mockResolvedValueOnce(undefined);
     const user = userEvent.setup();
@@ -72,7 +74,7 @@ describe("C-28 Suppression de compte", () => {
     await confirmViaAlert(alertSpy);
 
     expect(await screen.findByText("Compte désactivé")).toBeOnTheScreen();
-    expect(screen.getByTestId("delete-done")).toHaveTextContent(/24 septembre/);
+    expect(screen.getByTestId("delete-done")).toHaveTextContent(/24 octobre/);
 
     await user.press(screen.getByTestId("delete-close"));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/"));

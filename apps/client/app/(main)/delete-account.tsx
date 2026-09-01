@@ -16,8 +16,16 @@ import { CheckIcon } from "../../src/features/settings/icons";
 import { ScreenHeader } from "../../src/features/settings/screen-header";
 import { supabase } from "../../src/lib/supabase";
 
+// request_account_deletion renvoie l'horodatage de la DEMANDE — la date
+// limite de rétractation est J+30 (deletion_grace_days), calculée ici.
+const GRACE_DAYS = 30;
+
 function frenchDate(date: Date): string {
   return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+}
+
+function graceDeadline(from: Date): string {
+  return frenchDate(new Date(from.getTime() + GRACE_DAYS * 24 * 3600 * 1000));
 }
 
 export default function DeleteAccount() {
@@ -31,8 +39,8 @@ export default function DeleteAccount() {
     setBusy(true);
     setError(null);
     try {
-      const purge = await requestAccountDeletion(supabase);
-      setPurgeDate(frenchDate(new Date(purge)));
+      const requestedAt = await requestAccountDeletion(supabase);
+      setPurgeDate(graceDeadline(new Date(requestedAt)));
     } catch (e) {
       setBusy(false);
       if (e instanceof TekoApiError && e.code === "ride_in_progress") {
@@ -78,7 +86,7 @@ export default function DeleteAccount() {
     );
   }
 
-  const graceDate = frenchDate(new Date(Date.now() + 30 * 24 * 3600 * 1000));
+  const graceDate = graceDeadline(new Date());
 
   return (
     <View style={styles.screen}>
