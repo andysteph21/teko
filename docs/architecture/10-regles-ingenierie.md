@@ -40,6 +40,8 @@
 
 Limites connues et assumées : pas de règle `max-depth` (couverte indirectement par la complexité cognitive ; plugin GritQL possible si besoin) ; Biome ne formate **ni Markdown ni YAML** → ces fichiers ne sont plus formatés automatiquement (Prettier est retiré, pas conservé en doublon).
 
+**Dérogation `tools/**` (1ᵉʳ sept. 2026) :** les scripts utilitaires hors livrable (`tools/dev/` — simulateurs client/chauffeur, `tools/demo/` — enregistreur) sont hors périmètre de ce document (qui couvre `apps/*` et `packages/*`) : override dans `biome.json` racine qui coupe `noRestrictedImports` (ils simulent volontairement un client supabase-js brut), les règles de complexité et `noUndeclaredDependencies` (dépendances hissées du workspace) — même traitement que `apps/labo-carte` et `packages/maps/demo`. Le **formateur** continue de s'appliquer partout, `tools/` compris.
+
 ### Intégration
 
 - Scripts : `lint` = `biome check .`, CI = `biome ci` (reporter GitHub, annotations inline). Tâche racine turbo (`//#lint`) plutôt que par package — Biome est assez rapide, recommandation officielle Turborepo.
