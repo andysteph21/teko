@@ -10,7 +10,17 @@ import {
 } from "./driver";
 import { subscribeNotifications } from "./notifications";
 
-const CHAIN = ["from", "select", "insert", "update", "upsert", "eq", "order", "limit", "single"] as const;
+const CHAIN = [
+  "from",
+  "select",
+  "insert",
+  "update",
+  "upsert",
+  "eq",
+  "order",
+  "limit",
+  "single",
+] as const;
 type Mock = TekoClient & Record<(typeof CHAIN)[number], ReturnType<typeof vi.fn>>;
 
 function tableClient(data: unknown): Mock {

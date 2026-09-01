@@ -91,6 +91,8 @@ async function record() {
 if (mode === "login") await login();
 else if (mode === "record") await record();
 else {
-  console.error("usage: admin-recorder.mjs login <profil> | record <profil> <out.webm> <cmd> [path]");
+  console.error(
+    "usage: admin-recorder.mjs login <profil> | record <profil> <out.webm> <cmd> [path]",
+  );
   process.exit(1);
 }
