@@ -1,5 +1,6 @@
-// C-23 : rendu du hub (nom, numéro, compte de repères validés) et
-// déconnexion avec confirmation → signOut → retour à la racine.
+// C-23 : rendu du hub (nom, numéro, compte de repères validés),
+// déconnexion avec confirmation → signOut → retour à la racine,
+// et cible de navigation de chaque ligne (routes réelles de app/(main)/).
 
 import { act, render, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { Alert } from "react-native";
@@ -82,13 +83,23 @@ describe("C-23 Profil & paramètres", () => {
     expect(mockSignOut).toHaveBeenCalled();
   });
 
-  it("navigation : modifier le profil et suppression", async () => {
+  // Garde anti-route fantôme : « Mes courses » poussait /(main)/rides
+  // (inexistant) → écran « Unmatched Route » sur appareil.
+  const cibles = [
+    ["hub-edit", "/(main)/profile-edit"],
+    ["hub-landmarks", "/(main)/my-landmarks"],
+    ["hub-rides", "/(main)/history"],
+    ["hub-data", "/(main)/data-settings"],
+    ["hub-language", "/(main)/language"],
+    ["hub-notifications", "/(main)/notifications"],
+    ["hub-delete", "/(main)/delete-account"],
+  ] as const;
+
+  it.each(cibles)("navigation : %s pousse %s", async (testID, route) => {
     const user = userEvent.setup();
     render(<Profile />, { wrapper: Providers });
 
-    await user.press(await screen.findByTestId("hub-edit"));
-    expect(mockPush).toHaveBeenCalledWith("/(main)/profile-edit");
-    await user.press(screen.getByTestId("hub-delete"));
-    expect(mockPush).toHaveBeenCalledWith("/(main)/delete-account");
+    await user.press(await screen.findByTestId(testID));
+    expect(mockPush).toHaveBeenCalledWith(route);
   });
 });

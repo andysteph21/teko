@@ -4,7 +4,7 @@
 import { color, spacing, typography } from "@teko/ui";
 import { BellIcon, DataBarsIcon, LandmarkPinIcon } from "@teko/ui/native";
 import { LinearGradient } from "expo-linear-gradient";
-import { type Href, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -42,7 +42,7 @@ export function HubAccountSection({ validatedCount }: { validatedCount: number }
         <SettingsRow
           label={t("account:hub.modifierProfil")}
           icon={<PersonIcon />}
-          onPress={() => router.push("/(main)/profile-edit" as Href)}
+          onPress={() => router.push("/(main)/profile-edit")}
           testID="hub-edit"
         />
         <SettingsRow
@@ -53,13 +53,13 @@ export function HubAccountSection({ validatedCount }: { validatedCount: number }
               ? t("account:hub.reperesValides", { count: validatedCount })
               : undefined
           }
-          onPress={() => router.push("/(main)/my-landmarks" as Href)}
+          onPress={() => router.push("/(main)/my-landmarks")}
           testID="hub-landmarks"
         />
         <SettingsRow
           label={t("account:hub.courses")}
           icon={<BagIcon />}
-          onPress={() => router.push("/(main)/rides" as Href)}
+          onPress={() => router.push("/(main)/history")}
           testID="hub-rides"
         />
       </SettingsGroup>
@@ -79,20 +79,20 @@ export function HubPreferencesSection() {
           label={t("account:hub.donnees")}
           icon={<DataBarsIcon size={16} strokeWidth={2.2} />}
           value={t("account:hub.donneesValeur", { quantite: usage.quantityText })}
-          onPress={() => router.push("/(main)/data-settings" as Href)}
+          onPress={() => router.push("/(main)/data-settings")}
           testID="hub-data"
         />
         <SettingsRow
           label={t("account:hub.langue")}
           icon={<GlobeIcon />}
           value={t("account:hub.langueValeur")}
-          onPress={() => router.push("/(main)/language" as Href)}
+          onPress={() => router.push("/(main)/language")}
           testID="hub-language"
         />
         <SettingsRow
           label={t("account:hub.notifications")}
           icon={<BellIcon size={16} color={color.brand[800]} />}
-          onPress={() => router.push("/(main)/notifications" as Href)}
+          onPress={() => router.push("/(main)/notifications")}
           testID="hub-notifications"
         />
       </SettingsGroup>
@@ -137,7 +137,7 @@ export function HubExitSection({ onSignOut }: { onSignOut: () => void }) {
           icon={<TrashIcon color={color.semantic.error.default} />}
           iconBackground={color.semantic.error.light}
           danger
-          onPress={() => router.push("/(main)/delete-account" as Href)}
+          onPress={() => router.push("/(main)/delete-account")}
           testID="hub-delete"
         />
       </SettingsGroup>
