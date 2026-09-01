@@ -24,9 +24,7 @@ export async function getMyDriver(
 }
 
 /** Pièces du dossier avec statut et motif de refus (D-05/D-08/D-08b). */
-export async function listMyDocuments(
-  client: TekoClient,
-): Promise<TableRow<"driver_documents">[]> {
+export async function listMyDocuments(client: TekoClient): Promise<TableRow<"driver_documents">[]> {
   return unwrap(
     await client.from("driver_documents").select("*").order("created_at", { ascending: false }),
   );
