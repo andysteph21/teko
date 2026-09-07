@@ -59,7 +59,18 @@ jobs:
         run: supabase start
 
       - name: Exporter les clés locales
-        run: supabase status -o env >> "$GITHUB_ENV"
+        # `supabase status -o env` émet des valeurs GUILLEMETÉES (KEY="valeur").
+        # Le fichier $GITHUB_ENV prend la valeur À LA LETTRE : les guillemets
+        # restent DANS la variable, et supabase-js/pg les rejettent
+        # (« Invalid supabaseUrl » ; DB_URL parsée avec l'hôte « base »).
+        # En local ça passe car on fait `eval` (le shell retire les guillemets),
+        # pas la CI. On dé-guillemète donc à l'écriture — et on ne garde que les
+        # vraies lignes KEY=VALUE (une ligne parasite casserait $GITHUB_ENV).
+        run: |
+          supabase status -o env \
+            | grep -E '^[A-Z0-9_]+=' \
+            | sed -E 's/^([A-Z0-9_]+)="(.*)"$/\1=\2/' \
+            >> "$GITHUB_ENV"
 
       - name: Tests d'intégration (repères, heartbeat, Realtime)
         working-directory: packages/maps
