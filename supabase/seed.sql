@@ -44,6 +44,40 @@ where not exists (select 1 from public.landmarks);
 -- docker interne). En CI/dev sans besoin de push, le meilleur-effort ignore
 -- les échecs. Prod/staging : URL réelle + secret via la console (A-07).
 update public.app_config set value = to_jsonb('http://supabase_kong_teko:8000/functions/v1/notify-push'::text) where key = 'push_webhook_url';
+
+-- ============================================================================
+-- Rôle martin_tiles (serveur de tuiles carto). PROVISIONNÉ ICI parce que le
+-- rôle disparaît à chaque recréation de base (reset/volume neuf) : sans lui,
+-- Martin crash-loope en « password authentication failed » et on répare à la
+-- main (vécu : 1 582 redémarrages, 7 sept. 2026). Le seed tourne à chaque
+-- reset — le rôle est donc toujours là après un cycle propre. Dev uniquement
+-- (le seed ne s'exécute pas en prod).
+-- ⚠ Copie idempotente de infra/tiles/martin/setup-martin-role.sql (usage
+--   autonome `psql -f`, référencé par infra/ et docs) : GARDER LES DEUX ALIGNÉS.
+-- ============================================================================
+do $$
+begin
+  if not exists (select 1 from pg_roles where rolname = 'martin_tiles') then
+    create role martin_tiles login password 'martin_tiles_dev';
+  end if;
+end $$;
+
+grant usage on schema public, extensions to martin_tiles;
+grant select on public.landmarks, public.road_segments, public.zones to martin_tiles;
+
+drop policy if exists "tiles_landmarks_validated" on public.landmarks;
+create policy "tiles_landmarks_validated" on public.landmarks
+  for select to martin_tiles using ( status = 'validated' );
+drop policy if exists "tiles_roads_validated" on public.road_segments;
+create policy "tiles_roads_validated" on public.road_segments
+  for select to martin_tiles using ( status = 'validated' );
+drop policy if exists "tiles_zones_active" on public.zones;
+create policy "tiles_zones_active" on public.zones
+  for select to martin_tiles using ( is_active );
+
+-- PostGIS vit dans le schéma `extensions` chez Supabase : search_path pour que
+-- Martin trouve postgis_lib_version()/ST_AsMVT.
+alter role martin_tiles set search_path = public, extensions;
 -- Webhook de purge local (dev) : désactivation auth des comptes purgés par
 -- l'Edge Function account-purge (même réseau docker). Prod/staging : URL
 -- réelle + secret via la console (A-07).

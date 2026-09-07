@@ -27,6 +27,8 @@ Plateforme de transport à la demande pour le Gabon (MVP ride-hailing Libreville
 ## Pièges à ne pas repayer
 
 - `seed.sql` s'exécute **après** les migrations et écrase `app_config` — garder les deux alignés.
+- Le rôle `martin_tiles` disparaît à chaque recréation de base → Martin crash-loope (« password authentication failed »). Il est provisionné dans `seed.sql` (copie idempotente de `infra/tiles/martin/setup-martin-role.sql`) : **garder les deux alignés**. Après un reset, si Martin boucle, c'est le seed qui a divergé.
+- CI : `supabase status -o env` sort des valeurs **guillemetées** ; `>> "$GITHUB_ENV"` garde les guillemets dans la variable → supabase-js « Invalid supabaseUrl », pg hôte « base ». En local on charge par `eval` (guillemets retirés), pas la CI : dé-guillemeter à l'écriture (`sed`), jamais rediriger `status -o env` brut vers `$GITHUB_ENV`.
 - Géométries : PostgREST et Realtime sérialisent en GeoJSON — toujours `toLonLat()` de `@teko/maps` ; entrée en EWKT `SRID=4326;POINT(lon lat)`. Les numériques reviennent en **strings** via supabase-js.
 - Erreurs backend = messages français + code `42501` — passer par le mapper d'erreurs d'`api-client`, jamais de string-match dans l'UI.
 - MapLibre refuse toute couche texte sans `glyphs` ; le style généré les dérive de l'origine des tuiles.
