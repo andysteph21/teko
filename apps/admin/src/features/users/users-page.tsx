@@ -7,6 +7,7 @@
 import type { TableRow } from "@teko/types";
 import { type ReactNode, useState } from "react";
 import { PageHeader } from "../shell/page-header";
+import { AlphaInvitations } from "./alpha-invitations";
 import {
   ROLE_FILTERS,
   type RoleFilter,
@@ -40,6 +41,7 @@ export function UsersPage() {
         />
       </PageHeader>
       <div className="flex flex-col gap-3 p-4 lg:p-5">
+        <AlphaInvitations />
         <RoleFilters role={role} onChange={setRole} />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_380px]">
           <UsersListPanel query={profiles} selected={selected} onSelect={setSelected} />

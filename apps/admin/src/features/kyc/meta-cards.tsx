@@ -64,13 +64,6 @@ export function MetaCards({ driver }: { driver: TableRow<"drivers"> }) {
           <p className="mt-1 text-[11.5px] text-error-dark">Motif : {driver.deactivated_reason}</p>
         ) : null}
       </MetaCard>
-      <MetaCard label="Véhicule">
-        {/* TODO(admin.ts) : ajouter listVehicles côté api-client pour afficher
-            marque et plaque — la RLS admin le permet déjà. */}
-        <p className="text-[11.5px] text-neutral-400">
-          Lecture véhicule indisponible dans la console (à venir).
-        </p>
-      </MetaCard>
     </div>
   );
 }

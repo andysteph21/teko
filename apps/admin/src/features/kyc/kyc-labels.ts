@@ -1,6 +1,6 @@
 // Libellés et petites règles pures du domaine KYC (A-03, AM-02/AM-03).
-// Les 6 pièces requises viennent de docs/product/02-regles-metier.md §4.3 ;
-// la photo de profil est demandée mais ne bloque pas la validation.
+// Alpha du 18 octobre 2026 : les sept pièces, dont la photo de profil,
+// conditionnent la validation, avec vérification physique séparée.
 
 import { TekoApiError } from "@teko/api-client";
 import type { DbEnum, TableRow } from "@teko/types";
@@ -19,7 +19,7 @@ export const DOC_TYPE_LABELS: Record<DocumentType, string> = {
   profile_photo: "Photo de profil",
 };
 
-/** Les 6 pièces qui conditionnent « Tout valider — activer le chauffeur ». */
+/** Les sept pièces qui conditionnent l’activation alpha. */
 export const REQUIRED_DOC_TYPES: DocumentType[] = [
   "id_card",
   "license",
@@ -27,6 +27,7 @@ export const REQUIRED_DOC_TYPES: DocumentType[] = [
   "insurance",
   "vehicle_photo",
   "criminal_record",
+  "profile_photo",
 ];
 
 export const CATEGORY_LABELS: Record<DbEnum<"vehicle_category">, string> = {

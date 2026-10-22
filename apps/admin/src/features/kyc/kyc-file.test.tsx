@@ -1,3 +1,5 @@
+vi.mock("./vehicle-review", () => ({ VehicleReview: () => null }));
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -26,6 +28,7 @@ vi.mock("@teko/api-client", () => ({
   getKycFileUrl: vi.fn().mockResolvedValue("https://signed.example/piece.jpg"),
   reviewDocument: vi.fn().mockResolvedValue(undefined),
   validateKyc: vi.fn().mockResolvedValue(undefined),
+  recordPhysicalVerification: vi.fn().mockResolvedValue(undefined),
   TekoApiError: class extends Error {
     code = "unknown";
   },
@@ -42,6 +45,7 @@ import { KycFile } from "./kyc-file";
 
 const HOUR = 3_600_000;
 const DRIVER = {
+  physical_verified_at: "2026-10-18T10:00:00Z",
   id: "d1",
   kyc_status: "pending",
   categories: ["moto"],
@@ -75,6 +79,7 @@ function docs(idCardStatus = "pending") {
     doc("doc-4", "insurance", "validated"),
     doc("doc-5", "vehicle_photo", "validated"),
     doc("doc-6", "criminal_record", "validated"),
+    doc("doc-7", "profile_photo", "validated"),
   ];
 }
 

@@ -9,6 +9,7 @@ import { useSession } from "../shell/use-session";
 import { businessDayLabel, businessDayOf } from "./business-day";
 import { CommissionBanner } from "./commission-banner";
 import { DailyCloseButton } from "./daily-close-button";
+import { ManualReceipts } from "./manual-receipts";
 import { PaymentsTable } from "./payments-table";
 import { StatementsTable } from "./statements-table";
 
@@ -33,8 +34,11 @@ export function FinancePage() {
             <DailyCloseButton adminRole={adminRole} />
           </div>
         </div>
-        <StatementsTable />
-        <PaymentsTable />
+        {adminRole === "finance" || adminRole === "superadmin" ? <StatementsTable /> : null}
+        {session?.user.id && ["ops", "finance", "superadmin"].includes(adminRole ?? "") ? (
+          <ManualReceipts userId={session.user.id} adminRole={adminRole} />
+        ) : null}
+        {adminRole === "finance" || adminRole === "superadmin" ? <PaymentsTable /> : null}
       </div>
     </div>
   );

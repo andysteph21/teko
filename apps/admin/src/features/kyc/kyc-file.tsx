@@ -12,7 +12,10 @@ import { DecisionBar } from "./decision-bar";
 import { DocumentCard } from "./document-card";
 import { type DocumentRow, initials, relativeFr } from "./kyc-labels";
 import { MetaCards } from "./meta-cards";
+import { PhysicalVerification } from "./physical-verification";
 import { useDriverDocuments, useKycDriver } from "./use-kyc-queries";
+
+import { VehicleReview } from "./vehicle-review";
 
 function FileHead({ driver, profile }: { driver: TableRow<"drivers">; profile: ProfileRow }) {
   return (
@@ -86,6 +89,12 @@ export function KycFile({ driverId }: { driverId: string }) {
       ) : (
         <>
           <FileHead driver={driver} profile={profile} />
+          <VehicleReview driverId={driverId} adminRole={adminRole} />
+          <PhysicalVerification
+            driverId={driverId}
+            verifiedAt={driver.physical_verified_at}
+            adminRole={adminRole}
+          />
           <div className="flex flex-1 flex-col gap-3.5 p-4 lg:flex-row lg:px-5">
             <div className="order-2 lg:order-1 lg:flex-[1.3]">
               <DocList docs={documents.data} driverId={driverId} />
@@ -99,7 +108,12 @@ export function KycFile({ driverId }: { driverId: string }) {
               Dossier validé — chauffeur actif. La désactivation se gère dans Utilisateurs.
             </p>
           ) : (
-            <DecisionBar driverId={driverId} docs={documents.data} adminRole={adminRole} />
+            <DecisionBar
+              driverId={driverId}
+              docs={documents.data}
+              adminRole={adminRole}
+              physicallyVerified={Boolean(driver.physical_verified_at)}
+            />
           )}
         </>
       )}
