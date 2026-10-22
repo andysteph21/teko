@@ -1,12 +1,12 @@
 # Teko — instructions de travail
 
-Plateforme de transport à la demande pour le Gabon (MVP ride-hailing Libreville, Android, français). Backend Supabase livré et testé ; les 3 apps (`apps/client`, `apps/driver`, `apps/admin`) sont le chantier en cours.
+Plateforme de transport à la demande pour le Gabon (MVP ride-hailing Libreville, Android, français). Backend Supabase et trois apps (`apps/client`, `apps/driver`, `apps/admin`) en cours de durcissement alpha. Le plan alpha et son audit distinguent les corrections des validations encore bloquantes.
 
 ## Sources d'autorité (dans cet ordre)
 
 1. **[docs/plan/06-demarrage-apps.md](docs/plan/06-demarrage-apps.md)** — point d'entrée : quoi construire, dans quel ordre, pièges connus.
 2. **[docs/architecture/10-regles-ingenierie.md](docs/architecture/10-regles-ingenierie.md)** — comment coder : Biome, frontières d'imports, architecture d'état, tests/couverture, parc d'appareils.
-3. **Le backend fait autorité** : tout passe par les RPC ([supabase/README.md](supabase/README.md)) ; les 52 tests `supabase/tests/e2e/` sont la doc vivante des appels — **lire le test du flux avant de coder un écran**.
+3. **Le backend fait autorité** : tout passe par les RPC ([supabase/README.md](supabase/README.md)) ; les scénarios JWT `supabase/tests/e2e/` sont la doc vivante des appels — **lire le test du flux avant de coder un écran**.
 4. **`docs/design/design-tokens.json` fait autorité sur toute UI** ; maquettes dans `docs/design/maquettes/` (79), parcours dans `docs/design/parcours/`, langage carte figé dans `docs/design/08-carte-langage.md`. Tout écart maquette/code est un bug.
 5. Règles métier : [docs/product/02-regles-metier.md](docs/product/02-regles-metier.md) (+ addendum 25 août).
 
@@ -15,13 +15,13 @@ Plateforme de transport à la demande pour le Gabon (MVP ride-hailing Libreville
 - **Code et dossiers en anglais** (`apps/driver`, pas `chauffeur`) ; docs et textes UI en français.
 - **Biome** (pas ESLint/Prettier) : fichier ≤ 300 lignes, fonction ≤ 60, ≤ 4 paramètres, complexité cognitive bornée — ce sont des gates CI, pas des suggestions.
 - `@supabase/supabase-js` confiné à `packages/api-client` (+ `packages/maps`) ; `ui` n'importe jamais `api-client` ; les apps ne s'importent pas entre elles ; positions temps réel via `PositionsChannel` (ADR-13).
-- État mobile : TanStack Query (serveur + mutations hors-ligne) · Zustand 5 (client, `useShallow` obligatoire, abonnements transitoires pour la carte) · expo-sqlite (file GPS). Jamais de logique métier sensible côté client.
+- État mobile : TanStack Query (serveur ; commandes sans rejeu tardif automatique pour l’alpha) · Zustand 5 (client, `useShallow` obligatoire, abonnements transitoires pour la carte) · expo-sqlite (file GPS). Jamais de logique métier sensible côté client.
 - Tests d'abord pensés par construction : logique dans les packages purs (gate 95 %), écrans testés par variantes de maquette (~90 %), Maestro sur appareils réels pour les parcours critiques. 95 % = objectif, pas dogme.
 
 ## Environnement local
 
-- `supabase start` puis `eval "$(supabase status -o env | sed 's/^/export /')"` ; carto : `infra/compose` (Martin :3333, Valhalla :8002).
-- **3 appareils Android réels via adb USB** (OPPO A15 = vérité perf, Pixel 3, Tab A8) ; pas d'émulateur (pas de /dev/kvm). `adb reverse` : 8081, 54321, 3333, 8002.
+- Audit alpha : banc isolé préparé par `tools/audit/prepare-bench.mjs`, API :58321 / DB :58322 ; commandes dans `supabase/tests/README.md`. Préserver le projet `teko` existant, utilisé par la cartographie (Martin :3333, Valhalla :8002).
+- **2 appareils Android actuellement disponibles via adb USB** (OPPO A15 = vérité perf, Pixel 3) ; pas d'émulateur (pas de /dev/kvm). `adb reverse` du banc : 58321, 3333, 8002, et ports Metro seulement pour les builds de développement.
 - Builds Android : **JDK 17 portable** (`~/.local/jdk/`) — le JDK système casse AGP. MapLibre RN exige un dev client (pas d'Expo Go).
 
 ## Pièges à ne pas repayer

@@ -1,88 +1,114 @@
-# 02 — Backend Supabase & modèle de données
+# Backend et données — contrat de l’alpha
 
-## 1. Services Supabase utilisés
+Mis à jour le 18 octobre 2026. Les migrations de `supabase/migrations` et les
+scénarios JWT de `supabase/tests/e2e` sont les références exécutables. Le
+[plan alpha](../plan/08-plan-alpha.md) définit les critères d’ouverture ; le
+[rapport d’audit](../plan/09-audit-alpha.md) distingue corrections et preuves
+encore attendues.
 
-- **Auth** — inscription/connexion par **OTP SMS** (numéro de téléphone), e-mail optionnel. Un fournisseur SMS est branché comme provider (à sélectionner pour le Gabon ; voir questions ouvertes). Les rôles applicatifs (client, chauffeur, admin) sont portés par la table `profiles` + claims.
-- **Postgres 17** — base relationnelle + **PostGIS** (géométries : positions, routes, zones) + index géospatiaux.
-- **Realtime** — diffusion des positions et des changements d'état de course ; présence (chauffeurs en ligne).
-- **Edge Functions (Deno)** — toute la logique sensible : calcul du prix final, mutations de solde, intégration Airtel, webhooks de paiement, jobs planifiés.
-- **Storage** — documents KYC (accès restreint), photos de véhicules/profil.
-- **RLS (Row Level Security)** — isolation stricte des données par utilisateur/rôle.
+## Autorité et frontières
 
-## 2. Principes de données
+PostgreSQL porte les transitions de course, les rôles, la tarification, le
+grand livre et les clôtures. Les apps utilisent `@teko/api-client` pour les
+RPC, les lectures RLS et les Edge Functions. Un bouton masqué dans l’interface
+ne constitue jamais un contrôle d’autorisation.
 
-- **Source de vérité du solde = journal `ledger`** (écritures immuables). Le solde courant d'un chauffeur est la somme de ses écritures ; on **ne met jamais à jour un montant « en place »**.
-- **Géométries en PostGIS** (SRID 4326) pour positions, routes (`LineString`), zones (`Polygon`).
-- **Journalisation** systématique des transitions de course (`ride_events`) et des actions admin (`audit_log`).
-- **Jour ouvré (business day)** ancré sur la coupure **04:00 Africa/Libreville** : une fonction `business_day(ts)` rattache chaque transaction au bon jour pour le modèle de solde journalier.
+Les Edge Functions servent les intégrations : calcul d’itinéraire pour le
+devis, notifications, purge Auth, anciens adaptateurs de paiement. Leurs clés
+de service restent côté serveur. L’alpha désactive les paiements Airtel réels ;
+le fournisseur mock n’est utilisable que dans un bac à sable explicitement
+configuré avec son secret.
 
-## 3. Modèle de données (tables principales)
+## Données principales
 
-> Présentation logique ; les types exacts et contraintes seront fixés dans les migrations SQL. PK = clé primaire, FK = clé étrangère.
+| Ensemble | Tables / schéma | Règle essentielle |
+|---|---|---|
+| Identité | Auth, `profiles`, `drivers`, `vehicles` | Le numéro vérifié vient d’Auth, pas d’un profil modifiable. |
+| Alpha | `alpha_invites` | Ops/superadmin invitent par numéro et rôle ; refus serveur hors invitation. |
+| KYC | `driver_documents`, bucket privé `kyc` | Sept pièces, fichiers immuables, revue Ops et vérification physique avant activation. |
+| Devis | `ride_quotes` | Calcul serveur, propriétaire, expiration cinq minutes configurable et consommation unique. |
+| Courses | `rides`, `ride_events`, `ride_offers`, `driver_presence` | Écriture métier par RPC ; une offre ne révèle pas la destination avant acceptation. |
+| PIN | `private.ride_pins` | Aucun PIN dans la ligne publique ; lecture dédiée du passager uniquement. |
+| GPS de course | `ride_locations` | Chauffeur assigné, course active, horodatage réel, identifiant de mesure et rétention sept jours. |
+| Finance | `ledger`, `payments`, `daily_statements`, `payout_requests` | Grand livre autoritaire ; clôture cash produit un versement en attente. |
+| Encaissements | `cancellation_claims`, `manual_receipts`, bucket privé `finance-proofs` | Crédit seulement après encaissement complet et validation Finance ; référence, preuve et versions tracées. |
+| Exploitation | `incidents`, `notifications`, `audit_log`, `app_config`, `app_config_history` | Droits selon rôle ; secrets de déploiement exclus des lectures et de l’historique. |
+| Cartographie | Zones, repères et tables de traces/propositions | Règles séparées du suivi nominatif ; ne pas confondre les rétentions. |
 
-### Comptes & profils
-- **`profiles`** — `id` (FK auth.users), `role` (client|driver|admin), `phone`, `email?`, `full_name`, `photo_url?`, `locale` (def. `fr`), `created_at`.
-- **`drivers`** — `id` (FK profiles), `kyc_status` (pending|validated|rejected), `is_active`, `deactivated_reason?` (overdue_balance|admin|…), `rating_avg`, `categories` (text[]: eco|moto|confort|covoiturage), `gps_consent` (bool), `current_balance_cache` (numéraire indicatif, recalculé depuis `ledger`).
-- **`driver_documents`** — `id`, `driver_id` (FK), `type` (id_card|license|registration|insurance|vehicle_photo|criminal_record|profile_photo), `storage_path`, `status`, `reviewed_by?`, `reviewed_at?`, `note?`.
-- **`vehicles`** — `id`, `driver_id` (FK), `category`, `plate`, `photo_url`, `created_at`.
+## Contrats de course
 
-### Référentiels & tarification
-- **`zones`** — `id`, `name`, `geom` (Polygon), `is_active`, `coverage_status` (insufficient|ready). Ouverture du service par zone.
-- **`pricing_rules`** — `id`, `category`, `base_fare`, `per_km`, `per_min`, `min_fare`, `multipliers` (jsonb: nuit/zone), `valid_from`. Versionné (historisé).
-- **`config`** — paramètres globaux (commission, frais d'annulation, heure d'échéance=04:00, fenêtre de rappel, seuils de détection de routes, seuil badge 4.5, seuil/fréquence payout). Modifs journalisées.
+1. `price-quote` vérifie le JWT, appelle Valhalla depuis le serveur et crée un
+   devis en base. Les distances et prix proposés par l’app ne font pas foi.
+2. `request_quoted_ride` consomme le devis du passager. Deux appels concurrents
+   retrouvent une seule course. Un devis expiré demande une nouvelle
+   confirmation du prix. L’ancien contrat acceptant des métriques client
+   n’est plus exécutable par les utilisateurs.
+3. `driver_heartbeat` renouvelle la disponibilité d’un chauffeur actif, invité
+   et validé. `driver_offline` la retire et fait expirer ses offres en attente.
+   La présence expirée ne rend plus le chauffeur éligible.
+4. Le dispatch propose une offre à la fois, retente les chauffeurs devenus
+   éligibles et termine explicitement la recherche après trois minutes
+   configurables. `respond_offer` contrôle l’invitation et la disponibilité.
+5. Les transitions sont `mark_arrived`, `start_ride_checked`, `complete_ride`
+   et `cancel_ride`. Les transitions internes ne sont pas exposées aux JWT
+   ordinaires. Le prix final reste celui accepté au devis.
+6. `ride_pin` est réservé au passager. `start_ride_checked` retourne soit la
+   course, soit une erreur structurée. Une erreur de PIN ne lève pas une
+   exception SQL annulant le compteur : cinq erreurs persistent puis
+   déclenchent cinq minutes de blocage.
 
-### Courses
-- **`rides`** — `id`, `client_id` (FK), `driver_id?` (FK), `category`, `status` (requested|accepted|enroute|arrived|started|completed|cancelled_client|cancelled_driver|no_show|no_answer|failed), `scheduled_at?` (null = immédiat), `origin_geom` (Point), `dest_geom` (Point), `origin_landmark_id?` (FK landmarks), `dest_landmark_id?` (FK landmarks), `origin_hint?` (text: « derrière », « à côté de »…), `dest_hint?` (text), `meeting_landmark_id?` (FK landmarks: point de rendez-vous), `distance_est`, `duration_est`, `price_est`, `price_final?`, `payment_method` (cash|airtel), `pin_code`, `created_at`, `accepted_at?`, `started_at?`, `completed_at?`, `cancel_reason?`.
-- **`ride_events`** — `id`, `ride_id` (FK), `type`, `at`, `actor`, `meta` (jsonb). Journal immuable du cycle de vie (audit, litiges, métriques).
-- **`ride_locations`** — positions live (échantillonnées) ; rétention courte. Diffusion principalement via Realtime ; persistance limitée pour litiges/reconstruction.
+Seules les courses immédiates en cash sont ouvertes dans l’alpha. Les anciens
+contrats de courses programmées et de paiement restent historiques ; leur
+présence dans le dépôt n’autorise pas leur activation.
 
-### Finance (cœur du modèle)
-- **`payments`** — `id`, `ride_id?` (FK), `driver_id?`, `kind` (ride_collection|driver_settlement|payout|cancellation_fee|refund), `provider` (airtel), `direction` (in|out), `amount`, `currency` (XAF), `partner_txn_id` (**clé d'idempotence**, unique), `provider_txn_id?`, `status` (initiated|pending|success|failed|ambiguous), `raw` (jsonb), `created_at`, `updated_at`.
-- **`ledger`** — `id`, `driver_id` (FK), `business_day` (date), `kind` (commission_due|mobile_credit|settlement|payout|cancellation|adjustment), `amount_signed` (négatif = dette envers Teko), `balance_after`, `ride_id?`, `payment_id?`, `created_at`. **Immuable**, source de vérité du solde.
-- **`daily_statements`** — `id`, `driver_id` (FK), `business_day`, `opening`, `closing`, `total_commission`, `total_mobile_credit`, `settled_amount?`, `payout_amount?`, `status` (open|settled|overdue|paid_out). Généré à la clôture 04:00.
+## Finance et séparation des rôles
 
-### Cartographie
-- **`road_segments`** — `id`, `geom` (LineString), `source` (osm|admin|proposed), `status` (draft|validated|rejected), `attributes` (jsonb: sens, type, praticabilité), `created_by?`, `validated_by?`, `created_at`. Couche Teko routable.
-- **`road_proposals`** — `id`, `geom`, `support_count`, `distinct_drivers`, `window_start`, `window_end`, `status` (proposed|validated|rejected), `derived_from` (jsonb). File de revue admin.
-- **`gps_traces`** — `id`, `driver_id` (FK), `ride_id?`, `points` (geometry/temporel), `consented` (bool), `created_at`. Matière première du pipeline (agrégée/anonymisée ensuite).
-- **`landmarks`** — `id`, `name`, `aliases` (text[]), `category` (fuel_station|roundabout|market|church|school|pharmacy|bar|building|junction|other), `geom` (Point), `photo_url?`, `zone_id?` (FK zones), `salience` (numeric: score connu/visible), `usage_count` (int: fois choisi comme repère/destination), `source` (admin|driver|client), `status` (proposed|validated|rejected), `created_by?`, `validated_by?`, `created_at`. Couche de repères pour adressage et guidage.
-- **`landmark_proposals`** — `id`, `landmark_id?` (si rattaché à un existant), `name`, `category`, `geom`, `aliases`, `photo_url?`, `proposed_by`, `role` (driver|client), `status` (proposed|validated|rejected|merged), `reviewed_by?`, `created_at`. File de revue admin (anti-doublon/fusion).
+Ops prépare un dossier avec référence unique et justificatif joint. Finance
+ou superadmin vérifie puis approuve. Les preuves ne sont pas remplaçables.
+Un refus exige un motif ; une nouvelle version conserve la référence et le
+lien avec la précédente. Une seule validation financière est possible pour
+la référence, y compris sous concurrence.
 
-### Qualité, notifications, technique
-- **`ratings`** — `id`, `ride_id` (FK), `from_user`, `to_user`, `stars` (1-5), `comment?`, `created_at`.
-- **`devices`** — `id`, `user_id` (FK), `push_token`, `platform` (android|ios), `last_seen`.
-- **`notifications`** — `id`, `user_id` (FK), `type`, `payload` (jsonb), `created_at`, `read_at?`.
-- **`data_usage`** — `id`, `user_id` (FK), `day`, `bytes_estimated`. Alimente le widget conso (mesure surtout côté app ; agrégat optionnel).
-- **`audit_log`** — `id`, `actor` (admin), `action`, `entity`, `entity_id`, `before`, `after`, `at`. Traçabilité des actions admin (KYC, paramètres, validation routes, finance).
+Les annulations et non-présentations créent une créance. La part chauffeur de
+70 % est figée à sa création et créditée uniquement après règlement complet
+et validation Finance. À 4 h Libreville, un solde positif crée une demande de
+versement manuel ; il n’est pas déclaré payé sans justificatif approuvé.
 
-## 4. Sécurité d'accès (RLS, esquisse)
+Le chauffeur consulte ses finances. Finance/superadmin lisent les données
+financières globales. Ops accède aux dossiers nécessaires à la préparation,
+mais ne valide pas le crédit et ne lit pas le grand livre global. Les pièces
+KYC sont réservées au chauffeur concerné, à Ops et au superadmin.
 
-- **Client** : lit/écrit ses propres `rides`, `ratings`, `profiles` ; ne voit jamais le solde ni les documents d'autrui.
-- **Chauffeur** : lit ses `rides` assignées, son `ledger`, ses `daily_statements`, ses `driver_documents` ; écrit ses `gps_traces` (si consentement).
-- **Admin** : accès élargi selon **rôle** (ops/carto/finance), borné par des politiques et journalisé. Les opérations financières et de validation passent par des **Edge Functions** (jamais d'écriture directe du solde côté client).
-- **Documents KYC** : Storage privé, URLs signées de courte durée, accès admin uniquement.
+## Hors réseau et conservation
 
-## 5. Edge Functions (logique serveur)
+Les commandes et annulations exigent une confirmation serveur, sans file de
+rejeu tardif. L’historique local est lié au compte et exclut PIN et géométries
+précises. Le changement de compte vide les caches exposés par l’interface.
 
-| Fonction | Rôle |
-|---|---|
-| `price-quote` | Estimation de prix (appel routing + `pricing_rules`) — autorité serveur |
-| `ride-complete` | Calcule le prix final, écrit `payments`/`ledger` de façon **atomique** |
-| `airtel-collect` | Encaissement client→Teko / règlement chauffeur→Teko (USSD Push) |
-| `airtel-disburse` | Payout Teko→chauffeur |
-| `airtel-callback` | Réception/validation des callbacks signés Airtel |
-| `payments-reconcile` | Réconciliation des statuts pending/ambigus (enquiry) |
-| `daily-close` | Clôture 04:00 : relevés, désactivations, déclenchement payouts |
-| `road-detect` | Génère les `road_proposals` depuis les `gps_traces` (map-matching) |
-| `guidance` | Transforme un itinéraire (manœuvres Valhalla) en **instructions par points de repère** (sélection du repère saillant à chaque manœuvre) |
-| `landmark-suggest` | Suggère un **point de rendez-vous** (repère saillant proche de la prise en charge) |
-| `notify` | Envoi des notifications push (FCM) |
+La file GPS SQLite du chauffeur conserve uniquement ses mesures, au maximum
+24 h, avec leur heure et leur identifiant d’origine. Les envois répétés ne
+créent pas de doublon. Les mesures expirées ou futures sont refusées ; les
+points trop anciens ne deviennent jamais des positions « fraîches » au
+retour du réseau. La lecture serveur s’arrête après sept jours et une tâche
+planifiée purge les lignes expirées toutes les cinq minutes.
 
-## 6. Jobs planifiés
+Le service Android au premier plan affiche une notification permanente et
+continue les mesures écran éteint tant que le chauffeur est en ligne ou en
+course. Son fonctionnement réel sur l’OPPO et le Pixel reste à démontrer.
 
-- **`daily-close`** à 04:00 Africa/Libreville (clôture, désactivations, payouts).
-- **`payments-reconcile`** périodique (rattrape les transactions `pending`/`ambiguous`).
-- **`road-detect`** périodique (traces GPS → propositions).
-- **`reminders`** (rappels d'échéance avant 04:00, rappels d'évaluation).
+## Migrations, types et tests
 
-> Ordonnancement via le planificateur Supabase (cron) déclenchant les Edge Functions correspondantes. Idempotence requise (un job rejoué ne double pas les effets).
+Une migration supplémentaire corrige les installations existantes ; modifier
+une ancienne migration déjà livrée ne suffit pas. Les types TypeScript sont
+générés depuis le schéma, puis remplacés atomiquement. Ne pas écrire dans un
+fichier de types pendant qu’un autre processus le compile.
+
+Le banc `teko-alpha-audit` possède ses ports et secrets locaux. Les tests
+adversariaux refusent une cible différente. Le projet `teko` existant alimente
+encore la cartographie locale et doit être préservé. La CI utilise un contrat
+HTTP de routage déterministe ; il ne prouve pas la qualité des routes réelles.
+
+La validation comprend migration complète, pgTAP, JWT/API/Storage, tests
+unitaires, fautes injectées, sauvegarde/restauration et parcours sur APK signé.
+Les chiffres de couverture et les commandes sont consignés dans les journaux
+et le rapport d’audit, avec leurs limites.

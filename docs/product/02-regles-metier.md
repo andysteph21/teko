@@ -4,6 +4,15 @@
 
 Ce document décrit la logique métier du MVP : modèle financier (solde journalier), tarification, cartographie collaborative, KYC, annulations, évaluations, notifications. Les valeurs marquées *(paramétrable)* sont configurables par l'admin et leurs valeurs par défaut restent à arrêter (voir `05-questions-ouvertes.md`).
 
+**Périmètre alpha confirmé le 18 octobre 2026 :** courses immédiates à Libreville,
+cash uniquement, environ 20 chauffeurs invités. Les adaptations alpha et les
+critères d’ouverture sont tracés dans [les décisions](05-questions-ouvertes.md)
+et le [plan alpha](../plan/08-plan-alpha.md). Les sections historiques ci-dessous
+décrivent également des fonctions du MVP ultérieur. Pour l’alpha : devis serveur
+valable 5 minutes, recherche limitée à 3 minutes, invitations vérifiées côté
+serveur, règlement manuel avec preuve et validation Finance. Commission 15 %
+et report du résiduel restent applicables.
+
 ---
 
 ## 1. Modèle financier — solde journalier
@@ -34,21 +43,22 @@ Journée d'un chauffeur, prix en FCFA :
 
 | # | Course | Paiement | Calcul | Variation solde | Solde cumulé |
 |---|---|---|---|---|---|
-| 1 | 2 000 | Cash | −(20 % × 2 000) = −400 | −400 | −400 |
-| 2 | 3 000 | Airtel Money | +(3 000 − 600) = +2 400 | +2 400 | +2 000 |
-| 3 | 1 500 | Cash | −300 | −300 | +1 700 |
-| 4 | 5 000 | Cash | −1 000 | −1 000 | +700 |
+| 1 | 2 000 | Cash | −(15 % × 2 000) = −300 | −300 | −300 |
+| 2 | 3 000 | Airtel Money | +(3 000 − 450) = +2 550 | +2 550 | +2 250 |
+| 3 | 1 500 | Cash | −225 | −225 | +2 025 |
+| 4 | 5 000 | Cash | −750 | −750 | +1 275 |
 
-**Solde de fin de journée = +700** → Teko doit 700 FCFA au chauffeur (payout). Si le solde avait été négatif, le chauffeur devrait verser ce montant à Teko avant l'échéance.
+**Solde de fin de journée = +1 275** → Teko doit 1 275 FCFA au chauffeur. Si le solde avait été négatif, le chauffeur devrait verser ce montant à Teko avant l'échéance.
 
-> ⚠️ Ce barème (commission 20 %, sur cash *et* mobile) est **une hypothèse de travail** pour illustrer la mécanique. Le taux/forme exacts et le fait d'appliquer la commission au mobile money sont à valider (`05-questions-ouvertes.md`).
+> Commission 15 % sur les deux modes, confirmée le 25 août 2026. La ligne
+> Airtel illustre le MVP ultérieur ; l’alpha ne traite que des paiements cash.
 
 ### 1.4 Règlement quotidien et échéance
 
 - L'échéance quotidienne de règlement est fixée à **4h00 du matin** (heure du Gabon).
 - **Si solde négatif** à l'échéance : le chauffeur doit avoir versé le montant dû à Teko (via Airtel Money au MVP) **avant 4h**. À défaut → **désactivation automatique** du compte.
 - **Si solde positif** : Teko procède à un **payout** vers le chauffeur (règles de fréquence et seuil minimal de payout à définir — *paramétrable*).
-- À la clôture journalière, le solde réglé est **remis à zéro** et un **relevé quotidien** est archivé (auditable). *(Détail à confirmer : reset à 0 vs report du résiduel — voir questions ouvertes.)*
+- À la clôture journalière, le résiduel est **reporté** et un **relevé quotidien** est archivé. Le solde évolue par les écritures du grand livre ; il n’est pas remis à zéro arbitrairement (décision du 25 août 2026).
 
 ### 1.5 Désactivation et réactivation
 
@@ -171,9 +181,9 @@ Processus : création compte (OTP) → upload des pièces → **vérification KY
 ## 6. Annulations
 
 - **Annulation client** avant acceptation : **sans frais**.
-- **No-show / no-answer** : des **frais d'annulation** s'appliquent *(paramétrables)* lorsque le client ne se présente pas ou ne répond pas après l'arrivée du chauffeur (délai d'attente avant déclenchement à définir).
+- **No-show / no-answer** : frais paramétrables, après arrivée confirmée par le serveur et cinq minutes d’attente réellement écoulées (configurables).
 - **Annulation chauffeur** : suivie statistiquement ; un taux excessif peut entraîner une mise en revue.
-- **Répartition** *(décision n° 5, 25 août 2026 ; appliquée en base le 2 sept. 2026)* : le client doit le frais entier ; le chauffeur mobilisé en reçoit la **part chauffeur** (70 % par défaut, `cancellation_fee.driver_share_percent`, réglable par l'admin), créditée à son solde dès l'annulation ; le reste revient à Teko.
+- **Répartition alpha** *(18 octobre 2026, amende le crédit immédiat décidé précédemment)* : le client doit le frais entier ; la part chauffeur (70 % par défaut) est figée dans une **créance en attente**. Aucun crédit au solde avant encaissement complet et validation Finance du justificatif. Le reste revient à Teko.
 - L'impact financier des frais d'annulation sur le solde suit la même mécanique que les courses (selon le mode de paiement applicable) ; en espèces, le recouvrement auprès du client est différé (v1).
 
 ---
@@ -244,3 +254,25 @@ Codification des réponses au document « Décisions » (détail :
   80 % ; réglages du mode économie tels que spécifiés (position 5 s, carte
   allégée, initiales à la place des photos).
 - **Périmètre de lancement confirmé** : Libreville, Android uniquement.
+
+## Addendum alpha — arrondis confirmés le 19 octobre 2026
+
+Les nouveaux prix de course, frais d’annulation/non-présentation, commissions
+et parts chauffeur sur frais encaissés sont arrondis côté serveur au multiple
+de **25 FCFA** le plus proche ; une égalité est arrondie vers le haut. Le prix
+minimum paramétré reste respecté : s’il n’est pas lui-même un multiple de 25,
+le plancher applicable est le multiple de 25 supérieur.
+
+Exemples : un prix calculé de 1 203 devient 1 200 ; une commission brute de
+157,50 devient 150 ; une commission brute de 112,50 devient 125 ; la part de
+70 % d’un frais de 300 devient 200. La part sur frais reste une créance sans
+crédit avant encaissement complet et validation Finance. Le prix ferme est
+celui du devis enregistré et confirmé ; les devis, créances et écritures déjà
+enregistrés ne sont pas réécrits. Les règles de saisie des justificatifs de
+règlement sont précisées ci-dessous, sans arrondi de la preuve réelle.
+
+Pour les **nouveaux dossiers de règlement** cash ou versement externe préparés
+par Ops (révisions incluses), le montant exact du justificatif doit être
+positif et multiple de 25 FCFA. Un montant hors pas est refusé, jamais arrondi.
+Les dossiers déjà préparés restent approuvables à leur montant historique ;
+aucune réécriture automatique n’est ajoutée. Décision confirmée le 19 octobre.
