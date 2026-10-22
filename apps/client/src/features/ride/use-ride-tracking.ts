@@ -6,6 +6,7 @@
 import {
   createRealtimePositionsChannel,
   getRide,
+  getRidePin,
   type RidePositionEvent,
   rideDriverCard,
 } from "@teko/api-client";
@@ -95,8 +96,11 @@ function useRideRow(rideId: string | undefined) {
   const load = useCallback(async () => {
     if (!rideId) return;
     try {
-      const row = await getRide(supabase, rideId);
-      setRide(row);
+      const [row, pin] = await Promise.all([
+        getRide(supabase, rideId),
+        getRidePin(supabase, rideId),
+      ]);
+      setRide({ ...row, pin_code: pin });
       setStatus(row.status);
       setLoadError(false);
       void fetchDriverName(row).then(setDriverName);
@@ -147,11 +151,14 @@ function useVehiclePositions(refreshEta: (from: LonLat) => Promise<void>) {
 
   const handlePosition = useCallback(
     (event: RidePositionEvent) => {
-      lastPositionAt.current = Date.now();
-      setPositionStale(false);
+      const recordedAt = Date.parse(event.recordedAt);
+      if (!Number.isFinite(recordedAt) || recordedAt < (lastPositionAt.current ?? 0)) return;
+      lastPositionAt.current = recordedAt;
+      const stale = Date.now() - recordedAt > STALE_POSITION_MS;
+      setPositionStale(stale);
       const position = { lon: event.lon, lat: event.lat };
       setVehicle(position);
-      void refreshEta(position);
+      if (!stale) void refreshEta(position);
     },
     [refreshEta],
   );

@@ -5,12 +5,17 @@ import { screen, userEvent } from "@testing-library/react-native";
 jest.mock("../../lib/supabase", () => ({ supabase: {} }));
 
 const mockPush = jest.fn();
+const mockRedirect = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn(), back: jest.fn() }),
+  Redirect: ({ href }: { href: string }) => {
+    mockRedirect(href);
+    return null;
+  },
 }));
 
 import { render } from "@testing-library/react-native";
-import Schedule from "../../../app/(main)/schedule";
+import ScheduleRoute, { ScheduleForm as Schedule } from "../../../app/(main)/schedule";
 import { useBookingStore } from "../booking/store";
 
 beforeAll(async () => {
@@ -25,7 +30,12 @@ beforeEach(() => {
   useBookingStore.setState({ scheduledAt: null });
 });
 
-describe("C-18 Planifier", () => {
+describe("C-18 différé après alpha", () => {
+  it("la route alpha redirige et ne permet pas de programmer", () => {
+    render(<ScheduleRoute />);
+    expect(mockRedirect).toHaveBeenCalledWith("/(main)/home");
+    expect(screen.queryByTestId("schedule-cta")).toBeNull();
+  });
   it("affiche jours, note d'information et CTA", () => {
     render(<Schedule />);
 

@@ -49,7 +49,12 @@ const ride = {
 };
 
 function renderScreen(ui: ReactElement) {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  const qc = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, gcTime: Infinity },
+    },
+  });
   return render(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>);
 }
 

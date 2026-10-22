@@ -3,13 +3,12 @@
 // (PositionsChannel, ADR-13) ; après 90 s sans attribution : état « aucun
 // chauffeur » avec réessai ou retour accueil.
 
-import { cancelRide, createRealtimePositionsChannel } from "@teko/api-client";
-import type { RideStatus } from "@teko/types";
+import { cancelRide } from "@teko/api-client";
 import { color, spacing } from "@teko/ui";
 import { BottomPanel, DataWidget } from "@teko/ui/native";
 import { type Href, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useShallow } from "zustand/react/shallow";
 import { DEFAULT_CENTER, TILES_URL } from "../../src/config";
@@ -20,31 +19,10 @@ import {
   SearchingSheetContent,
 } from "../../src/features/booking/searching-sheet";
 import { useBookingStore } from "../../src/features/booking/store";
+import { useSearchStatus } from "../../src/features/booking/use-search-status";
 import { useDataUsage, useResolvedMapMode } from "../../src/features/data/data-state";
 import { TekoMapView } from "../../src/features/map/native-map";
 import { supabase } from "../../src/lib/supabase";
-
-/** Délai local avant l'état « aucun chauffeur » (repli MVP). */
-export const NO_DRIVER_DELAY_MS = 90_000;
-
-/** Statuts signifiant qu'un chauffeur est attribué → suivi de course C-13. */
-const ASSIGNED: RideStatus[] = ["accepted", "enroute", "arrived", "started"];
-
-/** Dès l'attribution (statut temps réel), bascule vers le suivi C-13. */
-function useAssignmentRedirect(rideId: string | undefined, router: ReturnType<typeof useRouter>) {
-  useEffect(() => {
-    if (!rideId) return;
-    const channel = createRealtimePositionsChannel(supabase);
-    const unsubscribe = channel.subscribeRideStatus(rideId, (status) => {
-      if (ASSIGNED.includes(status)) {
-        router.replace({ pathname: "/(main)/ride/[id]", params: { id: rideId } } as Href);
-      }
-    });
-    return () => {
-      void unsubscribe();
-    };
-  }, [rideId, router]);
-}
 
 export default function Searching() {
   const { rideId } = useLocalSearchParams<{ rideId: string }>();
@@ -61,22 +39,21 @@ export default function Searching() {
   const reset = useBookingStore((s) => s.reset);
   const mode = useResolvedMapMode();
   const usage = useDataUsage();
-  const [noDriver, setNoDriver] = useState(false);
+  const { noDriver, error } = useSearchStatus(rideId);
+  const [cancelError, setCancelError] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  useAssignmentRedirect(rideId, router);
-
-  useEffect(() => {
-    // TODO: brancher la notification `no_driver_found` quand le push FCM
-    // arrivera — le minuteur local de 90 s est le repli MVP.
-    const timer = setTimeout(() => setNoDriver(true), NO_DRIVER_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, []);
 
   const cancelAndGoHome = async () => {
     setCancelling(true);
-    if (rideId) await cancelRide(supabase, rideId).catch(() => undefined);
-    reset();
-    router.replace("/(main)/home" as Href);
+    setCancelError(false);
+    try {
+      if (rideId && !noDriver) await cancelRide(supabase, rideId);
+      reset();
+      router.replace("/(main)/home" as Href);
+    } catch {
+      setCancelError(true);
+      setCancelling(false);
+    }
   };
 
   const center = draft.meeting?.position ?? draft.origin?.position ?? DEFAULT_CENTER;
@@ -105,6 +82,12 @@ export default function Searching() {
       </View>
 
       <BottomPanel style={sheetStyle}>
+        {error || cancelError ? (
+          <Text accessibilityRole="alert">
+            Connexion interrompue. La demande reste active tant que le serveur n’a pas confirmé sa
+            fin.
+          </Text>
+        ) : null}
         {noDriver ? (
           <NoDriverSheetContent
             cancelling={cancelling}

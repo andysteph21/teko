@@ -14,6 +14,7 @@ const mockChannel = {
 };
 jest.mock("@teko/api-client", () => ({
   getRide: (...args: unknown[]) => mockGetRide(...args),
+  getRidePin: jest.fn(async () => "4729"),
   rideDriverCard: (...args: unknown[]) => mockGetProfile(...args),
   createTripShare: (...args: unknown[]) => mockCreateTripShare(...args),
   createRealtimePositionsChannel: () => mockChannel,

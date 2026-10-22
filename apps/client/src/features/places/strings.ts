@@ -5,6 +5,8 @@
 export const placesFr = {
   recherche: {
     maPosition: "Ma position",
+    choisirDepart: "Choisir le départ",
+    chercherDepart: "Chercher le repère de départ…",
     chercherRepere: "Chercher un repère…",
     reperesProches: "Repères proches",
     lieuxEnregistres: "Lieux enregistrés",

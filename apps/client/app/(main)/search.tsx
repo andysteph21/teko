@@ -22,12 +22,20 @@ export default function Search() {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const origin = useBookingStore((s) => s.origin);
+  const setOrigin = useBookingStore((s) => s.setOrigin);
+  const [choosingOrigin, setChoosingOrigin] = useState(!origin);
   const setDestination = useBookingStore((s) => s.setDestination);
   const search = useLandmarkSearch(query);
   const savedPlaces = useSavedPlaces();
   const recents = useRecentDestinations();
 
   const pick = (position: LonLat, label: string, landmarkId?: string) => {
+    if (choosingOrigin) {
+      setOrigin({ position, label, landmarkId });
+      setChoosingOrigin(false);
+      setQuery("");
+      return;
+    }
     setDestination({ position, label, landmarkId });
     router.push("/(main)/refine" as Href);
   };
@@ -43,12 +51,24 @@ export default function Search() {
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <SearchHeader
-        originLabel={origin?.label ?? t("places:recherche.maPosition")}
-        placeholder={t("places:recherche.chercherRepere")}
+        originLabel={origin?.label ?? t("places:recherche.choisirDepart")}
+        onOriginPress={() => {
+          setChoosingOrigin(true);
+          setQuery("");
+        }}
+        choosingOrigin={choosingOrigin}
+        placeholder={t(
+          choosingOrigin ? "places:recherche.chercherDepart" : "places:recherche.chercherRepere",
+        )}
         backLabel={t("places:recherche.retour")}
         query={query}
         onQueryChange={setQuery}
-        onBack={() => router.back()}
+        onBack={() => {
+          if (choosingOrigin && origin) {
+            setChoosingOrigin(false);
+            setQuery("");
+          } else router.back();
+        }}
       />
       <ScrollView style={styles.list} keyboardShouldPersistTaps="handled">
         {search.active ? (

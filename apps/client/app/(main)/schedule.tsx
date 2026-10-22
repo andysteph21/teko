@@ -4,7 +4,7 @@
 
 import { color, spacing, typography } from "@teko/ui";
 import { Button } from "@teko/ui/native";
-import { type Href, useRouter } from "expo-router";
+import { type Href, Redirect, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -16,6 +16,11 @@ import { dayOptions, timeSlots } from "../../src/features/history/schedule-slots
 import { ScreenHeader } from "../../src/features/history/screen-header";
 
 export default function Schedule() {
+  return <Redirect href="/(main)/home" />;
+}
+
+/** Composant du MVP ultérieur ; la route alpha ci-dessus le rend inaccessible. */
+export function ScheduleForm() {
   const router = useRouter();
   const { t } = useTranslation();
   const setScheduledAt = useBookingStore((s) => s.setScheduledAt);

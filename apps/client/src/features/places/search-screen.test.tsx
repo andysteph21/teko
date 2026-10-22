@@ -2,7 +2,7 @@
 // destination du brouillon + navigation C-09, ligne « Proposer » → C-26.
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 
 const mockSearchLandmarks = jest.fn();
 const mockListSavedPlaces = jest.fn();
@@ -21,6 +21,7 @@ jest.mock("expo-router", () => ({
 
 import Search from "../../../app/(main)/search";
 import { useBookingStore } from "../booking/store";
+import { SEARCH_DEBOUNCE_MS } from "./use-landmark-search";
 
 beforeAll(async () => {
   const { createTekoI18n } = require("@teko/i18n");
@@ -37,7 +38,10 @@ const LANDMARK = {
 
 function renderSearch() {
   const client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: Number.POSITIVE_INFINITY } },
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, gcTime: Infinity },
+    },
   });
   return render(
     <QueryClientProvider client={client}>
@@ -47,14 +51,56 @@ function renderSearch() {
 }
 
 beforeEach(() => {
+  jest.useFakeTimers();
   jest.clearAllMocks();
   useBookingStore.getState().reset();
+  useBookingStore
+    .getState()
+    .setOrigin({ position: { lon: 9.45, lat: 0.41 }, label: "Ma position" });
   mockListSavedPlaces.mockResolvedValue([]);
   mockListMyRides.mockResolvedValue([]);
   mockSearchLandmarks.mockResolvedValue([]);
 });
 
+afterEach(() => jest.useRealTimers());
+
+async function searchFor(query: string) {
+  fireEvent.changeText(screen.getByTestId("search-input"), query);
+  await act(async () => {
+    await jest.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS);
+  });
+}
+
 describe("C-08 Recherche", () => {
+  it("sans GPS, choisit d'abord le départ sans naviguer ni inventer une position", async () => {
+    useBookingStore.getState().setOrigin(null);
+    mockSearchLandmarks.mockResolvedValue([LANDMARK]);
+    renderSearch();
+    expect(screen.getByText("Choisir le départ")).toBeOnTheScreen();
+    await searchFor("phar");
+    fireEvent.press(await screen.findByTestId("search-result-lm1"));
+    expect(useBookingStore.getState().origin).toEqual({
+      position: { lon: 9.4536, lat: 0.4032 },
+      label: LANDMARK.name,
+      landmarkId: "lm1",
+    });
+    expect(useBookingStore.getState().destination).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+    await searchFor("phar");
+    fireEvent.press(await screen.findByTestId("search-result-lm1"));
+    expect(mockPush).toHaveBeenCalledWith("/(main)/refine");
+  });
+
+  it("permet de remplacer le départ GPS par un repère sans changer la destination", async () => {
+    mockSearchLandmarks.mockResolvedValue([LANDMARK]);
+    renderSearch();
+    fireEvent.press(screen.getByTestId("search-origin"));
+    await searchFor("phar");
+    fireEvent.press(await screen.findByTestId("search-result-lm1"));
+    expect(useBookingStore.getState().origin?.landmarkId).toBe("lm1");
+    expect(useBookingStore.getState().destination).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
   it("recherche en direct : sélection → destination + navigation C-09", async () => {
     useBookingStore
       .getState()
@@ -62,7 +108,7 @@ describe("C-08 Recherche", () => {
     mockSearchLandmarks.mockResolvedValue([LANDMARK]);
     renderSearch();
 
-    fireEvent.changeText(screen.getByTestId("search-input"), "phar");
+    await searchFor("phar");
     const row = await screen.findByTestId("search-result-lm1");
     fireEvent.press(row);
 
@@ -77,7 +123,7 @@ describe("C-08 Recherche", () => {
   it("aucun résultat : la ligne « Proposer » emmène vers C-26 avec le nom saisi", async () => {
     renderSearch();
 
-    fireEvent.changeText(screen.getByTestId("search-input"), "kiosque pmu");
+    await searchFor("kiosque pmu");
     const propose = await screen.findByTestId("search-propose-query");
     fireEvent.press(propose);
 
