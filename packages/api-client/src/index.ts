@@ -28,6 +28,7 @@ export {
   listRoadProposals,
   listStatements,
   type PendingKycRow,
+  recordPhysicalVerification,
   reviewDocument,
   runDailyClose,
   setCommission,
@@ -38,6 +39,7 @@ export {
   validateLandmarkProposal,
   validateRoadProposal,
 } from "./admin";
+export { listAlphaInvites, setAlphaInvite } from "./alpha-invites";
 export { type Session, signInWithPhoneOtp, signOut, verifyPhoneOtp } from "./auth";
 export {
   type CreateTekoClientOptions,
@@ -47,6 +49,7 @@ export {
 } from "./client";
 export {
   driverHeartbeat,
+  driverOffline,
   listPendingOffers,
   type OfferDetails,
   offerDetails,
@@ -72,7 +75,22 @@ export {
   listMyStatements,
   listPaymentsForRide,
 } from "./finance";
+export { cachedRideHistory, type RideHistoryCache } from "./history-cache";
 export {
+  approveManualReceipt,
+  getFinanceProofUrl,
+  listCancellationClaims,
+  listManualReceipts,
+  listPayoutRequests,
+  type ManualReceiptInput,
+  prepareManualReceipt,
+  preparePayoutReceipt,
+  rejectManualReceipt,
+  reviseManualReceipt,
+  uploadFinanceProof,
+} from "./manual-receipts";
+export {
+  getNotification,
   listNotifications,
   markNotificationRead,
   subscribeNotifications,
@@ -89,6 +107,8 @@ export {
   type RidePositionEvent,
   type Unsubscribe,
 } from "./positions";
+export { getRideQuote, quoteRoute, type RideQuote, requestQuotedRide } from "./quotes";
+export { getRidePin } from "./ride-pin";
 export {
   ACTIVE_RIDE_STATUSES,
   cancelRide,
@@ -116,3 +136,5 @@ export {
   reportIncident,
   type SharedTripView,
 } from "./safety";
+export { getSessionIdentity, type SessionIdentity } from "./session-identity";
+export { reopenVehicleReview, updateReviewedVehicle } from "./vehicle-review";

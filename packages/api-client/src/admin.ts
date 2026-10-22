@@ -19,7 +19,7 @@ export async function listKycQueue(
   return unwrap(
     await client
       .from("drivers")
-      .select("*, profiles(full_name, phone, created_at)")
+      .select("*, profiles!drivers_id_fkey(full_name, phone, created_at)")
       .eq("kyc_status", status)
       .order("created_at", { ascending: true }),
   ) as PendingKycRow[];
@@ -62,6 +62,14 @@ export async function validateKyc(
       ...(note ? { p_note: note } : {}),
     }),
   );
+}
+
+export async function recordPhysicalVerification(
+  client: TekoClient,
+  driverId: string,
+  note: string,
+): Promise<void> {
+  unwrap(await client.rpc("record_physical_verification", { p_driver: driverId, p_note: note }));
 }
 
 /** Statut d'une pièce précise (refus ciblé avec motif, D-08b). */
@@ -262,6 +270,7 @@ export async function listAppConfig(client: TekoClient): Promise<TableRow<"app_c
 }
 
 export async function updateAppConfig(client: TekoClient, key: string, value: Json): Promise<void> {
+  if (value === null) throw new Error("Une configuration ne peut pas être nulle");
   unwrap(await client.from("app_config").update({ value }).eq("key", key));
 }
 

@@ -6,6 +6,11 @@ import type { PaymentMethod, RideRow, TableRow, VehicleCategory } from "@teko/ty
 import type { TekoClient } from "./client";
 import { unwrap } from "./errors";
 
+/** Retire immédiatement la présence et fait expirer les offres en attente. */
+export async function driverOffline(client: TekoClient): Promise<void> {
+  unwrap(await client.rpc("driver_offline"));
+}
+
 /** Toggle « en ligne » (D-09) — à rappeler périodiquement : la présence
  *  expire après `presence_ttl_s` (300 s). Position arrondie (sobriété). */
 export async function driverHeartbeat(

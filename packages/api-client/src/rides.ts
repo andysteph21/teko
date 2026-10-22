@@ -5,7 +5,7 @@
 import { ewktPoint, type LonLat } from "@teko/maps";
 import type { PaymentMethod, RideRow, RideStatus, TableRow, VehicleCategory } from "@teko/types";
 import type { TekoClient } from "./client";
-import { unwrap } from "./errors";
+import { TekoApiError, unwrap } from "./errors";
 
 export interface EstimatePriceInput {
   category: VehicleCategory;
@@ -94,7 +94,17 @@ export async function markArrived(client: TekoClient, rideId: string): Promise<R
 
 /** Chauffeur : saisie du PIN communiqué de vive voix (D-12). */
 export async function startRide(client: TekoClient, rideId: string, pin: string): Promise<RideRow> {
-  return unwrap(await client.rpc("start_ride", { p_ride: rideId, p_pin: pin })) as RideRow;
+  const result = unwrap(await client.rpc("start_ride_checked", { p_ride: rideId, p_pin: pin })) as {
+    ride?: RideRow;
+    error?: "pin_incorrect" | "pin_blocked";
+  };
+  if (result.error)
+    throw new TekoApiError(
+      result.error,
+      result.error === "pin_blocked" ? "Trop d’essais. Réessayez dans 5 minutes." : "PIN incorrect",
+    );
+  if (!result.ride) throw new TekoApiError("unknown", "Réponse de démarrage invalide");
+  return result.ride;
 }
 
 /** Chauffeur : fin de course (D-13 → D-14) — le backend calcule le prix
@@ -176,7 +186,7 @@ export async function rideDriverCard(
   };
 }
 
-/** Une course par id (participant sous RLS) — PIN visible côté client. */
+/** Une course par id (participant sous RLS) ; PIN privé lu par getRidePin. */
 export async function getRide(client: TekoClient, rideId: string): Promise<RideRow> {
   return unwrap(await client.from("rides").select("*").eq("id", rideId).single());
 }

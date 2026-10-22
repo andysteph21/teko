@@ -51,6 +51,13 @@ function tableClient(data: unknown): Mock {
 }
 
 describe("file KYC (A-03)", () => {
+  it("une configuration nulle est refusée avant toute écriture", async () => {
+    const client = tableClient(null);
+    await expect(updateAppConfig(client, "commission", null)).rejects.toThrow(
+      "ne peut pas être nulle",
+    );
+    expect(client.from).not.toHaveBeenCalled();
+  });
   it("listKycQueue filtre par statut et joint le profil", async () => {
     const client = tableClient([{ id: "d1", profiles: { full_name: "Jean" } }]);
     const rows = await listKycQueue(client);
@@ -189,6 +196,38 @@ describe("incidents, journal, config", () => {
 });
 
 describe("tableau de bord (A-02)", () => {
+  it("les compteurs absents deviennent zéro et une lecture refusée ne devient jamais un zéro trompeur", async () => {
+    const empty = tableClient(null);
+    expect(await dashboardCounts(empty)).toEqual({
+      activeRides: 0,
+      onlineDrivers: 0,
+      pendingKyc: 0,
+      openIncidents: 0,
+    });
+    const denied = tableClient(null);
+    // biome-ignore lint/suspicious/noThenProperty: chaîne PostgREST simulée
+    (denied as unknown as { then: unknown }).then = (resolve: (v: unknown) => unknown) =>
+      resolve({ data: null, error: { code: "42501", message: "permission denied" } });
+    await expect(dashboardCounts(denied)).rejects.toMatchObject({ code: "not_authorized" });
+  });
+
+  it("les vues non filtrées restent bornées et ne conservent aucun ancien filtre", async () => {
+    const client = tableClient([]);
+    await listStatements(client);
+    await listPayments(client);
+    await listProfiles(client);
+    await listIncidents(client);
+    await listAuditLog(client);
+    expect(client.eq).not.toHaveBeenCalled();
+    expect(client.ilike).not.toHaveBeenCalled();
+    expect(client.limit).toHaveBeenCalledWith(200);
+    expect(client.limit).toHaveBeenCalledWith(100);
+    expect(client.limit).toHaveBeenCalledWith(50);
+    await setDriverActive(client, "d1", false);
+    expect(client.update).toHaveBeenCalledWith({ is_active: false, deactivated_reason: null });
+    await reviewDocument(client, "doc1", "validated");
+    expect(client.update).toHaveBeenLastCalledWith({ status: "validated", note: null });
+  });
   it("dashboardCounts agrège 4 compteurs head-only", async () => {
     const counts = [4, 12, 3, 1];
     let call = 0;

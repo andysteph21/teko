@@ -12,6 +12,7 @@ export function subscribeNotifications(
   client: TekoClient,
   userId: string,
   onNotification: (n: NotificationRow) => void,
+  onReady?: () => void,
 ): Unsubscribe {
   const channel = client
     .channel(`notifications-${userId}`)
@@ -20,7 +21,9 @@ export function subscribeNotifications(
       { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
       (payload) => onNotification(payload.new as NotificationRow),
     )
-    .subscribe();
+    .subscribe((status) => {
+      if (status === "SUBSCRIBED") onReady?.();
+    });
   return async () => {
     await client.removeChannel(channel);
   };
@@ -41,4 +44,9 @@ export async function listNotifications(
 
 export async function markNotificationRead(client: TekoClient, id: string): Promise<void> {
   unwrap(await client.rpc("mark_notification_read", { p_id: id }));
+}
+
+/** Relit sous JWT : le contenu reçu par push ne fait pas autorité. */
+export async function getNotification(client: TekoClient, id: string): Promise<NotificationRow> {
+  return unwrap(await client.from("notifications").select("*").eq("id", id).single());
 }

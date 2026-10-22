@@ -22,12 +22,17 @@ export interface PositionsChannel {
   /** Statut de la course (accepted → arrived → started → completed). */
   subscribeRideStatus(rideId: string, onStatus: (status: RideStatus) => void): Unsubscribe;
   /** Écriture chauffeur pendant la course (position arrondie, sobriété). */
-  pushRidePosition(rideId: string, position: LonLat): Promise<void>;
+  pushRidePosition(
+    rideId: string,
+    position: LonLat,
+    sample?: { id: string; recordedAt: string },
+  ): Promise<void>;
 }
 
 export interface RealtimePositionsOptions {
   /** Mode éco : arrondi ~11 m au lieu de ~1 m (C-25). */
   eco?: boolean;
+  driverId?: string;
 }
 
 /** Implémentation Supabase Realtime (postgres_changes, RLS respectée). */
@@ -74,14 +79,24 @@ export function createRealtimePositionsChannel(
       return remove(channel);
     },
 
-    async pushRidePosition(rideId, position) {
+    async pushRidePosition(rideId, position, sample) {
       const rounded = roundPosition(position, options.eco ?? false);
-      const { data: userData } = await client.auth.getUser();
-      const { error } = await client.from("ride_locations").insert({
+      let driverId = options.driverId;
+      if (!driverId) {
+        const identity = await client.auth.getUser();
+        if (identity.error) throw mapApiError(identity.error);
+        driverId = identity.data.user?.id;
+      }
+      const row = {
         ride_id: rideId,
-        driver_id: userData.user?.id as string,
+        driver_id: driverId as string,
         geom: ewktPoint(rounded),
-      });
+        ...(sample ? { sample_id: sample.id, recorded_at: sample.recordedAt } : {}),
+      };
+      const table = client.from("ride_locations");
+      const { error } = sample
+        ? await table.upsert(row, { onConflict: "sample_id", ignoreDuplicates: true })
+        : await table.insert(row);
       if (error) throw mapApiError(error);
     },
   };

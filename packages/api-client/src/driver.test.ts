@@ -4,7 +4,9 @@ import {
   createDriverProfile,
   getMyDriver,
   listMyDocuments,
+  listMyVehicles,
   setGpsConsent,
+  setPayoutMsisdn,
   uploadKycDocument,
   upsertVehicle,
 } from "./driver";
@@ -32,6 +34,26 @@ function tableClient(data: unknown): Mock {
 }
 
 describe("dossier chauffeur", () => {
+  it("liste seulement les véhicules du chauffeur et conserve l'erreur d'un upload KYC", async () => {
+    const client = tableClient([]);
+    await listMyVehicles(client, "d1");
+    expect(client.eq).toHaveBeenCalledWith("driver_id", "d1");
+    await setPayoutMsisdn(client, "d1", "+24107000002");
+    expect(client.update).toHaveBeenCalledWith({ payout_msisdn: "+24107000002" });
+    const upload = vi
+      .fn()
+      .mockResolvedValue({ error: { code: "42501", message: "permission denied" } });
+    (client as unknown as { storage: unknown }).storage = { from: () => ({ upload }) };
+    await expect(
+      uploadKycDocument(client, {
+        userId: "d1",
+        type: "license",
+        data: new ArrayBuffer(1),
+        contentType: "image/png",
+      }),
+    ).rejects.toMatchObject({ code: "not_authorized" });
+    expect(client.insert).not.toHaveBeenCalled();
+  });
   it("createDriverProfile : upsert par id avec catégories", async () => {
     const client = tableClient(null);
     await createDriverProfile(client, "d1", ["eco", "moto"]);
@@ -57,10 +79,14 @@ describe("dossier chauffeur", () => {
       data: new ArrayBuffer(8),
       contentType: "image/jpeg",
     });
-    expect(upload).toHaveBeenCalledWith("d1/license.jpg", expect.any(ArrayBuffer), {
-      contentType: "image/jpeg",
-      upsert: true,
-    });
+    expect(upload).toHaveBeenCalledWith(
+      expect.stringMatching(/^d1\/license-[0-9]+-[a-z0-9]+\.jpg$/),
+      expect.any(ArrayBuffer),
+      {
+        contentType: "image/jpeg",
+        upsert: false,
+      },
+    );
     expect(doc.id).toBe("doc1");
   });
 
@@ -84,13 +110,17 @@ describe("dossier chauffeur", () => {
 describe("subscribeNotifications", () => {
   it("filtre par user_id et relaie les insertions", async () => {
     let handler: ((p: { new: unknown }) => void) | undefined;
+    let statusHandler: ((status: string) => void) | undefined;
     const channel = {
       on: vi.fn((_e: string, filter: unknown, h: (p: { new: unknown }) => void) => {
         handler = h;
         expect(filter).toMatchObject({ table: "notifications", filter: "user_id=eq.u1" });
         return channel;
       }),
-      subscribe: vi.fn(() => channel),
+      subscribe: vi.fn((callback: (status: string) => void) => {
+        statusHandler = callback;
+        return channel;
+      }),
     };
     const client = {
       channel: vi.fn(() => channel),
@@ -98,7 +128,13 @@ describe("subscribeNotifications", () => {
     } as unknown as TekoClient;
 
     const seen: unknown[] = [];
-    const unsubscribe = subscribeNotifications(client, "u1", (n) => seen.push(n));
+    const ready = vi.fn();
+    const unsubscribe = subscribeNotifications(client, "u1", (n) => seen.push(n), ready);
+    statusHandler?.("CHANNEL_ERROR");
+    expect(ready).not.toHaveBeenCalled();
+    statusHandler?.("SUBSCRIBED");
+    statusHandler?.("SUBSCRIBED");
+    expect(ready).toHaveBeenCalledTimes(2);
     handler?.({ new: { id: "n1", type: "ride_offer" } });
     expect(seen).toEqual([{ id: "n1", type: "ride_offer" }]);
     await unsubscribe();

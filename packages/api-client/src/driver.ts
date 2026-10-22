@@ -43,10 +43,10 @@ export async function uploadKycDocument(
   },
 ): Promise<TableRow<"driver_documents">> {
   const extension = input.contentType.includes("png") ? "png" : "jpg";
-  const path = `${input.userId}/${input.type}.${extension}`;
+  const path = `${input.userId}/${input.type}-${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
   const { error: uploadError } = await client.storage
     .from("kyc")
-    .upload(path, input.data, { contentType: input.contentType, upsert: true });
+    .upload(path, input.data, { contentType: input.contentType, upsert: false });
   if (uploadError) throw mapApiError(uploadError);
   return unwrap(
     await client

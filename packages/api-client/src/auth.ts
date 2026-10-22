@@ -27,6 +27,10 @@ export async function verifyPhoneOtp(
 }
 
 export async function signOut(client: TekoClient): Promise<void> {
+  // Avant la révocation du JWT, retirer les jetons de cette session seulement.
+  // Si le serveur est injoignable, garder la session pour permettre de réessayer.
+  const devices = await client.rpc("unregister_session_devices");
+  if (devices.error) throw mapApiError(devices.error);
   const { error } = await client.auth.signOut();
   if (error) throw mapApiError(error);
 }
