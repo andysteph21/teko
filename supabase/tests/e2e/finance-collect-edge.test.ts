@@ -27,6 +27,7 @@ async function invokeCollect(user: TestUser, payment_id: string) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${data.session?.access_token}`,
       apikey: ANON_KEY ?? "",
+      "x-teko-sandbox-secret": process.env.TEKO_SANDBOX_SECRET ?? "",
     },
     body: JSON.stringify({ payment_id }),
   });

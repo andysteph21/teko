@@ -60,7 +60,7 @@ set local "request.jwt.claims" = '{"sub":"dddddddd-dddd-dddd-dddd-dddddddddddd",
 
 select throws_ok(
   $$ update public.drivers set is_active = true where id = 'dddddddd-dddd-dddd-dddd-dddddddddddd' $$,
-  'P0001', NULL, 'Un chauffeur ne peut pas s''auto-activer (garde champs sensibles)' );
+  '42501', NULL, 'Un chauffeur ne peut pas s''auto-activer (garde champs sensibles)' );
 
 reset role;
 select * from finish();

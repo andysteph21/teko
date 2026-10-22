@@ -55,13 +55,22 @@ async function serviceSql(text: string, params: unknown[] = []) {
 async function makeUser(role?: "driver") {
   const email = `maps-${randomUUID()}@test.teko.ga`;
   const password = "e2e-Passw0rd!";
+  const phone = `24107${BigInt(`0x${randomUUID().replaceAll("-", "").slice(0, 12)}`)
+    .toString()
+    .slice(-10)}`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
+    phone,
+    phone_confirm: true,
   });
   if (error) throw error;
   const id = data.user!.id;
+  await serviceSql("insert into public.alpha_invites(phone,role) values($1,$2)", [
+    phone,
+    role ?? "client",
+  ]);
   if (role === "driver") {
     await serviceSql(`update public.profiles set role = 'driver' where id = $1`, [id]);
     await serviceSql(
@@ -145,12 +154,19 @@ d("présence chauffeur (heartbeat)", () => {
 d("positions de course en temps réel", () => {
   it("le client reçoit via Realtime la position poussée par le chauffeur", async () => {
     // Course réelle : Nadia commande, le chauffeur (en ligne) accepte.
-    const { data: ride, error } = await client.rpc("request_ride", {
+    // Le devis est une fixture serveur : ce test vise la livraison Realtime.
+    const quote = await admin.rpc("create_ride_quote", {
+      p_client: _clientId,
       p_category: "eco",
       p_origin: "SRID=4326;POINT(9.4536 0.4032)",
       p_dest: "SRID=4326;POINT(9.4671 0.4148)",
       p_distance_m: 3200,
       p_duration_s: 720,
+      p_shape: "maps-realtime-fixture",
+    });
+    expect(quote.error).toBeNull();
+    const { data: ride, error } = await client.rpc("request_quoted_ride", {
+      p_quote: quote.data.id,
     });
     expect(error).toBeNull();
     if (!ride) throw new Error("ride null");
@@ -158,34 +174,49 @@ d("positions de course en temps réel", () => {
     expect(accept.error).toBeNull();
 
     const received: Array<{ lon: number; lat: number }> = [];
+    const systemErrors: string[] = [];
+    let postgresReady = false;
     const channel = clientData.subscribeRidePositions(ride.id, (e) => received.push(e));
-    // Attendre l'abonnement effectif avant de pousser.
-    await new Promise<void>((resolve, reject) => {
-      const t = setTimeout(() => reject(new Error("subscribe timeout")), 8000);
-      const check = setInterval(() => {
-        if (channel.state === "joined") {
-          clearTimeout(t);
-          clearInterval(check);
-          resolve();
-        }
-      }, 100);
-    });
-
-    await driverData.pushRidePosition(ride.id, { lon: 9.4562, lat: 0.4079 });
-    await new Promise<void>((resolve, reject) => {
-      const t = setTimeout(() => reject(new Error("realtime timeout — position non reçue")), 8000);
-      const check = setInterval(() => {
-        if (received.length > 0) {
-          clearTimeout(t);
-          clearInterval(check);
-          resolve();
-        }
-      }, 100);
-    });
-
-    expect(received[0]!.lon).toBeCloseTo(9.4562, 3);
-    expect(received[0]!.lat).toBeCloseTo(0.4079, 3);
-    await clientData.unsubscribe(channel);
-    await driver.rpc("cancel_ride", { p_ride: ride.id, p_status: "cancelled_driver" });
+    channel.on(
+      "system",
+      {},
+      (message: { status?: string; message?: string; extension?: string }) => {
+        if (message.status === "ok" && message.extension === "postgres_changes")
+          postgresReady = true;
+        if (message.status === "error")
+          systemErrors.push(message.message ?? "Realtime indisponible");
+      },
+    );
+    try {
+      await waitUntil(() => postgresReady, systemErrors);
+      await driverData.pushRidePosition(ride.id, { lon: 9.4562, lat: 0.4079 });
+      const visible = await client.from("ride_locations").select("id").eq("ride_id", ride.id);
+      expect(visible.error).toBeNull();
+      expect(visible.data).toHaveLength(1);
+      await waitUntil(() => received.length > 0, systemErrors);
+      expect(received[0]!.lon).toBeCloseTo(9.4562, 3);
+      expect(received[0]!.lat).toBeCloseTo(0.4079, 3);
+    } finally {
+      await clientData.unsubscribe(channel);
+      await driver.rpc("cancel_ride", { p_ride: ride.id, p_status: "cancelled_driver" });
+    }
   }, 30000);
 });
+
+async function waitUntil(ready: () => boolean, errors: string[]): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const finish = (error?: Error) => {
+      clearInterval(check);
+      clearTimeout(timeout);
+      error ? reject(error) : resolve();
+    };
+    const check = setInterval(() => {
+      if (errors.length) finish(new Error(errors.join("; ")));
+      else if (ready()) finish();
+    }, 50);
+    const timeout = setTimeout(
+      () => finish(new Error("Realtime : événement attendu absent")),
+      8000,
+    );
+  });
+}

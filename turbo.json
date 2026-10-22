@@ -2,6 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "globalDependencies": ["tsconfig.json", ".npmrc"],
+  "globalPassThroughEnv": ["EXPO_ACCESS_TOKEN"],
   "globalEnv": [
     "SUPABASE_URL",
     "SUPABASE_ANON_KEY",
@@ -12,7 +13,21 @@
     "SERVICE_ROLE_KEY",
     "DB_URL",
     "DATABASE_URL",
-    "CI"
+    "CI",
+    "EXPO_PUBLIC_ALPHA_USB_GPS",
+    "EXPO_PUBLIC_SUPABASE_URL",
+    "EXPO_PUBLIC_SUPABASE_ANON_KEY",
+    "EXPO_PUBLIC_TILES_URL",
+    "EXPO_PUBLIC_VALHALLA_URL",
+    "TEKO_APP_VARIANT",
+    "TEKO_ALLOW_LOCAL_HTTP",
+    "TEKO_EXPO_OWNER",
+    "TEKO_GOOGLE_SERVICES_FILE",
+    "EXPO_PUBLIC_EAS_PROJECT_ID",
+    "TEKO_E2E_DISPOSABLE",
+    "TEKO_FUNCTIONS_URL",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY"
   ],
   "tasks": {
     "//#lint": {

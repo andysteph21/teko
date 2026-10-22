@@ -90,7 +90,9 @@ describe("gardes anti-escalade et fonctions internes", () => {
       .from("drivers")
       .update({ current_balance_cache: 999999 })
       .eq("id", boris.id);
-    expect(error?.message).toMatch(/admin ou le service/i);
+    expect(error?.code).toBe("42501");
+    const actual = await serviceSql("select current_balance_cache from public.drivers where id=$1", [boris.id]);
+    expect(Number(actual.rows[0].current_balance_cache)).toBe(0);
   });
 
   it("les fonctions internes ne sont plus exécutables par un utilisateur", async () => {
@@ -120,7 +122,7 @@ describe("gardes anti-escalade et fonctions internes", () => {
 
   it("daily_close est refusée à un client (E-16 comblé)", async () => {
     const { error } = await nadia.client.rpc("daily_close", {});
-    expect(error?.message).toMatch(/administrateurs ou au service/i);
+    expect(error?.code).toBe("42501");
   });
 
   it("un tiers ne peut pas annuler la course de Nadia", async () => {

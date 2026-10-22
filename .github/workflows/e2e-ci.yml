@@ -1,52 +1,49 @@
-name: E2E CI
-
-# Tests end-to-end sur la stack Supabase locale (Docker) : utilisateurs seed
-# créés via l'API admin, actions jouées avec de vrais JWT à travers PostgREST
-# (RLS exercée comme en production), assertions sur la réaction de la base.
-
+name: E2E alpha CI
 on:
   pull_request:
-    paths:
-      - "supabase/**"
-      - ".github/workflows/e2e-ci.yml"
+    paths: ["supabase/**", "tools/audit/**", ".github/workflows/e2e-ci.yml"]
   push:
     branches: [main]
-    paths:
-      - "supabase/**"
-      - ".github/workflows/e2e-ci.yml"
+    paths: ["supabase/**", "tools/audit/**", ".github/workflows/e2e-ci.yml"]
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: latest
-
-      # Stack complète (Auth, PostgREST, Realtime, Storage) + migrations + seed.
-      - name: Start Supabase
-        run: supabase start
-
-      - name: Exporter les clés locales (API_URL, ANON_KEY, SERVICE_ROLE_KEY, DB_URL)
-        run: supabase status -o env >> "$GITHUB_ENV"
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0
       - name: Installer les dépendances de test
         working-directory: supabase/tests/e2e
-        run: npm install
-
-      - name: Tests e2e
-        working-directory: supabase/tests/e2e
-        run: npm test
-
-      - name: Stop Supabase
+        run: npm ci
+      - name: Préparer le banc jetable
+        run: node tools/audit/prepare-bench.mjs
+      - name: Démarrer la stack isolée et appliquer toutes les migrations
+        run: supabase start --workdir /tmp/teko-alpha-bench --exclude studio,postgres-meta,logflare,vector,supavisor
+      - name: Démarrer le contrat HTTP de routage et les fonctions
+        run: |
+          node tools/audit/route-fixture.mjs > /tmp/teko-alpha-route.log 2>&1 &
+          supabase functions serve --workdir /tmp/teko-alpha-bench --env-file /tmp/teko-alpha-functions.env > /tmp/teko-alpha-functions.log 2>&1 &
+          node tools/audit/run-bench.mjs node "$GITHUB_WORKSPACE/tools/audit/wait-functions.mjs"
+      - name: Tests JWT, Storage et contrats HTTP
+        run: node tools/audit/run-bench.mjs
+      - name: Fautes injectées, puis restauration des gardes
+        run: node tools/audit/check-mutations.mjs
+      - name: Journaux de diagnostic et preuves de mutation
         if: always()
-        run: supabase stop
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-evidence
+          include-hidden-files: true
+          path: |
+            .local/alpha-evidence/mutations
+            /tmp/teko-alpha-functions.log
+            /tmp/teko-alpha-route.log
+      - name: Arrêter le seul banc alpha
+        if: always()
+        run: supabase stop --project-id teko-alpha-audit

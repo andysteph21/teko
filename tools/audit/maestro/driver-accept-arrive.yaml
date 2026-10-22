@@ -1,0 +1,23 @@
+# Démarrer cette attente avant la confirmation passager sur l'autre téléphone.
+appId: ga.teko.driver.alpha
+---
+- assertVisible: "BANC USB · GPS FICTIF À LIBREVILLE"
+- extendedWaitUntil:
+    visible:
+      id: "offer-accept"
+    timeout: 120000
+- tapOn:
+    id: "offer-accept"
+    waitToSettleTimeoutMs: 0
+- extendedWaitUntil:
+    visible:
+      id: "ride-arrive"
+    timeout: 20000
+- tapOn:
+    id: "ride-arrive"
+    waitToSettleTimeoutMs: 0
+- extendedWaitUntil:
+    visible:
+      id: "ride-request-pin"
+    timeout: 20000
+- takeScreenshot: driver-arrived

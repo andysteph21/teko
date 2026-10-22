@@ -90,20 +90,35 @@ describe("dispatch par offres", () => {
     await nadia.client.rpc("cancel_ride", { p_ride: ride.id });
   });
 
-  it("aucun chauffeur éligible → client prévenu, course annulable sans frais", async () => {
+  it("sans chauffeur, reste en recherche puis termine à 3 minutes sans frais", async () => {
     const ride = await requestRide(nadia.client, { p_category: "confort" });
     const ev = await serviceSql(
       `select 1 from public.ride_events where ride_id = $1 and type = 'dispatch_exhausted'`,
       [ride.id],
     );
-    expect(ev.rows).toHaveLength(1);
+    expect(ev.rows).toHaveLength(0);
+    await serviceSql("update public.rides set created_at=now()-interval '181 seconds' where id=$1", [ride.id]);
+    await serviceSql("select public.retry_alpha_dispatch()");
     const notif = await serviceSql(
       `select 1 from public.notifications where user_id = $1 and type = 'no_driver_found' and (payload->>'ride_id') = $2`,
       [nadia.id, ride.id],
     );
     expect(notif.rows).toHaveLength(1);
-    const { data } = await nadia.client.rpc("cancel_ride", { p_ride: ride.id });
-    expect(data.status).toBe("cancelled_client");
+    const state = await nadia.client.from("rides").select("status,cancel_reason").eq("id", ride.id).single();
+    expect(state.data).toMatchObject({ status: "failed", cancel_reason: "no_driver_found" });
+    const fees = await serviceSql("select id from public.cancellation_claims where ride_id=$1", [ride.id]);
+    expect(fees.rows).toHaveLength(0);
+  });
+
+  it("retente un chauffeur arrivé pendant la recherche et ne crée pas deux offres concurrentes", async () => {
+    const ride = await requestRide(nadia.client, { p_category: "confort" });
+    const late = await createDriver(["confort"]);
+    await goOnline(late, 9.4537, 0.4033);
+    await Promise.all([1, 2].map(() => serviceSql("select public.retry_alpha_dispatch()")));
+    const offers = await late.client.from("ride_offers").select("id").eq("ride_id", ride.id).eq("status", "pending");
+    expect(offers.error).toBeNull();
+    expect(offers.data).toHaveLength(1);
+    await nadia.client.rpc("cancel_ride", { p_ride: ride.id });
   });
 
   it("une offre déjà traitée ne peut pas être rejouée", async () => {

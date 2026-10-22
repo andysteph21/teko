@@ -204,7 +204,7 @@ describe("suppression de compte (E-04)", () => {
     // Déclencheur explicite (le webhook pg_net fait la même chose, en asynchrone).
     const res = await fetch(`${FUNCTIONS_URL}/account-purge`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-teko-purge-secret": process.env.PURGE_TRIGGER_SECRET ?? "" },
       body: JSON.stringify({ source: "e2e" }),
     });
     expect(res.status).toBe(200);
@@ -326,6 +326,25 @@ describe("équipe admin (E-09) et KYC (E-14)", () => {
       .insert({ id: candidate.id, categories: ["moto"] });
     expect(ins.error).toBeNull();
 
+    const identity = await admin.auth.admin.getUserById(candidate.id);
+    const invitation = await ops.client.rpc("invite_alpha", { p_phone: identity.data.user!.phone, p_role: "driver" });
+    expect(invitation.error).toBeNull();
+    const premature = await ops.client.rpc("validate_kyc", { p_driver: candidate.id, p_accept: true });
+    expect(premature.error?.code).toBe("22023");
+    const image = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/a9sAAAAASUVORK5CYII=", "base64");
+    for (const type of ["id_card","license","registration","insurance","vehicle_photo","criminal_record","profile_photo"]) {
+      const path = `${candidate.id}/${type}.png`;
+      const uploaded = await candidate.client.storage.from("kyc").upload(path, image, { contentType: "image/png" });
+      expect(uploaded.error).toBeNull();
+      const document = await candidate.client.from("driver_documents").insert({ driver_id: candidate.id, type, storage_path: path }).select().single();
+      expect(document.error).toBeNull();
+      const review = await ops.client.from("driver_documents").update({ status: "validated" }).eq("id", document.data.id);
+      expect(review.error).toBeNull();
+    }
+    const beforeMeeting = await ops.client.rpc("validate_kyc", { p_driver: candidate.id, p_accept: true });
+    expect(beforeMeeting.error?.code).toBe("22023");
+    const meeting = await ops.client.rpc("record_physical_verification", { p_driver: candidate.id, p_note: "Attestation fictive du scénario automatisé" });
+    expect(meeting.error).toBeNull();
     const val = await ops.client.rpc("validate_kyc", {
       p_driver: candidate.id,
       p_accept: true,
