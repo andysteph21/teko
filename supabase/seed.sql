@@ -40,11 +40,6 @@ select * from (values
 ) as v(name, aliases, category, geom, status, salience)
 where not exists (select 1 from public.landmarks);
 
--- Webhook push local (dev) : l'Edge Function notify-push via Kong (réseau
--- docker interne). En CI/dev sans besoin de push, le meilleur-effort ignore
--- les échecs. Prod/staging : URL réelle + secret via la console (A-07).
-update public.app_config set value = to_jsonb('http://supabase_kong_teko:8000/functions/v1/notify-push'::text) where key = 'push_webhook_url';
--- Webhook de purge local (dev) : désactivation auth des comptes purgés par
--- l'Edge Function account-purge (même réseau docker). Prod/staging : URL
--- réelle + secret via la console (A-07).
-update public.app_config set value = to_jsonb('http://supabase_kong_teko:8000/functions/v1/account-purge'::text) where key = 'purge_webhook_url';
+-- Les URLs de webhook dépendent de l'environnement. Un seed réutilisé dans
+-- une stack isolée ne doit jamais contacter une autre stack nommée "teko".
+-- Configurer URL et secret explicitement pour chaque déploiement.

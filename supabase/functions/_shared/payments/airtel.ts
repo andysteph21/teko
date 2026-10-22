@@ -4,6 +4,7 @@
 // authentifiés (jeton + HMAC optionnelle), Enquiry par type de transaction.
 // Restent À CONFIRMER en sandbox : le nom d'en-tête exact de la signature
 // (Message Signing) et le comportement d'idempotence sur transaction.id rejoué.
+import { timingSafeEqual } from "../secure-compare.ts";
 import type {
   CallbackResult,
   CollectParams,
@@ -84,19 +85,7 @@ export function disbursePin(): string {
   return encryptPinForAirtel(env("AIRTEL_DISBURSE_PIN"), env("AIRTEL_RSA_PUBLIC_KEY"));
 }
 
-/** Comparaison sans fuite de temps ni de longueur : on compare les SHA-256. */
-export async function timingSafeEqual(a: string, b: string): Promise<boolean> {
-  const encoder = new TextEncoder();
-  const [da, db] = await Promise.all([
-    crypto.subtle.digest("SHA-256", encoder.encode(a)),
-    crypto.subtle.digest("SHA-256", encoder.encode(b)),
-  ]);
-  const va = new Uint8Array(da);
-  const vb = new Uint8Array(db);
-  let diff = 0;
-  for (let i = 0; i < va.length; i++) diff |= va[i] ^ vb[i];
-  return diff === 0;
-}
+export { timingSafeEqual };
 
 async function hmacHex(secret: string, body: string): Promise<string> {
   const key = await crypto.subtle.importKey(
