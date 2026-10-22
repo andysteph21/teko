@@ -26,6 +26,14 @@ export const bookingFr = {
     planifierPlusTard: "Planifier pour plus tard",
   },
   rencontre: {
+    nouveauDevis: "Confirmez le prix de ce départ",
+    prixPrecedent: "Prix précédent : {{prix}}",
+    prixConfirme: "Nouveau prix ferme : {{prix}}",
+    reconfirmation:
+      "Le trajet a été recalculé pour ce point de départ. Aucune course n’est encore commandée.",
+    confirmerPrix: "Confirmer ce prix et commander",
+    revenirDepart: "Revenir au départ initial",
+    devisExpire: "Ce prix a expiré. Revenez au choix de la course pour confirmer un nouveau devis.",
     eyebrow: "Point de rencontre suggéré",
     reperValide: "Repère validé",
     pourquoi:
@@ -52,7 +60,12 @@ export const bookingFr = {
   horsLigne: {
     titre: "Pas de connexion",
     texte:
-      "Vérifiez votre réseau mobile. Rien n'a été perdu — votre demande reprendra là où elle s'est arrêtée.",
+      "Vérifiez votre réseau mobile. Aucune nouvelle demande ne sera envoyée automatiquement à la reconnexion.",
     astuce: "Astuce : le mode éco fonctionne même avec un signal très faible.",
+  },
+  tarifsIndisponibles: {
+    titre: "Tarifs temporairement indisponibles",
+    texte:
+      "Le service de tarifs ne répond pas pour le moment. Réessayez dans un instant. Aucune course n’a été commandée.",
   },
 } as const;

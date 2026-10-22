@@ -21,6 +21,11 @@ const DB_URL =
   process.env.DB_URL ??
   "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 
+if (process.env.TEKO_E2E_DISPOSABLE !== "teko-alpha-audit" ||
+  API_URL !== "http://127.0.0.1:58321" || !DB_URL.includes(":58322/")) {
+  throw new Error("Tests refusés hors du banc jetable. Utilisez node tools/audit/run-bench.mjs depuis la racine.");
+}
+
 if (!ANON_KEY || !SERVICE_KEY) {
   throw new Error(
     "ANON_KEY / SERVICE_ROLE_KEY absents. Lancez `supabase start` puis exportez `supabase status -o env`.",
@@ -57,24 +62,33 @@ export interface TestUser {
   client: SupabaseClient;
 }
 
+const fixtureUsers = new Set<string>();
+
 // Crée un utilisateur auth confirmé + session réelle (JWT anon + password).
 export async function createUser(
   opts: {
     role?: "client" | "driver" | "admin";
     adminRole?: "ops" | "carto" | "finance" | "superadmin";
     phone?: string;
+    invited?: boolean;
   } = {},
 ): Promise<TestUser> {
   const email = `e2e-${randomUUID()}@test.teko.ga`;
   const password = "e2e-Passw0rd!";
+  const phone = opts.phone ?? `24107${String(BigInt(`0x${randomUUID().replaceAll("-", "")}`) % 10000000000n).padStart(10, "0")}`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
-    ...(opts.phone ? { phone: opts.phone, phone_confirm: true } : {}),
+    phone, phone_confirm: true,
   });
   if (error) throw error;
   const id = data.user.id;
+  fixtureUsers.add(id);
+  if (opts.invited !== false && opts.role !== "admin") {
+    await serviceSql("insert into public.alpha_invites(phone,role) values($1,$2) on conflict(phone,role) do update set is_active=true",
+      [phone.replace(/\D/g, ""), opts.role ?? "client"]);
+  }
 
   if (opts.role && opts.role !== "client") {
     await serviceSql(
@@ -122,11 +136,13 @@ export async function goOnline(driver: TestUser, lon: number, lat: number) {
   if (error) throw error;
 }
 
-// Repasse hors ligne les chauffeurs donnés (ou tous). À appeler en afterAll
+// Repasse hors ligne les seuls utilisateurs créés par ce fichier de tests.
+// À appeler en afterAll
 // de chaque spec qui utilise goOnline : les fichiers partagent la même base,
 // et un chauffeur resté en ligne détournerait les offres des specs suivantes.
 export async function allOffline() {
-  await serviceSql(`delete from public.driver_presence`);
+  await serviceSql(`delete from public.driver_presence where driver_id = any($1::uuid[])`,
+    [[...fixtureUsers]]);
 }
 
 // Offre en attente du chauffeur pour une course donnée (via RLS : il ne voit
@@ -148,21 +164,24 @@ export const DISTANCE_M = 3200;
 export const DURATION_S = 720;
 
 export async function requestRide(client: SupabaseClient, extra: object = {}) {
-  const { data, error } = await client.rpc("request_ride", {
-    p_category: "eco",
-    p_origin: ORIGIN,
-    p_dest: DEST,
-    p_distance_m: DISTANCE_M,
-    p_duration_s: DURATION_S,
-    ...extra,
+  const identity = await client.auth.getUser();
+  if (identity.error) throw identity.error;
+  // Fixture de devis créée par le serveur : le parcours de routage réel est
+  // testé séparément. Les mutations de course restent sous JWT utilisateur.
+  const quote = await admin.rpc("create_ride_quote", {
+    p_client: identity.data.user!.id, p_category: "eco", p_origin: ORIGIN,
+    p_dest: DEST, p_distance_m: DISTANCE_M, p_duration_s: DURATION_S,
+    p_shape: "_p~iF~ps|U_ulLnnqC_mqNvxq`@", ...extra,
   });
+  if (quote.error) throw quote.error;
+  const { data, error } = await client.rpc("request_quoted_ride", { p_quote: quote.data.id });
   if (error) throw error;
   return data;
 }
 
 export async function ridePin(rideId: string): Promise<string> {
   const r = await serviceSql(
-    "select pin_code from public.rides where id = $1",
+    "select pin_code from private.ride_pins where ride_id = $1",
     [rideId],
   );
   return r.rows[0].pin_code;
@@ -178,11 +197,12 @@ export async function completeCashRide(client: TestUser, driver: TestUser) {
   if (r.error) throw r.error;
   r = await driver.client.rpc("mark_arrived", { p_ride: ride.id });
   if (r.error) throw r.error;
-  r = await driver.client.rpc("start_ride", {
+  r = await driver.client.rpc("start_ride_checked", {
     p_ride: ride.id,
     p_pin: await ridePin(ride.id),
   });
   if (r.error) throw r.error;
+  if (r.data.error) throw new Error(r.data.error);
   r = await driver.client.rpc("complete_ride", { p_ride: ride.id });
   if (r.error) throw r.error;
   return r.data;

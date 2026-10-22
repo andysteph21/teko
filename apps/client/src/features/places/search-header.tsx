@@ -8,6 +8,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export interface SearchHeaderProps {
   originLabel: string;
+  choosingOrigin: boolean;
+  onOriginPress: () => void;
   placeholder: string;
   backLabel: string;
   query: string;
@@ -17,6 +19,8 @@ export interface SearchHeaderProps {
 
 export function SearchHeader({
   originLabel,
+  choosingOrigin,
+  onOriginPress,
   placeholder,
   backLabel,
   query,
@@ -40,11 +44,16 @@ export function SearchHeader({
         <View style={[styles.dot, { backgroundColor: color.map.markerLandmark }]} />
       </View>
       <View style={styles.fields}>
-        <View style={styles.origin}>
+        <Pressable
+          style={[styles.origin, choosingOrigin && styles.originActive]}
+          accessibilityRole="button"
+          onPress={onOriginPress}
+          testID="search-origin"
+        >
           <Text style={styles.originText} numberOfLines={1}>
             {originLabel}
           </Text>
-        </View>
+        </Pressable>
         <TextField
           value={query}
           onChangeText={onQueryChange}
@@ -94,4 +103,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[3],
   },
   originText: { fontSize: typography.fontSize.base, color: color.neutral[500] },
+  originActive: { borderWidth: 1, borderColor: color.brand[600] },
 });

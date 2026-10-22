@@ -169,7 +169,11 @@ export default function DriverRideScreen() {
   const mode = useResolvedMapMode();
   const eco = mode.mode === "eco";
   const { ride, status } = state;
-  usePushPositions(id, status === "started", eco);
+  usePushPositions(
+    id,
+    status ? ["accepted", "enroute", "arrived", "started"].includes(status) : undefined,
+    eco,
+  );
   const cash = ride?.payment_method !== "airtel";
   const newBalance = useNewBalance(status === "completed" && cash);
 

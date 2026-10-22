@@ -10,7 +10,7 @@ major_version = 17
 enabled = true
 # Liens profonds des apps Expo (retours d'auth) + admin local.
 site_url = "http://127.0.0.1:3000"
-additional_redirect_urls = ["teko-client://auth", "teko-driver://auth", "http://127.0.0.1:3000"]
+additional_redirect_urls = ["teko-client://auth", "teko-driver://auth", "teko-client-alpha://auth", "teko-driver-alpha://auth", "http://127.0.0.1:3000"]
 
 # Auth téléphone (parcours C-03/C-04, D-03) — en local, PAS de fournisseur
 # SMS : les numéros de test ci-dessous acceptent un code fixe, sans réseau.

@@ -45,11 +45,12 @@ describe("kyc-labels", () => {
       doc("insurance", "validated", "2026-08-20T10:00:00Z"),
       doc("vehicle_photo", "validated", "2026-08-20T10:00:00Z"),
       doc("criminal_record", "validated", "2026-08-20T10:00:00Z"),
+      doc("profile_photo", "validated", "2026-08-20T10:00:00Z"),
     ];
     expect(pendingRequiredTypes(docs)).toEqual(["license"]);
   });
 
-  it("la photo de profil ne bloque pas la validation du dossier", () => {
+  it("la photo de profil doit être validée pour activer le chauffeur alpha", () => {
     const docs = [
       doc("id_card", "validated", "2026-08-20T10:00:00Z"),
       doc("license", "validated", "2026-08-20T10:00:00Z"),
@@ -59,6 +60,6 @@ describe("kyc-labels", () => {
       doc("criminal_record", "validated", "2026-08-20T10:00:00Z"),
       doc("profile_photo", "pending", "2026-08-20T10:00:00Z"),
     ];
-    expect(pendingRequiredTypes(docs)).toEqual([]);
+    expect(pendingRequiredTypes(docs)).toEqual(["profile_photo"]);
   });
 });

@@ -41,20 +41,19 @@ export async function restoreAccountIfDeletionPending(
   return true;
 }
 
-/** Enregistre le jeton push de l'appareil (FCM) — la livraison des offres
- *  et notifications passe par lui (spike doc 11 : Realtime ≠ arrière-plan). */
+/** Le serveur rattache le jeton Expo à une seule session propriétaire. */
 export async function registerDevice(
   client: TekoClient,
   userId: string,
   pushToken: string,
+  platform: "android" | "ios" = "android",
 ): Promise<void> {
   unwrap(
-    await client.from("devices").upsert(
-      { user_id: userId, push_token: pushToken, platform: "android" },
-      {
-        onConflict: "user_id,push_token",
-      },
-    ),
+    await client.rpc("register_push_device", {
+      p_user: userId,
+      p_token: pushToken,
+      p_platform: platform,
+    }),
   );
 }
 

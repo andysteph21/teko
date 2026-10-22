@@ -1,0 +1,16 @@
+# PIN fourni depuis l'écran passager du banc, jamais récupéré via le chauffeur.
+appId: ga.teko.driver.alpha
+---
+- assertVisible: "BANC USB · GPS FICTIF À LIBREVILLE"
+- tapOn:
+    id: "ride-request-pin"
+    waitToSettleTimeoutMs: 0
+- tapOn:
+    id: "pin"
+    waitToSettleTimeoutMs: 0
+- inputText: "${PIN}"
+- extendedWaitUntil:
+    visible:
+      id: "ride-complete"
+    timeout: 20000
+- takeScreenshot: driver-started

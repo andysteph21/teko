@@ -7,8 +7,11 @@ import { admin, json } from "../_shared/db.ts";
 import type { Db } from "../_shared/db_types.ts";
 import { applyOutcome, type PaymentRow } from "../_shared/payments/apply.ts";
 import { getProvider } from "../_shared/payments/index.ts";
+import { paymentGate } from "../_shared/payment-gate.ts";
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  const rejected = await paymentGate(req);
+  if (rejected) return rejected;
   try {
     // Client complet pour la requête de liste ; surface Db pour les transitions.
     const full = admin();

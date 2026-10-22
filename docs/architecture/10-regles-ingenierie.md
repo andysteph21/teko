@@ -62,6 +62,15 @@ Limites connues et assumées : pas de règle `max-depth` (couverte indirectement
 
 ## 4. État & données (apps mobiles)
 
+**Amendement alpha du 18 octobre 2026, confirmé par le porteur :** conserver
+l’historique en cache et les positions GPS temporairement ; commandes et
+annulations exigent une confirmation serveur, sans rejeu tardif automatique.
+La file de mutations décrite ci-dessous ne doit donc pas être appliquée à ces
+deux actions pour l’alpha. Les choix de délai, rétention locale, déduplication
+et traitement d’une réponse réseau perdue seront soumis au porteur avant
+implémentation. Voir les [décisions produit](../product/05-questions-ouvertes.md)
+et le [plan alpha](../plan/08-plan-alpha.md).
+
 Architecture en **trois couches, un propriétaire par domaine d'état** — issue de l'évaluation du guide [Expo local-first](https://docs.expo.dev/guides/local-first/) (qui ne recommande rien et met en garde : outils « à leurs débuts ») comparé à Zustand :
 
 1. **TanStack Query v5** — tout l'état serveur (courses, tarifs, historique, profil) **plus les actions différées hors-ligne** (commander/annuler, noter, éditer le profil) : mutations en pause (`networkMode`), `PersistQueryClientProvider` + `resumePausedMutations()`, `scope: { id }` pour l'ordre FIFO. **Obligatoire :** `queryClient.setMutationDefaults()` enregistré au niveau client (sans lui, les mutations reprises ne font *silencieusement rien*), `buster` par release, politique explicite pour les actions de plus de 24 h (`maxAge`). `onlineManager` branché sur NetInfo, `focusManager` sur AppState.
@@ -122,3 +131,73 @@ Signalements et questions techniques transverses : datés, jamais supprimés, cl
 ---
 
 *Sources des vérifications (25 août 2026) : registre npm (zustand, @tanstack/react-query, @biomejs/biome, @legendapp/state, tinybase), biomejs.dev (changelog, règles, domaines), docs.expo.dev (local-first, sqlite, using-eslint), tanstack.com (network-mode, persistQueryClient, react-native), turborepo.dev (boundaries, guide Biome), dépôts GitHub des bibliothèques (issues citées).*
+
+## Compléments d’ingénierie alpha — 18 octobre 2026
+
+Ces décisions remplacent, pour l’alpha, les propositions antérieures de
+mutations TanStack différées automatiquement : aucune commande de course,
+annulation ou disponibilité ne doit se rejouer tardivement sans confirmation.
+L’historique est un cache local par compte ; seule la file de mesures GPS
+conserve des éléments à envoyer (24 h maximum, heure d’origine préservée).
+
+Le service de localisation Android est au premier plan, avec notification
+permanente. Il utilise la permission de localisation au premier plan ; ne pas
+ajouter de permission de localisation permanente sans besoin démontré. Les
+mesures sont persistées avant les requêtes réseau ; une réponse ancienne ne
+doit pas écraser un changement de disponibilité plus récent.
+
+Les APK USB sont signés par une clé alpha dédiée hors Git et utilisent des
+identifiants distincts. Le GPS fictif exige le drapeau de build explicite et
+l’URL exacte du banc local ; il affiche un bandeau visible. Les APK terrain
+n’activent pas ce drapeau et doivent être validés avec GPS réel à Libreville.
+Le temps Android `am start -W` ne suffit pas à mesurer l’interactivité React
+Native : compléter par le parcours visible, mémoire et fluidité sur l’OPPO.
+
+### Décision du 19 octobre 2026 — compilateur de la console
+
+Le porteur conserve Turbopack pour l’alpha et demande de poursuivre le
+diagnostic du refus de port interne. Le build Webpack réussi constitue une
+preuve de diagnostic, pas un changement de compilateur dans les scripts ou
+la CI. La validation attendue reste un build de production Turbopack réussi.
+
+### Investigation du 19 octobre — tâches GPS en arrière-plan
+
+L’envoi après panne API attend le retour au premier plan sur le Pixel ;
+les livraisons natives et la persistance locale continuent. Le problème est
+reproduit avec deux coupures distinctes. L’enregistrement headless de
+`expo-task-manager` 57.0.13 termine sa Promise immédiatement, alors que le
+service natif gère une terminaison après les événements GPS. Un candidat
+laissant cette Promise en attente est vérifié isolément ; un patch local
+versionné a été proposé puis autorisé dans la décision ci-dessous.
+Aucune dérogation au critère GPS n’est accordée. Voir A20 dans
+l’[audit alpha](../plan/09-audit-alpha.md).
+
+### Décision du 19 octobre — correctif Expo Task Manager
+
+Le porteur autorise le patch local versionné de `expo-task-manager` 57.0.13.
+La Promise de maintien de la tâche Android attend désormais sa terminaison
+native après les événements GPS, au lieu de se résoudre immédiatement.
+Le patch pnpm couvre le source TypeScript et le JavaScript livré ; une
+réinstallation avec lockfile doit le réappliquer. Le contrat JS et l’ancienne
+faute sont testés par `tools/audit/check-task-lifetime.mjs`. La validation
+physique de la reprise en arrière-plan et écran éteint reste distincte.
+
+Le patch est réappliqué et son hash vérifié après une réinstallation locale
+avec lockfile gelé. À la mise à jour d’Expo, refaire le test du contrat et les
+essais GPS ; retirer le patch seulement lorsque la version de remplacement
+passe ces mêmes contrôles. Les preuves physiques identifient l’APK signé et
+restent distinctes de la réussite d’un test en environnement JavaScript.
+
+### Résultats locaux du 19 octobre
+
+Le build de production **Turbopack** réussit sans changement de compilateur
+(`admin-receipt-step-build.log`) ; l’ancien refus de port n’est plus reproduit,
+sans cause initiale confirmée. Le contrat Expo passe après réinstallation
+avec lockfile gelé, et la reprise GPS sans retour au premier plan est observée
+sur Pixel puis sur OPPO écran éteint après une panne de passerelle.
+
+L’OPPO a aussi révélé que la fermeture du clavier au démontage du champ était
+trop tardive : le hook le ferme maintenant avant d’appliquer le statut de
+course. Le nouvel ordre est testé et le parcours signé réussit sur OPPO.
+Les SHA et les limites exactes des deux builds GPS sont dans l’audit A20/A21 ;
+la validation terrain et l’endurance sur batterie restent à réaliser.

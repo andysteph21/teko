@@ -64,7 +64,7 @@ export default function Splash() {
         <Text style={styles.markText}>T</Text>
       </View>
       <Text style={styles.brand}>Teko Chauffeur</Text>
-      <Text style={styles.slogan}>Vos gains, réglés chaque jour</Text>
+      <Text style={styles.slogan}>Vos courses, votre solde suivi</Text>
       <ActivityIndicator color={color.neutral[0]} style={styles.spinner} />
     </View>
   );

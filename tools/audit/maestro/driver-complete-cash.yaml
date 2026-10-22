@@ -1,0 +1,21 @@
+# Reprendre après les mesures GPS écran éteint / hors réseau et leur inspection.
+appId: ga.teko.driver.alpha
+---
+- assertVisible: "BANC USB · GPS FICTIF À LIBREVILLE"
+- tapOn:
+    id: "ride-complete"
+    waitToSettleTimeoutMs: 0
+- extendedWaitUntil:
+    visible:
+      id: "collect-amount"
+    timeout: 20000
+- assertVisible:
+    id: "new-balance"
+- takeScreenshot: driver-cash-receipt
+- tapOn:
+    id: "ride-cash-done"
+    waitToSettleTimeoutMs: 0
+- extendedWaitUntil:
+    visible:
+      id: "online-toggle"
+    timeout: 20000

@@ -2,63 +2,37 @@
 // + avatar flottants, widget data (bas-gauche, au-dessus de la feuille),
 // feuille « Où allez-vous ? » : recherche de repère, récents, planifier.
 
-import type { LonLat } from "@teko/maps";
 import { color, spacing, typography } from "@teko/ui";
 import {
   BellIcon,
   BottomPanel,
-  CalendarIcon,
   DataWidget,
   EcoPill,
   LandmarkPinIcon,
   LandmarkRow,
   RecentIcon,
 } from "@teko/ui/native";
-import * as Location from "expo-location";
 import { type Href, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { DEFAULT_CENTER, TILES_URL, withinGabon } from "../../src/config";
+import { DEFAULT_CENTER, TILES_URL } from "../../src/config";
 import { useProfile } from "../../src/features/auth/use-profile";
-import { useBookingStore } from "../../src/features/booking/store";
 import { useDataUsage, useResolvedMapMode } from "../../src/features/data/data-state";
 import { ClientDot } from "../../src/features/map/client-dot";
 import { TekoMapView } from "../../src/features/map/native-map";
+import { useHomePosition } from "../../src/features/places/use-home-position";
 import { useRecentDestinations } from "../../src/features/places/use-recent-destinations";
 
 export default function Home() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [position, setPosition] = useState<LonLat | null>(null);
+  const position = useHomePosition();
   const mode = useResolvedMapMode();
   const usage = useDataUsage();
   const profile = useProfile();
   const recents = useRecentDestinations();
-  const setOrigin = useBookingStore((s) => s.setOrigin);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      const { status } = await Location.getForegroundPermissionsAsync();
-      if (status !== "granted") return;
-      const loc = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      }).catch(() => null);
-      if (loc && !cancelled) {
-        const raw = { lon: loc.coords.longitude, lat: loc.coords.latitude };
-        // Hors emprise Gabon (dev, voyageur) : recadrage Libreville.
-        const p = withinGabon(raw) ? raw : DEFAULT_CENTER;
-        setPosition(p);
-        setOrigin({ position: p, label: "Ma position" });
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [setOrigin]);
 
   const initial = (profile.data?.full_name ?? "•").trim().charAt(0).toUpperCase();
 
@@ -84,7 +58,10 @@ export default function Home() {
         />
       </View>
 
-      <BottomPanel title={t("booking:home.ouAllezVous")} style={styles.panel}>
+      <BottomPanel
+        title={t("booking:home.ouAllezVous")}
+        style={{ ...styles.panel, paddingBottom: insets.bottom + spacing[5] }}
+      >
         <Pressable
           style={styles.search}
           onPress={() => router.push("/(main)/search" as Href)}
@@ -103,13 +80,6 @@ export default function Home() {
             onPress={() => router.push("/(main)/search" as Href)}
           />
         ))}
-        <LandmarkRow
-          title={t("booking:home.planifier")}
-          subtitle={t("booking:home.planifierSous")}
-          icon={<CalendarIcon />}
-          iconBackground={color.neutral[100]}
-          onPress={() => router.push("/(main)/schedule" as Href)}
-        />
       </BottomPanel>
     </View>
   );

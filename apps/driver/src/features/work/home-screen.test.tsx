@@ -1,3 +1,11 @@
+const mockRegisterPush = jest.fn(async (..._args: unknown[]) => "ready");
+jest.mock("../../lib/push-registration", () => ({
+  registerPush: (...args: unknown[]) => mockRegisterPush(...args),
+}));
+jest.mock("../../lib/location-service", () => ({
+  configureDriverLocation: jest.fn(async () => undefined),
+}));
+
 // D-09 : solde du jour + toggle hors ligne/en ligne (heartbeat), permission
 // localisation demandée au premier passage en ligne (bandeau si refus/GPS
 // muet), modal d'offre D-10 (accepter → navigation course), état suspendu.
@@ -15,6 +23,7 @@ const mockRespondOffer = jest.fn();
 const mockSubscribeNotifications = jest.fn();
 jest.mock("@teko/api-client", () => ({
   driverHeartbeat: (...args: unknown[]) => mockHeartbeat(...args),
+  driverOffline: jest.fn(async () => undefined),
   getMyDriver: (...args: unknown[]) => mockGetMyDriver(...args),
   driverBalance: (...args: unknown[]) => mockDriverBalance(...args),
   listPendingOffers: (...args: unknown[]) => mockListPendingOffers(...args),
@@ -106,6 +115,7 @@ const OFFER = {
 
 type NotifCb = (n: { type: string; payload: unknown }) => void;
 let notifCb: NotifCb | undefined;
+let readyCb: (() => void) | undefined;
 
 beforeAll(async () => {
   const { createTekoI18n } = require("@teko/i18n");
@@ -115,8 +125,10 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
+  mockRegisterPush.mockResolvedValue("ready");
   jest.clearAllMocks();
   notifCb = undefined;
+  readyCb = undefined;
   useWorkStore.setState({ online: false, toast: null, locationIssue: null, devicePosition: null });
   mockGetPermissions.mockResolvedValue({ status: "granted", canAskAgain: true });
   mockRequestPermissions.mockResolvedValue({ status: "granted", canAskAgain: true });
@@ -125,11 +137,17 @@ beforeEach(() => {
   mockGetMyDriver.mockResolvedValue({ id: "drv-1", is_active: true, kyc_status: "validated" });
   mockDriverBalance.mockResolvedValue(12_500);
   mockListPendingOffers.mockResolvedValue([]);
-  mockSubscribeNotifications.mockImplementation((_c: unknown, _u: string, cb: NotifCb) => {
-    notifCb = cb;
-    return async () => {};
+  mockSubscribeNotifications.mockImplementation(
+    (_c: unknown, _u: string, cb: NotifCb, ready: () => void) => {
+      notifCb = cb;
+      readyCb = ready;
+      return async () => {};
+    },
+  );
+  mockOfferDetails.mockResolvedValue({
+    ...OFFER,
+    expiresAt: new Date(Date.now() + 12000).toISOString(),
   });
-  mockOfferDetails.mockResolvedValue({ ...OFFER });
   mockFetchRoute.mockResolvedValue({ coordinates: [], distanceM: 1200, durationS: 240 });
 });
 
@@ -232,25 +250,36 @@ describe("D-09 Permission localisation", () => {
     expect(openSettings).toHaveBeenCalled();
   });
 
-  it("permission accordée mais GPS muet : en ligne avec bandeau « Position introuvable »", async () => {
+  it("permission accordée mais GPS muet : reste hors ligne avec bandeau « Position introuvable »", async () => {
     mockGetPosition.mockRejectedValue(new Error("gps off"));
     const user = userEvent.setup();
     render(<DriverHome />);
 
     await user.press(await screen.findByTestId("online-toggle"));
 
-    expect(await screen.findByText("En ligne")).toBeOnTheScreen();
     expect(await screen.findByTestId("location-banner")).toBeOnTheScreen();
+    expect(screen.getByText("Hors ligne")).toBeOnTheScreen();
     expect(screen.getByText("Position introuvable")).toBeOnTheScreen();
     expect(mockHeartbeat).not.toHaveBeenCalled();
 
-    await user.press(screen.getByTestId("online-toggle"));
-    await waitFor(() => expect(screen.queryByTestId("location-banner")).toBeNull());
     expect(screen.getByText("Hors ligne")).toBeOnTheScreen();
   });
 });
 
 describe("D-10 Demande de course", () => {
+  it("rattrape une offre arrivée entre la lecture initiale et l'ouverture du canal", async () => {
+    const user = userEvent.setup();
+    render(<DriverHome />);
+    await user.press(await screen.findByTestId("online-toggle"));
+    await waitFor(() => expect(mockSubscribeNotifications).toHaveBeenCalled());
+    expect(screen.queryByTestId("offer-modal")).toBeNull();
+    mockListPendingOffers.mockResolvedValue([
+      { id: "off-1", expires_at: new Date(Date.now() + 12000).toISOString() },
+    ]);
+    act(() => readyCb?.());
+    expect(await screen.findByTestId("offer-modal")).toBeOnTheScreen();
+    expect(mockRespondOffer).not.toHaveBeenCalled();
+  });
   it("notification ride_offer → modal avec le net en grand, accepter → course", async () => {
     mockRespondOffer.mockResolvedValue({ id: "ride-9", status: "accepted" });
     const user = userEvent.setup();
@@ -291,4 +320,14 @@ describe("D-10 Demande de course", () => {
     );
     expect(mockReplace).not.toHaveBeenCalled();
   });
+});
+
+it("le refus des notifications empêche la présence serveur du chauffeur", async () => {
+  mockRegisterPush.mockResolvedValue("denied");
+  render(<DriverHome />);
+  const user = userEvent.setup();
+  await screen.findByTestId("online-toggle");
+  await user.press(screen.getByTestId("online-toggle"));
+  await waitFor(() => expect(mockRegisterPush).toHaveBeenCalled());
+  expect(mockHeartbeat).not.toHaveBeenCalled();
 });

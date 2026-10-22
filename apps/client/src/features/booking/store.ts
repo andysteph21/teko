@@ -2,6 +2,7 @@
 // §4) : la vérité des prix et de la course vit côté backend. Plusieurs
 // petits stores, sélecteurs via useShallow dans les écrans.
 
+import { quoteRoute, type RideQuote } from "@teko/api-client";
 import type { LonLat, RouteResult } from "@teko/maps";
 import type { PaymentMethod, VehicleCategory } from "@teko/types";
 import { create } from "zustand";
@@ -30,6 +31,7 @@ export interface BookingState {
   scheduledAt: string | null;
   route: RouteResult | null;
   estimates: Partial<Record<VehicleCategory, number>>;
+  quotes: Partial<Record<VehicleCategory, RideQuote>>;
   meeting: MeetingPick | null;
 
   setOrigin: (origin: PlacePick | null) => void;
@@ -43,6 +45,7 @@ export interface BookingState {
     estimates: Partial<Record<VehicleCategory, number>>,
   ) => void;
   setMeeting: (meeting: MeetingPick | null) => void;
+  setQuotes: (quotes: Partial<Record<VehicleCategory, RideQuote>>) => void;
   reset: () => void;
 }
 
@@ -54,20 +57,27 @@ const INITIAL = {
   scheduledAt: null,
   route: null,
   estimates: {},
+  quotes: {},
   meeting: null,
 };
 
 export const useBookingStore = create<BookingState>((set) => ({
   ...INITIAL,
-  setOrigin: (origin) => set({ origin }),
-  setDestination: (destination) => set({ destination, route: null, estimates: {}, meeting: null }),
+  setOrigin: (origin) => set({ origin, route: null, estimates: {}, quotes: {}, meeting: null }),
+  setDestination: (destination) =>
+    set({ destination, route: null, estimates: {}, quotes: {}, meeting: null }),
   setDestinationHint: (hint) =>
     set((s) => (s.destination ? { destination: { ...s.destination, hint } } : {})),
-  setCategory: (category) => set({ category }),
+  setCategory: (category) =>
+    set((s) => ({
+      category,
+      ...(s.quotes[category] ? { route: quoteRoute(s.quotes[category]) } : {}),
+    })),
   setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
   setScheduledAt: (scheduledAt) => set({ scheduledAt }),
   setRouteAndEstimates: (route, estimates) => set({ route, estimates }),
   setMeeting: (meeting) => set({ meeting }),
+  setQuotes: (quotes) => set({ quotes }),
   reset: () => set(INITIAL),
 }));
 

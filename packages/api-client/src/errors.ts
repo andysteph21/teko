@@ -10,9 +10,11 @@ export type TekoApiErrorCode =
   | "offer_already_handled"
   | "offer_expired"
   | "pin_incorrect"
+  | "pin_blocked"
   | "ride_in_progress"
   | "role_change_forbidden"
   | "network"
+  | "quote_expired"
   | "unknown";
 
 export class TekoApiError extends Error {
@@ -28,6 +30,7 @@ export class TekoApiError extends Error {
 
 /** [détecteur sur message normalisé, code stable] — ordre = priorité. */
 const MESSAGE_RULES: [string, TekoApiErrorCode][] = [
+  ["devis expiré", "quote_expired"],
   ["réservé au superadmin", "superadmin_only"],
   ["réservé aux participants", "participants_only"],
   ["aucune offre active", "no_active_offer"],

@@ -24,7 +24,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.120.0
 
       # Démarre la stack locale (Docker) ET applique toutes les migrations
       # de supabase/migrations sur une base neuve. Échoue si une migration casse.
@@ -33,7 +33,7 @@ jobs:
 
       # Analyse statique du schéma (best practices, erreurs potentielles).
       - name: Lint base de données
-        run: supabase db lint --level warning
+        run: supabase db lint --schema public --schema private --level warning
 
       # Exécute les tests pgTAP de supabase/tests/database.
       - name: Tests pgTAP

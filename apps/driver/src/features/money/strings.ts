@@ -31,11 +31,11 @@ export const moneyFr = {
     sousTitre: "Journée du {{jour}} · clôture à 04 h 00",
     crediteur: "Teko vous doit",
     crediteurTexte:
-      "Le versement sur votre numéro Airtel Money est automatique à la clôture de 04 h 00.",
+      "À 04 h 00, un versement manuel est préparé. Finance confirme le versement après vérification du justificatif.",
     debiteur: "Vous devez à Teko",
     suspendu: "Compte suspendu",
     suspenduTexte:
-      "Réglez votre solde pour recevoir de nouvelles courses — la réactivation est immédiate après le règlement.",
+      "Réglez votre solde auprès de Teko. Finance vérifie le justificatif avant la réactivation.",
     urgenceCloture: "Urgence — clôture dans",
     cloture: "Clôture dans",
     regler: "Régler par Airtel Money",

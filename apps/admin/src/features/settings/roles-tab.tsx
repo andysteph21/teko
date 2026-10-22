@@ -18,6 +18,16 @@ const ROLES = ["ops", "carto", "finance", "superadmin"] as const;
 
 const MATRIX: Capacity[] = [
   {
+    label: "Inviter un passager ou un chauffeur à l’alpha",
+    sub: "Numéro vérifié, contrôle serveur",
+    grants: ["yes", "no", "no", "yes"],
+  },
+  {
+    label: "Préparer un règlement avec justificatif",
+    sub: "Sans effet sur le grand livre avant validation Finance",
+    grants: ["yes", "no", "yes", "yes"],
+  },
+  {
     label: "Tableau de bord temps réel",
     sub: "A-02 · lecture",
     grants: ["yes", "yes", "yes", "yes"],
@@ -48,8 +58,8 @@ const MATRIX: Capacity[] = [
     grants: ["no", "no", "yes", "yes"],
   },
   {
-    label: "Règlement manuel & réconciliation Airtel",
-    sub: "A-05 · écrit au grand livre via RPC",
+    label: "Valider ou refuser un règlement manuel",
+    sub: "A-05 · preuve et encaissement vérifiés avant crédit",
     grants: ["no", "no", "yes", "yes"],
   },
   {

@@ -28,7 +28,8 @@ describe("moteur de solde", () => {
 
   it("après une course cash, driver_balance = -commission", async () => {
     const ride = await completeCashRide(nadia, boris);
-    due = Number(ride.price_final) * 0.15;
+    expect(Number(ride.price_final)).toBe(1600);
+    due = 250; // 15 % = 240 bruts, arrondis au multiple de 25.
     const { data, error } = await boris.client.rpc("driver_balance", {
       p_driver: boris.id,
     });

@@ -1,6 +1,7 @@
 // C-10 : garde brouillon → accueil, cartes de catégories à prix ferme,
 // sélection catégorie/paiement, CTA vers C-11, réseau KO → C-29.
 
+import { TekoApiError } from "@teko/api-client";
 import { render, screen, userEvent } from "@testing-library/react-native";
 
 const mockPush = jest.fn();
@@ -99,12 +100,34 @@ describe("C-10 Catégorie", () => {
 
   it("réseau KO → écran hors-ligne C-29, Réessayer relance l'estimation", async () => {
     const refetch = jest.fn();
-    mockEstimatesQuery.mockReturnValue({ isPending: false, error: new Error("réseau"), refetch });
+    mockEstimatesQuery.mockReturnValue({
+      isPending: false,
+      error: new TekoApiError("network", "réseau"),
+      refetch,
+    });
     const user = userEvent.setup();
     render(<Category />);
 
     expect(screen.getByText("Pas de connexion")).toBeOnTheScreen();
     await user.press(screen.getByTestId("offline-retry"));
     expect(refetch).toHaveBeenCalled();
+  });
+
+  it("une panne du service ne prétend pas que le téléphone est hors réseau", async () => {
+    const refetch = jest.fn();
+    mockEstimatesQuery.mockReturnValue({
+      isPending: false,
+      error: new Error("service indisponible"),
+      refetch,
+    });
+    const user = userEvent.setup();
+    render(<Category />);
+    expect(screen.getByText("Tarifs temporairement indisponibles")).toBeOnTheScreen();
+    expect(screen.queryByText("Pas de connexion")).toBeNull();
+    expect(screen.queryByTestId("order-cta")).toBeNull();
+    expect(refetch).not.toHaveBeenCalled();
+    await user.press(screen.getByTestId("quote-retry"));
+    expect(refetch).toHaveBeenCalledTimes(1);
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

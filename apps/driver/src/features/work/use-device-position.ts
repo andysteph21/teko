@@ -1,12 +1,7 @@
-// Position GPS de l'appareil — hors emprise Gabon (dev, voyageur) : recadrage
-// Libreville (lancement mono-ville). Partagée par la carte D-09, le heartbeat
-// et l'envoi de positions en course. La permission Android est demandée au
-// moment où elle devient nécessaire : le passage en ligne (use-online-toggle).
-
 import type { LonLat } from "@teko/maps";
 import * as Location from "expo-location";
 import { useEffect } from "react";
-import { DEFAULT_CENTER, withinGabon } from "../../config";
+import { devicePoint } from "../../config";
 import { useWorkStore } from "./store";
 
 /** `blocked` : refus définitif Android — seule issue, les réglages du téléphone. */
@@ -31,7 +26,7 @@ export async function fetchDevicePosition(): Promise<LonLat | null> {
   }).catch(() => null);
   if (!loc) return null;
   const raw = { lon: loc.coords.longitude, lat: loc.coords.latitude };
-  return withinGabon(raw) ? raw : DEFAULT_CENTER;
+  return devicePoint(raw);
 }
 
 /** Position partagée (store) : lue une fois au montage pour centrer la carte,

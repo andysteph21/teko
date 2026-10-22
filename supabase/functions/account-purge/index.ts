@@ -7,13 +7,12 @@
 
 import { admin, json } from "../_shared/db.ts";
 import { purgeAuthAccounts } from "../_shared/purge/handler.ts";
+import { authorizeWebhook } from "../_shared/webhook-auth.ts";
 
 Deno.serve(async (req) => {
   try {
-    const secret = Deno.env.get("PURGE_TRIGGER_SECRET") ?? "";
-    if (secret && req.headers.get("x-teko-purge-secret") !== secret) {
-      return json({ error: "secret invalide" }, 401);
-    }
+    const rejected = await authorizeWebhook(req, Deno.env.get("PURGE_TRIGGER_SECRET"), "x-teko-purge-secret");
+    if (rejected) return rejected;
 
     const db = admin();
     const result = await purgeAuthAccounts({

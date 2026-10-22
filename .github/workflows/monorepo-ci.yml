@@ -15,6 +15,11 @@ on:
       - "package.json"
       - "pnpm-workspace.yaml"
       - "pnpm-lock.yaml"
+      - "patches/**"
+      - "tools/audit/check-links.mjs"
+      - "tools/audit/check-pickup-ui.mjs"
+      - "tools/audit/check-estimates-ui.mjs"
+      - "tools/audit/check-task-lifetime.mjs"
       - ".github/workflows/monorepo-ci.yml"
   pull_request:
     paths:
@@ -25,6 +30,11 @@ on:
       - "package.json"
       - "pnpm-workspace.yaml"
       - "pnpm-lock.yaml"
+      - "patches/**"
+      - "tools/audit/check-links.mjs"
+      - "tools/audit/check-pickup-ui.mjs"
+      - "tools/audit/check-estimates-ui.mjs"
+      - "tools/audit/check-task-lifetime.mjs"
       - ".github/workflows/monorepo-ci.yml"
 
 jobs:
@@ -47,5 +57,44 @@ jobs:
       - name: Lint (Biome)
         run: pnpm exec biome ci .
 
-      - name: Typecheck, tests (gates de couverture), builds
-        run: pnpm exec turbo run typecheck test build
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Tests et gates de couverture
+        run: pnpm test
+
+      - name: Liens malformés Expo Router
+        run: node tools/audit/check-links.mjs
+
+      - name: Vérifier que le test détecte une commande avant confirmation du prix
+        run: |
+          node tools/audit/check-pickup-ui.mjs prepare
+          if pnpm --filter @teko/app-client exec jest --runInBand meeting-screen.test.tsx --testNamePattern 'confirme le repère suggéré' --config ../../.local/alpha-evidence/pickup-ui-mutation/jest.config.json --json --outputFile ../../.local/alpha-evidence/pickup-ui-mutation/jest-result.json > .local/alpha-evidence/pickup-ui-mutation-run.log 2>&1; then
+            echo 'La faute injectée aurait dû faire échouer le test.' >&2
+            exit 1
+          fi
+          node tools/audit/check-pickup-ui.mjs verify
+
+      - name: Vérifier l'absence de relance des devis à la reconnexion
+        run: node tools/audit/check-estimates-ui.mjs
+
+      - name: Cycle de tâche GPS et faute de terminaison prématurée
+        run: node tools/audit/check-task-lifetime.mjs
+
+      - name: Builds séquentiels
+        run: pnpm build
+
+      - name: Archiver la preuve du test mordant
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pickup-ui-mutation
+          include-hidden-files: true
+          path: |
+            .local/alpha-evidence/pickup-ui-mutation/*.json
+            .local/alpha-evidence/pickup-ui-mutation/*.log
+            .local/alpha-evidence/pickup-ui-mutation-run.log
+            .local/alpha-evidence/estimates-ui-mutation/*.json
+            .local/alpha-evidence/estimates-ui-mutation/*.log
+            .local/alpha-evidence/task-lifetime/*.json
+          if-no-files-found: ignore

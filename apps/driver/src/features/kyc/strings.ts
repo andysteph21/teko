@@ -4,9 +4,9 @@
 export const kycFr = {
   onboarding: {
     passer: "Passer",
-    slide1Titre: "Vos gains, réglés chaque jour",
+    slide1Titre: "Vos courses, votre solde suivi",
     slide1Texte:
-      "Encaissez en espèces ou par Airtel Money. Le solde se règle automatiquement chaque nuit avant 04 h 00.",
+      "Encaissez vos courses en espèces. Les règlements et versements sont confirmés par Finance après vérification du justificatif.",
     slide2Titre: "Guidé par les repères",
     slide2Texte:
       "Les passagers indiquent un repère connu — pharmacie, école, carrefour. L'app vous y mène.",
@@ -17,7 +17,7 @@ export const kycFr = {
     demoSolde: "Votre solde du jour",
     demoCourses: "8 courses",
     demoCommission: "Commission Teko",
-    demoVersement: "Versé par Airtel Money",
+    demoVersement: "Versement après validation Finance",
   },
   phone: {
     titre: "Votre numéro",

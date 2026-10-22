@@ -2,7 +2,21 @@
 
 Plateforme de transport à la demande conçue pour le Gabon (MVP ride-hailing, ambition super-app). Ce README est la carte du projet — chaque dossier a sa documentation propre.
 
-**État au 25 août 2026 (soir) :** backend livré et testé · conception UX des 3 interfaces terminée (79 maquettes, sources dans [docs/design/maquettes/](docs/design/maquettes/)) · **réponses client 26/26, les 6 bloquantes levées** ([suivi](docs/plan/04-suivi-client.md)) · stack **Supabase + Expo confirmée** ([07-evaluation-stack.md](docs/architecture/07-evaluation-stack.md)) · **56 tests pgTAP + 52 tests e2e** en CI ([supabase/tests/e2e/](supabase/tests/e2e/README.md)) · **carte complète et animée** : `packages/maps`, langage figé dans [08-carte-langage.md](docs/design/08-carte-langage.md) · **règles d'ingénierie actées** ([10-regles-ingenierie.md](docs/architecture/10-regles-ingenierie.md) : Biome, nommage anglais, Zustand + TanStack Query + expo-sqlite, paliers de couverture, 3 appareils adb) · **LOT 1 LIVRÉ — jalon M1 atteint** : 6 packages du socle (115 tests, 100 % lignes) + 3 apps scaffoldées ([apps/](apps/)) qui **démarrent et lisent des données réelles** (console admin vérifiée au navigateur ; app client vérifiée sur OPPO A15 physique : OTP de test → repères Libreville + estimation) · CI racine `monorepo-ci` · prochaine étape : **spikes MapLibre RN + Realtime, puis lot 3 (app client)**.
+**Cap alpha confirmé le 18 octobre 2026 :** alpha fermée à Libreville, environ
+20 chauffeurs, courses immédiates et cash uniquement. Le
+[plan alpha](docs/plan/08-plan-alpha.md) précise les travaux de documentation,
+audit de sécurité, tests mordants et validation avant les premières courses
+réelles. L’implémentation et la validation sont en cours ; ce dépôt ne constitue
+pas encore un feu vert pour les courses réelles.
+
+**Architecture constatée le 18 octobre 2026 :** trois applications implémentées,
+passager et chauffeur sous Expo/React Native, console sous Next.js. Les fonctions
+PostgreSQL portent les transitions de course, le tarif et le grand livre ; les
+Edge Functions gèrent les intégrations réseau. Martin fournit les tuiles et
+Valhalla les itinéraires. `packages/api-client` porte les contrats d’accès ; les
+types de base sont générés. Les comptes rendus d’août et septembre restent dans
+les documents de lots ; leurs anciens nombres de tests ne décrivent pas les
+vérifications actuelles.
 
 ## Structure du projet
 
@@ -21,8 +35,8 @@ teko/
 │  │                    # 02-backlog.md · 03-estimation-couts-ti.md · 04-suivi-client.md
 │  │                    # 05-reference-taxido.md · 06-demarrage-apps.md (POINT D'ENTRÉE apps)
 │  └─ integrations/     # Évaluations Airtel Money & Moov Money
-├─ supabase/            # Backend livré : 21 migrations (~24 tables, ~40 RPC),
-│                       # Edge Functions Airtel, 56 tests pgTAP + 52 e2e, seed Libreville
+├─ supabase/            # Migrations, RPC PostgreSQL, Edge Functions et tests réels
+│                       # Seed Libreville pour développement, à ne pas déployer tel quel
 ├─ envoi-client/        # Paquet client du 18 août : docx remplissable, 3 vidéos MP4,
 │                       # PDF coûts (client + INTERNE), README avec checklist d'envoi
 ├─ assets/icons/        # Icônes officielles (client anneau+T, chauffeur anneau+T+voiture)

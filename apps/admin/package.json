@@ -7,7 +7,7 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start",
-    "test": "vitest run",
+    "test": "vitest run --maxWorkers=2",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
@@ -20,7 +20,7 @@
     "@teko/types": "workspace:*",
     "@teko/ui": "workspace:*",
     "maplibre-gl": "catalog:",
-    "next": "^16.3.2",
+    "next": "16.3.8",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "zustand": "catalog:"

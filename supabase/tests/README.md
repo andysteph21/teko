@@ -1,114 +1,215 @@
-# Tests de la base de données Teko — catalogue & intentions
+# Tests du backend alpha
 
-Documentation de chaque test automatisé : **ce qu'il vérifie** et **pourquoi il existe**.
-Deux suites : **pgTAP** (56 tests, exécution réelle sur Postgres) et **Deno** (4 tests, logique paiement).
+Les tests vérifient des invariants métier et des frontières d’autorisation.
+Un simple succès HTTP ne suffit pas : les scénarios contrôlent les lignes
+réellement créées, les montants, l’absence de fuite et l’unicité des effets.
 
-## Comment exécuter
-```bash
-# depuis la RACINE du projet (bug CLI si lancé depuis supabase/)
-supabase db reset      # applique migrations + seed
-supabase test db       # 56 tests pgTAP
-deno test supabase/functions   # 4 tests unitaires (logique paiement)
+## Trois niveaux complémentaires
+
+- `database/` : pgTAP, calculs SQL et RLS sous rôles simulés ; ne prouve pas
+  l’authentification d’une session réelle ni les politiques Storage HTTP.
+- `e2e/` : Auth, PostgREST, RPC, Realtime, Storage et fonctions HTTP avec de
+  vrais JWT. Les préconditions privilégiées restent séparées des actions
+  attaquées. Les suites refusent une base autre que le banc jetable alpha.
+- `../functions/` : tests Deno des intégrations et refus par défaut. Les
+  fournisseurs externes simulés ne démontrent pas une livraison SMS/FCM réelle.
+
+## Exécuter sur une installation neuve
+
+Depuis la racine du dépôt, avec Docker disponible :
+
+```sh
+node tools/audit/prepare-bench.mjs
+supabase start --workdir /tmp/teko-alpha-bench --exclude studio,postgres-meta,logflare,vector,supavisor
+supabase functions serve --workdir /tmp/teko-alpha-bench --env-file /tmp/teko-alpha-functions.env
 ```
 
-## Philosophie
-- La **logique métier sensible** (solde, clôture, tarif, cycle de vie, repères) vit dans des fonctions Postgres : on la teste donc **au plus près de la vérité**, en exécution réelle (pas seulement en syntaxe).
-- Chaque test tourne dans une **transaction annulée** (`rollback`) : aucune donnée résiduelle.
-- Les fixtures emploient des **noms dédiés** (préfixe `ZZ`) pour rester robustes au `seed`.
-- Conventions pgTAP : `throws_ok(sql, errcode, NULL, desc)` (on vérifie le **SQLSTATE**, pas le texte) ; l'identité (`auth.uid()`) est simulée via `request.jwt.claims`.
+La dernière commande reste ouverte. Dans un autre terminal :
 
----
+Pour les essais longs sur téléphones, on peut remplacer ce serveur de premier
+plan par `node tools/audit/serve-bench.mjs start`, puis vérifier sa disponibilité
+avec `node tools/audit/run-bench.mjs node /home/steph/Teko/tools/audit/wait-functions.mjs`.
+Le runtime reste indépendant du terminal ; `status` affiche son état et `stop`
+demande uniquement l’arrêt du processus enregistré, après contrôle de son
+identité et de son heure de création. Arrêter le serveur de premier plan avant
+ce lancement ; ne pas démarrer deux runtimes simultanés. Le mode push se change
+serveur arrêté, avant un nouveau `start`.
 
-## `00_schema.test.sql` — structure & invariants (15 tests)
+```sh
+supabase test db --workdir /tmp/teko-alpha-bench
+node tools/audit/run-bench.mjs
+node tools/audit/check-mutations.mjs
+```
 
-| # | Vérifie | Pourquoi |
-|---|---|---|
-| 1‑8 | Présence des tables `profiles`, `drivers`, `rides`, `payments`, `ledger`, `landmarks`, `road_segments`, `daily_statements` | Détecter immédiatement une migration cassée/oubliée : ce sont les tables structurantes du MVP. |
-| 9 | Colonne `ledger.amount_signed` | C'est la colonne pivot du modèle financier (montant signé) ; sa disparition casserait le solde. |
-| 10 | Colonne `rides.origin_landmark_id` | Garantit que l'**adressage par point de repère** est bien inscrit dans le schéma. |
-| 11‑12 | `business_day('03:59')` = J‑1 et `business_day('04:00')` = J (Africa/Libreville) | La **coupure de 4 h** conditionne tout le solde journalier ; une erreur rattacherait les transactions au mauvais jour. |
-| 13‑14 | `UPDATE`/`DELETE` sur `ledger` rejetés (P0001) | **Intégrité financière** : le grand livre est append‑only, on ne réécrit jamais un solde. |
-| 15 | Un non‑admin ne peut pas changer de rôle (P0001) | **Anti‑escalade de privilèges** (la garde de rôle fonctionne). |
+Installer au préalable les dépendances de `e2e/` avec son lockfile. Le harnais
+charge les clés locales sans les afficher ; ne pas copier la sortie de
+`supabase status -o env` dans les journaux publics. Les secrets du bac à sable
+sont créés aléatoirement dans `/tmp/teko-alpha-functions.env`, droits 0600,
+et conservés hors Git dans `.local/alpha-services/bench-functions.env` pour
+survivre à un redémarrage. La préparation réutilise cette copie si `/tmp` a
+été vidé ; ne jamais l'inclure dans les artefacts de CI.
 
-## `01_rls.test.sql` — isolation (Row Level Security) (6 tests)
+Après un redémarrage du poste, les conteneurs peuvent être actifs alors que
+`/tmp/teko-alpha-bench` a disparu. Exécuter d’abord
+`node tools/audit/prepare-bench.mjs` pour recréer la configuration et les
+copies de sources, puis `node tools/audit/serve-bench.mjs status`.
+Cette préparation ne réinitialise aucune base. Ne pas utiliser `db reset`
+pour réparer l’absence de ce dossier. Vérifier aussi `adb devices -l` :
+un serveur ADB disponible ne signifie pas que les téléphones sont connectés.
 
-| # | Vérifie | Pourquoi |
-|---|---|---|
-| 1 | Le client A voit sa propre course | Un utilisateur doit accéder à ses données. |
-| 2 | Seuls les repères **validés** sont visibles | Les propositions non validées ne doivent pas fuiter (modération). |
-| 3 | Un client ne lit **aucune** écriture du `ledger` | Cloisonnement financier (données chauffeur/Teko). |
-| 4 | A ne peut pas créer une course **au nom de B** (42501) | Empêcher l'usurpation d'identité (politique `WITH CHECK`). |
-| 5 | Le client B ne voit pas la course de A | Isolation stricte entre clients. |
-| 6 | Un chauffeur ne peut pas **s'auto‑activer** (P0001) | L'activation/KYC reste une prérogative admin/service, pas du chauffeur. |
+Le devis HTTP utilise Valhalla local sur le port 8002. La CI démarre
+`tools/audit/route-fixture.mjs` pour vérifier le contrat HTTP sans télécharger
+un extrait cartographique. Cette fixture ne remplace pas les essais du vrai
+moteur de routage et de la couverture terrain.
 
-## `02_balance.test.sql` — moteur de solde (6 tests)
+Pour rejouer les migrations depuis zéro, `supabase db reset --local --workdir
+/tmp/teko-alpha-bench --yes` détruit **uniquement le banc jetable**. Vérifier le
+chemin et le projet avant usage ; ne jamais appliquer cette commande à `teko`
+ou à un environnement hébergé.
 
-Reproduit l'exemple chiffré des règles métier avec **commission 15 %**.
+## Invariants critiques couverts
 
-| # | Vérifie | Pourquoi |
-|---|---|---|
-| 1 | `commission_amount(2000)` = 300 | Le calcul de commission (15 %) est correct. |
-| 2 | Course **cash** 2000 → solde −300 | Le cash crée une **dette** (commission due) ; signe négatif correct. |
-| 3 | Course **mobile** 3000 → solde +2250 | Le paiement mobile crédite le chauffeur de `P − commission` ; le solde cumule. |
-| 4‑5 | Cash 1500 puis 5000 → +2025 puis +1275 | La séquence cumulative (`balance_after`) reste exacte au fil des écritures. |
-| 6 | `driver_balance` = 1275 | Le **solde courant** est cohérent avec la somme du journal. |
+| Règle | Suites principales |
+|---|---|
+| Pas de changement de rôle, KYC, solde ou transition directe par un usager | `security-rls`, `security-alpha`, `kyc-boundaries` |
+| Devis propriétaire, expiration et consommation concurrente unique | `quotes`, `alpha-invitations` |
+| Départ GPS conservé, déplacement soumis à un nouveau devis nominatif | `pickup-quote` |
+| PIN passager seul, cinq erreurs puis blocage persistant | `security-alpha`, `pin-attempts` |
+| Recherche bornée et attribution exclusive | `dispatch`, `ride-lifecycle` |
+| Frais non encaissés sans crédit, preuve obligatoire, Finance seul valide | `manual-receipts`, `cash-close` |
+| Refus motivé et chaîne de versions, une seule validation concurrente | `manual-revisions` |
+| Sept pièces réelles et vérification physique avant activation | `compte-sos`, `kyc-boundaries` |
+| Véhicule verrouillé après KYC et nouvelle vérification Ops | `vehicle-review` |
+| Points GPS légitimes, heure réelle, doublons et rétention sept jours | `security-alpha`, `gps-retention` |
+| Secrets webhook absents des lectures et de l’historique | `security-webhooks`, tests Deno |
 
-## `03_daily_close.test.sql` — clôture journalière (7 tests)
+Les noms ci-dessus désignent les fichiers `.test.ts`. Les totaux évoluent :
+consulter la sortie du dernier passage complet, pas un nombre figé dans une
+introduction historique.
 
-| # | Vérifie | Pourquoi |
-|---|---|---|
-| 1 | `daily_close()` traite 2 chauffeurs | La clôture parcourt bien les comptes ayant de l'activité. |
-| 2‑3 | Chauffeur A (solde −1000) **désactivé**, motif `overdue_balance` | Sanction automatique d'un solde négatif à l'échéance + traçabilité du motif. |
-| 4‑5 | Relevé de A = `overdue`, `closing` = −1000 | Le relevé journalier reflète exactement la situation. |
-| 6 | Un **payout** de 2000 est enqueué pour B (solde +) | Teko doit reverser le solde positif au chauffeur. |
-| 7 | Relevé de B = `paid_out` | Statut de relevé correct côté créance. |
+## Tests mordants et restauration
 
-## `04_rides.test.sql` — tarification & cycle de vie (9 tests)
+Exécuter les mutations **sans autre suite backend en parallèle**. Le harnais
+injecte une faute à la fois dans `supabase_db_teko-alpha-audit`, exige une
+assertion échouée et restaure la garde dans un `finally`. Une panne de réseau
+ou d’outil ne vaut pas détection d’une faute.
+Les journaux et résultats sont conservés dans
+`.local/alpha-evidence/mutations`, hors Git. Les sauvegardes brutes et secrets
+ne font pas partie des preuves à transmettre à la revue indépendante.
 
-| # | Vérifie | Pourquoi |
-|---|---|---|
-| 1 | `estimate_price('eco',5km,10min)` = 2000 | Tarification déterministe à partir du barème (estimation GPS). |
-| 2 | `request_ride` → statut `requested` | Création de course par le client. |
-| 3 | Code **PIN à 4 chiffres** généré | Sécurité d'appariement (le client devra le communiquer). |
-| 4 | `accept_ride` → `accepted` | Prise en charge par un chauffeur **autorisé** (KYC validé, actif, catégorie desservie). |
-| 5 | `mark_arrived` → `arrived` | Transition d'état contrôlée (chauffeur assigné). |
-| 6 | **PIN erroné rejeté** (P0001) | On ne démarre pas sans le bon code (anti‑erreur / anti‑fraude). |
-| 7 | PIN correct → `started` | Démarrage légitime de la course. |
-| 8 | `complete_ride` → `completed` | Clôture de course. |
-| 9 | Course cash → solde chauffeur −300 | L'**effet financier** de fin de course (commission) est bien posté au journal. |
+Le contrôle UI `tools/audit/check-pickup-ui.mjs` prépare une copie fautive du
+hook : elle commande dès réception du nouveau devis. Jest charge uniquement
+cette copie via une configuration dédiée ; la source applicative reste
+inchangée. Le mode `verify` exige l'échec précis de l'assertion d'absence de
+commande, puis supprime la copie. Le workflow `monorepo-ci.yml` contient les
+trois commandes de reproduction et archive leur preuve. Une erreur d'import
+ou un délai dépassé ne compte pas comme faute détectée.
 
-## `05_landmarks_notifications.test.sql` — repères & notifications (6 tests)
+`tools/audit/check-restore.mjs` sauvegarde SQL et fichiers privés, restaure le
+SQL dans une base distincte du conteneur alpha, compare les comptages et une
+ACL critique, extrait les fichiers puis compare leurs SHA-256. Les tâches
+planifiées sont capturées sans les démarrer dans la copie. Cela ne prouve pas
+encore le redéploiement complet des services sur un nouvel hôte.
 
-| # | Vérifie | Pourquoi |
-|---|---|---|
-| 1 | `suggest_meeting_landmark` renvoie le repère proche | Proposer un **point de rendez‑vous** pertinent (réduit les malentendus de localisation). |
-| 2 | `reverse_geocode_landmark` → « près de \<repère\> » | **Adressage par repère** (pas d'adresse fiable au Gabon). |
-| 3 | `nearest_landmarks` classe par saillance puis distance | Choisir le **bon repère** pour le guidage. |
-| 4 | `propose_landmark` crée une proposition (`proposed`) | Contribution collaborative (chauffeurs/clients). |
-| 5 | `validate_landmark_proposal` (admin) publie le repère | **Validation admin** obligatoire avant exploitation. |
-| 6 | `enqueue_notification` crée une notification | La file de notifications fonctionne. |
+Les scénarios sur APK signé, les pertes réseau et la localisation écran éteint
+sur OPPO/Pixel complètent ces suites. Ils restent indispensables avant terrain,
+ainsi que la revue indépendante et les procédures Finance/SOS.
 
-## `06_commission.test.sql` — commission réservée au superadmin (7 tests)
+Pour reprendre une stack alpha déjà démarrée sans reset, avec aucun runtime
+Edge alpha actif : `bash tools/audit/validate-bench.sh`. Le script exige les
+fournisseurs simulés, démarre son propre runtime de fonctions, vérifie le
+refus anonyme, régénère les types et exécute pgTAP, JWT/HTTP puis les mutations
+séquentiellement. Il arrête uniquement le processus de fonctions qu'il a
+lancé ; les bases et les autres projets restent présents. Les journaux
+restent dans `.local/alpha-evidence`. Il ne remplace pas un runtime Expo
+déjà utilisé pour les essais sur téléphones.
 
-| # | Vérifie | Pourquoi |
-|---|---|---|
-| 1 | `is_superadmin()` = false pour un admin **finance** | Distinguer le plus haut droit des sous‑rôles admin courants. |
-| 2 | `set_commission` refusée à l'admin finance (42501) | La commission engage directement les revenus : **réservée au superadmin** (RPC). |
-| 3 | Écriture directe sur `app_config.commission` refusée à un non‑superadmin (42501) | La **garde** protège aussi le contournement par écriture table directe, pas seulement la RPC. |
-| 4 | `is_superadmin()` = true pour le superadmin | Le plus haut droit est bien reconnu. |
-| 5 | `set_commission('percent',12)` accepté pour le superadmin | Le superadmin **peut** paramétrer la commission. |
-| 6 | `get_commission()` reflète la nouvelle valeur | L'écran admin relit la valeur effective. |
-| 7 | Taux > 100 % rejeté (22023) | **Garde‑fou de saisie** (bornes de validité). |
+Après arrêt du runtime que l'on a lancé, `node tools/audit/set-push-mode.mjs
+mock` prépare les validations automatisées ; `node tools/audit/set-push-mode.mjs
+expo` prépare les livraisons réelles sur les appareils USB. Redémarrer les
+fonctions avec le fichier d'environnement du banc après chaque changement.
+Le mode Expo exige son jeton serveur et désactive le drapeau de simulation
+push. Les secrets restent persistés hors Git, droits 0600.
 
----
+## Reprise des parcours USB sur deux téléphones
 
-## Tests Deno — logique de paiement (`supabase/functions/_shared/payments/payments_test.ts`, 4 tests)
+Les fragments `tools/audit/maestro/` sont préparés pour le nouvel APK de
+confirmation du devis. **Ils restent à exécuter sur appareils**. Ils exigent
+le bandeau GPS fictif du banc et utilisent des captures à chemins relatifs,
+pour éviter l'échec d'archivage observé avec un chemin absolu.
 
-| Test | Vérifie | Pourquoi |
-|---|---|---|
-| `resolveOutcome mappe les statuts` | success→confirm, failed→fail, pending/ambiguous→retry | Règle d'aiguillage centrale : décide quand muter le solde, **sans jamais doubler un paiement** (les cas incertains attendent la réconciliation). |
-| `MockProvider.collect …` | Le statut simulé dépend du `partnerTxnId` | Permet des scénarios déterministes (succès/échec/attente) sans dépendre d'Airtel. |
-| `MockProvider.disburse et enquire` | Cohérence des trois opérations | Garantir un comportement homogène collect/disburse/enquire. |
-| `MockProvider.verifyCallback` | Parsing du corps de callback (valide/invalide) | Base de la confirmation asynchrone côté `airtel-callback`. |
+1. Reconstruire et vérifier les APK séquentiellement, relever leurs SHA-256,
+   puis rétablir les reverses USB et les fonctions du banc. Ne pas réinitialiser
+   la base pour reprendre la course précédente.
+2. Sur une nouvelle course dédiée, choisir une suggestion réellement différente
+   du départ. Lancer `driver-accept-arrive.yaml` en attente sur le téléphone
+   chauffeur, puis `client-confirm-pickup.yaml` sur le passager.
+3. Lire le PIN sur le seul écran passager ; le fournir au fragment
+   `driver-start.yaml` avec l'option Maestro `-e PIN=…`. Un essai de mauvais
+   code doit utiliser une valeur différente de ce PIN, sans supposer que
+   `0000` est toujours incorrect.
+4. Avant la clôture, mesurer les points serveur écran éteint, puis une coupure
+   réseau et la reprise de la file GPS. Relever les heures originales,
+   doublons éventuels et consommation mémoire de l'OPPO. Ne pas supprimer
+   les protections batterie pour transformer un échec en succès.
+5. Exécuter `driver-complete-cash.yaml` ; rapprocher le reçu du devis, du
+   grand livre, de la commission de 15 % et du solde. Les seules assertions
+   d'écran ne prouvent pas ces effets financiers.
 
-> Les Edge Functions réelles (Airtel) ne sont pas testables sans identifiants/déploiement ; on teste donc la **logique pure** (aiguillage, idempotence, parsing) via le fournisseur simulé. L'intégration end‑to‑end se fera en sandbox Airtel.
+L'ancien `apps/client/e2e/course-complete.yaml` ne prouve qu'une commande
+jusqu'à la recherche de chauffeur ; il ne valide pas cette séquence complète.
+## Reprise ciblée d’un assemblage Android interrompu
+
+Après un bundle JavaScript **réussi** pour le même état des sources et la
+même configuration USB, l’assemblage peut être repris avec
+`node tools/audit/run-bench.mjs node /home/steph/Teko/tools/audit/build-alpha.mjs driver --js-only --assemble-only`.
+Ce mode exige un projet natif alpha et un bundle existant. Il ne remplace pas
+la reconstruction forcée du bundle après modification des dépendances ou de
+la configuration ; ne pas l’utiliser pour déclarer un ancien bundle à jour.
+Pour séparer les étapes longues, `--js-only --bundle-only` reconstruit seulement
+le bundle ; après succès, `--js-only --assemble-only` assemble l’APK. Le contrôle
+`verify-alpha-apk.mjs` compare aussi le bundle incorporé et les sources des
+correctifs clés au dernier bundle produit, en plus de la signature et des secrets.
+
+Le scénario physique de déplacement du départ dispose d’un repère synthétique
+à proximité du GPS USB, préparé uniquement sur le banc isolé par
+`node tools/audit/run-bench.mjs node /home/steph/Teko/tools/audit/prepare-pickup-fixture.mjs`.
+Son nom affiche « banc USB » ; il ne constitue pas un relevé terrain.
+
+### Correctif GPS Expo et règlements au pas de 25 (19 octobre)
+
+`pnpm install --frozen-lockfile` réapplique le patch versionné de
+`expo-task-manager` 57.0.13. `node tools/audit/check-task-lifetime.mjs` teste
+l’enregistrement réellement installé et injecte l’ancienne terminaison
+prématurée dans une copie en mémoire. Ce contrat JS ne remplace pas les essais
+Android en arrière-plan, avec panne puis écran éteint. La provenance APK
+contrôle aussi le module JavaScript Expo incorporé dans le bundle.
+
+`receipt-cash-step.test.ts` passe par JWT Ops/Finance et Storage : les nouveaux
+montants hors pas de 25 sont refusés **avant** leur conversion à deux décimales,
+les révisions conservent l’historique et un ancien dossier reste approuvable à
+son montant exact. Le harnais de mutations retire cette garde puis introduit
+un arrondi préalable ; chacune de ces fautes doit provoquer une assertion.
+
+Pour isoler le GPS du parcours passager déjà testé, `device-ride.mjs` permet
+les seules actions `create`, `status` et `pin <id>` sur le compte passager
+synthétique du banc. Le devis HTTP et la commande utilisent son vrai JWT ;
+l’acceptation, l’arrivée et le démarrage restent effectués dans l’APK chauffeur.
+`create` refuse de dupliquer une course active. `pin` n’utilise jamais le rôle
+chauffeur ni le rôle de service pour lire le code. Exécuter ces actions avec
+`run-bench.mjs`, après lancement des attentes Maestro du téléphone concerné.
+Aucun SMS payant ni course terrain n’est lancé par ce banc.
+
+Le flow `maestro/driver-accept-start.yaml` réunit acceptation, arrivée et
+ouverture du champ PIN. Après la ligne « id: ride-complete is visible » en
+attente, saisir le code lu par le seul passager avec `adb -s <téléphone> shell
+input text <code>` ; ne pas démarrer un second UIAutomator sur le même
+téléphone. Ce flow ne ferme pas le clavier : sa fermeture doit venir de l’app.
+
+Pour le test de panne, retirer uniquement `adb reverse` ne suffit pas : des
+connexions existantes peuvent survivre. Au banc, arrêter puis redémarrer le
+seul conteneur `supabase_kong_teko-alpha-audit`, conserver la DB disponible
+pour les contrôles, et ne pas ramener l’app au premier plan avant constat de
+reprise. Contrôler aussi les heures de mesure distinctes, les identifiants
+d’échantillon et le maintien de l’écran éteint pour l’essai OPPO. Les fichiers
+de preuve datés et les limites de ces scénarios sont dans l’audit alpha.

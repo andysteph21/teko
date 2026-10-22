@@ -26,7 +26,11 @@ export function BalanceCard({ balance }: { balance: number | null }) {
           {owed ? "+" : ""}
           {formatXaf(balance, "FCFA")}
         </Text>
-        <Text style={styles.cardHint}>{t("work:accueil.reglementAuto")}</Text>
+        <Text style={styles.cardHint}>
+          {owed
+            ? t("work:accueil.reglementAuto")
+            : "Règlement manuel à faire valider par Finance avant 04 h 00"}
+        </Text>
       </View>
       <Pressable
         style={styles.details}

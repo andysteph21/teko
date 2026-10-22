@@ -6,12 +6,12 @@ import { messageForType, mockProvider } from "./index.ts";
 Deno.test("messageForType : l'offre chauffeur est urgente et éphémère", () => {
   const m = messageForType("ride_offer", {});
   assertEquals(m.title, "Nouvelle course à proximité");
-  assertEquals(m.ttl, "15s");
+  assertEquals(m.ttl, "12s");
 });
 
-Deno.test("messageForType : rappel de règlement avec montant", () => {
+Deno.test("messageForType : aucun montant sur l’écran verrouillé", () => {
   const m = messageForType("settlement_reminder", { amount: 3000 });
-  assertEquals(m.body.includes("3000 F"), true);
+  assertEquals(m.body.includes("3000"), false);
 });
 
 Deno.test("messageForType : type inconnu → libellé générique", () => {

@@ -53,7 +53,10 @@ const releve = (surcharges: Record<string, unknown> = {}) => ({
 
 function renderScreen(ui: ReactElement) {
   const qc = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: Number.POSITIVE_INFINITY } },
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, gcTime: Infinity },
+    },
   });
   return render(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>);
 }

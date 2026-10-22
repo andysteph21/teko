@@ -72,8 +72,8 @@ describe("cycle de vie d'une course cash", () => {
     });
     expect(error).toBeNull();
     expect(Number(data.price_est)).toBe(priceEst);
-    expect(Number(data.commission)).toBe(priceEst * 0.15);
-    expect(Number(data.net_driver)).toBe(priceEst * 0.85);
+    expect(Number(data.commission)).toBe(250); // 240 bruts → 250 au pas de 25
+    expect(Number(data.net_driver)).toBe(1350); // prix 1600 moins commission 250
     expect(Object.keys(data).join(",")).not.toMatch(/dest/);
   });
 
@@ -109,15 +109,18 @@ describe("cycle de vie d'une course cash", () => {
     expect(r.error).toBeNull();
     expect(r.data.status).toBe("arrived");
 
-    r = await boris.client.rpc("start_ride", { p_ride: rideId, p_pin: "0000" });
-    expect(r.error).not.toBeNull();
+    const correctPin = await ridePin(rideId);
+    const wrongPin = correctPin === "0000" ? "0001" : "0000";
+    r = await boris.client.rpc("start_ride_checked", { p_ride: rideId, p_pin: wrongPin });
+    expect(r.error).toBeNull();
+    expect(r.data.error).toBe("pin_incorrect");
 
-    r = await boris.client.rpc("start_ride", {
+    r = await boris.client.rpc("start_ride_checked", {
       p_ride: rideId,
-      p_pin: await ridePin(rideId),
+      p_pin: correctPin,
     });
     expect(r.error).toBeNull();
-    expect(r.data.status).toBe("started");
+    expect(r.data.ride.status).toBe("started");
   });
 
   it("complete_ride clôture la course et poste la commission au ledger (cash)", async () => {
@@ -134,7 +137,7 @@ describe("cycle de vie d'une course cash", () => {
     );
     expect(ledger.rows).toHaveLength(1);
     expect(ledger.rows[0].kind).toBe("commission_due");
-    expect(Number(ledger.rows[0].amount_signed)).toBe(-priceEst * 0.15);
+    expect(Number(ledger.rows[0].amount_signed)).toBe(-250);
   });
 
   it("ride_events journalise la séquence complète, dans l'ordre", async () => {
@@ -184,9 +187,12 @@ describe("annulation et frais (E-03 comblé)", () => {
     expect(fee.rows).toHaveLength(0);
   });
 
-  it("annulation client après acceptation : max(300 F, 20 %) dû, 70 % crédités au chauffeur", async () => {
+  it("annulation après acceptation : 325 F dus, part chauffeur en attente", async () => {
     const ride = await requestRide(nadia.client);
     await boris.client.rpc("accept_ride", { p_ride: ride.id });
+    const announced = await nadia.client.rpc("estimate_cancellation_fee", { p_ride: ride.id });
+    expect(announced.error).toBeNull();
+    expect(Number(announced.data)).toBe(325);
     const { error } = await nadia.client.rpc("cancel_ride", { p_ride: ride.id });
     expect(error).toBeNull();
 
@@ -194,29 +200,38 @@ describe("annulation et frais (E-03 comblé)", () => {
       `select amount_signed from public.ledger where ride_id = $1 and kind = 'cancellation'`,
       [ride.id],
     );
-    // Frais dû par le client : max(300, 20 % × 1600) = 320 XAF ; part chauffeur
-    // 70 % (décision client n° 5) : round(320 × 0,7) = 224 au grand livre.
-    expect(fee.rows).toHaveLength(1);
-    expect(Number(fee.rows[0].amount_signed)).toBe(224);
+    expect(fee.rows).toHaveLength(0);
+    const claim = await serviceSql("select amount,driver_share,status from public.cancellation_claims where ride_id=$1", [ride.id]);
+    expect(claim.rows).toHaveLength(1);
+    expect(Number(claim.rows[0].amount)).toBe(325);
+    expect(Number(claim.rows[0].driver_share)).toBe(225);
+    expect(claim.rows[0].status).toBe("pending");
 
     const notif = await serviceSql(
       `select payload->>'fee' as fee from public.notifications where user_id = $1 and type = 'cancellation_fee' and (payload->>'ride_id') = $2`,
       [nadia.id, ride.id],
     );
     expect(notif.rows).toHaveLength(1);
-    expect(Number(notif.rows[0].fee)).toBe(320); // le client doit le frais entier
+    expect(Number(notif.rows[0].fee)).toBe(325); // le client doit le frais entier
 
     const event = await serviceSql(
       `select meta->>'fee' as fee, meta->>'driver_share' as share from public.ride_events where ride_id = $1 and type = 'cancelled'`,
       [ride.id],
     );
-    expect(Number(event.rows[0].fee)).toBe(320);
-    expect(Number(event.rows[0].share)).toBe(224);
+    expect(Number(event.rows[0].fee)).toBe(325);
+    expect(Number(event.rows[0].share)).toBe(225);
   });
 
-  it("no_show déclaré par le chauffeur : frais dédié (1 000 F, config), 70 % au chauffeur", async () => {
+  it("no_show exige arrivée et cinq minutes avant de créer la créance", async () => {
     const ride = await requestRide(nadia.client);
     await boris.client.rpc("accept_ride", { p_ride: ride.id });
+    const early = await boris.client.rpc("cancel_ride", { p_ride: ride.id, p_status: "no_show" });
+    expect(early.error?.code).toBe("22023");
+    const arrival = await boris.client.rpc("mark_arrived", { p_ride: ride.id });
+    expect(arrival.error).toBeNull();
+    const waiting = await boris.client.rpc("cancel_ride", { p_ride: ride.id, p_status: "no_show" });
+    expect(waiting.error?.code).toBe("22023");
+    await serviceSql("update public.rides set arrived_at=now()-interval '301 seconds' where id=$1", [ride.id]);
     const { data, error } = await boris.client.rpc("cancel_ride", {
       p_ride: ride.id,
       p_status: "no_show",
@@ -227,7 +242,10 @@ describe("annulation et frais (E-03 comblé)", () => {
       `select amount_signed from public.ledger where ride_id = $1 and kind = 'cancellation'`,
       [ride.id],
     );
-    expect(fee.rows).toHaveLength(1);
-    expect(Number(fee.rows[0].amount_signed)).toBe(700);
+    expect(fee.rows).toHaveLength(0);
+    const claim = await serviceSql("select amount,driver_share,status from public.cancellation_claims where ride_id=$1", [ride.id]);
+    expect(Number(claim.rows[0].amount)).toBe(1000);
+    expect(Number(claim.rows[0].driver_share)).toBe(700);
+    expect(claim.rows[0].status).toBe("pending");
   });
 });

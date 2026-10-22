@@ -1,0 +1,23 @@
+# Précondition : écran de rencontre, suggestion située ailleurs que le départ.
+# Banc synthétique uniquement ; à exécuter après reconstruction du nouvel APK.
+appId: ga.teko.client.alpha
+---
+- assertVisible: "BANC USB · GPS FICTIF À LIBREVILLE"
+- tapOn:
+    id: "meeting-confirm"
+    waitToSettleTimeoutMs: 0
+- extendedWaitUntil:
+    visible:
+      id: "pickup-new-price"
+    timeout: 20000
+- assertNotVisible:
+    id: "cancel-ride"
+- takeScreenshot: pickup-new-price
+- tapOn:
+    id: "pickup-price-confirm"
+    waitToSettleTimeoutMs: 0
+- extendedWaitUntil:
+    visible:
+      id: "driver-card"
+    timeout: 30000
+- takeScreenshot: passenger-driver-assigned

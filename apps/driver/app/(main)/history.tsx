@@ -7,8 +7,7 @@
 // D-09), pas de prénom du passager ni de note donnée (pas de jointure
 // profil côté RLS), montants bruts au lieu du net (TODO backend).
 
-import { type UseQueryResult, useQuery } from "@tanstack/react-query";
-import { listMyRides } from "@teko/api-client";
+import type { UseQueryResult } from "@tanstack/react-query";
 import type { RideRow } from "@teko/types";
 import { color, spacing, typography } from "@teko/ui";
 import { Button } from "@teko/ui/native";
@@ -28,7 +27,7 @@ import {
   groupRidesByDay,
   matchesFilter,
 } from "../../src/features/account/ride-display";
-import { supabase } from "../../src/lib/supabase";
+import { useRideHistory } from "../../src/lib/use-ride-history";
 
 const FILTER_LABEL_KEYS: Record<DriverRideFilter, string> = {
   toutes: "account:historique.filtreToutes",
@@ -80,7 +79,7 @@ export default function History() {
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<DriverRideFilter>("toutes");
   const [now] = useState(() => new Date());
-  const query = useQuery({ queryKey: ["my-rides"], queryFn: () => listMyRides(supabase, 50) });
+  const query = useRideHistory();
 
   const sections = useMemo(
     () =>

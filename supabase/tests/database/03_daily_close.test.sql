@@ -43,14 +43,14 @@ select is( (select closing from public.daily_statements
              where driver_id='aaaa1111-aaaa-1111-aaaa-111111111111'),
            -1000::numeric, 'Solde de clôture A = -1000' );
 
--- B : payout enqueué + relevé paid_out
-select is( (select count(*) from public.payments
+-- B : versement manuel en attente, jamais payé avant preuve + validation.
+select is( (select count(*) from public.payout_requests
              where driver_id='bbbb2222-bbbb-2222-bbbb-222222222222'
-               and kind='payout' and amount=2000)::int,
-           1, 'Un payout de 2000 est enqueué pour B' );
+               and status='pending' and amount=2000)::int,
+           1, 'Un versement manuel de 2000 est préparé pour B' );
 select is( (select status::text from public.daily_statements
              where driver_id='bbbb2222-bbbb-2222-bbbb-222222222222'),
-           'paid_out', 'Relevé B = paid_out' );
+           'open', 'Relevé B reste ouvert avant validation du versement' );
 
 select * from finish();
 rollback;

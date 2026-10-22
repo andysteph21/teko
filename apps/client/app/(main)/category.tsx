@@ -7,15 +7,15 @@ import { color, spacing, typography } from "@teko/ui";
 import { BottomPanel, Button, DataWidget, PanelTitle } from "@teko/ui/native";
 import { type Href, Redirect, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useShallow } from "zustand/react/shallow";
-import { OfflineScreen } from "../../src/components/offline-screen";
 import { TILES_URL } from "../../src/config";
 import { BackChip } from "../../src/features/booking/back-chip";
 import { LandmarkMarker, RouteOverlay } from "../../src/features/booking/booking-map-layers";
 import { CategoryList, SkeletonRows } from "../../src/features/booking/category-cards";
 import { PaymentSelector } from "../../src/features/booking/payment-selector";
+import { QuoteErrorScreen } from "../../src/features/booking/quote-error-screen";
 import { useBookingStore } from "../../src/features/booking/store";
 import { useEstimates } from "../../src/features/booking/use-estimates";
 import { useDataUsage, useResolvedMapMode } from "../../src/features/data/data-state";
@@ -46,7 +46,12 @@ export default function Category() {
     return <Redirect href={"/(main)/home" as Href} />;
   }
   if (estimatesQuery.error) {
-    return <OfflineScreen onRetry={() => void estimatesQuery.refetch()} />;
+    return (
+      <QuoteErrorScreen
+        error={estimatesQuery.error}
+        onRetry={() => void estimatesQuery.refetch()}
+      />
+    );
   }
 
   const minutes = draft.route ? Math.max(1, Math.round(draft.route.durationS / 60)) : 0;
@@ -101,14 +106,6 @@ export default function Category() {
           disabled={loading || price == null}
           testID="order-cta"
         />
-        <Pressable
-          onPress={() => router.push("/(main)/schedule" as Href)}
-          accessibilityRole="button"
-          style={styles.later}
-          testID="schedule-later"
-        >
-          <Text style={styles.laterText}>{t("booking:categorie.planifierPlusTard")}</Text>
-        </Pressable>
       </BottomPanel>
     </View>
   );

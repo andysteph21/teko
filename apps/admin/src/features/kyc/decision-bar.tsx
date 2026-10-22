@@ -17,14 +17,16 @@ interface DecisionBarProps {
   driverId: string;
   docs: DocumentRow[];
   adminRole: string | null;
+  physicallyVerified: boolean;
 }
 
 function blockedReason(props: DecisionBarProps, canDecide: boolean): string | null {
   if (!canDecide) return "Réservé aux admins ops (ou superadmin).";
   const missing = pendingRequiredTypes(props.docs);
-  if (missing.length === 0) return null;
+  if (missing.length === 0)
+    return props.physicallyVerified ? null : "Enregistrer d’abord la vérification physique.";
   const labels = missing.map((type) => DOC_TYPE_LABELS[type]).join(", ");
-  return `Valider d'abord les 6 pièces requises — ${missing.length > 1 ? "restantes" : "restante"} : ${labels}.`;
+  return `Valider d'abord les 7 pièces requises — ${missing.length > 1 ? "restantes" : "restante"} : ${labels}.`;
 }
 
 export function DecisionBar(props: DecisionBarProps) {

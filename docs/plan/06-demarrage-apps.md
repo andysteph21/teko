@@ -2,6 +2,14 @@
 
 **Date :** 25 août 2026 · **Public :** l'agent/l'équipe qui attaque le développement des applications. Ce document est le **point d'entrée unique** : il dit ce qui est décidé, où se trouve chaque source d'autorité, et dans quel ordre travailler. Tout le reste du dépôt est en appui.
 
+**Actualisation du 18 octobre 2026 :** pour préparer l’alpha fermée, suivre le
+[plan alpha](08-plan-alpha.md) et les décisions qui y sont référencées.
+L’ordre des lots ci-dessous décrit le développement initial ; les priorités
+actuelles sont la réconciliation documentaire, l’audit, les corrections et
+leurs preuves avant ouverture. L’alpha retient les courses immédiates et le
+cash uniquement, sans rejeu automatique des commandes ou annulations hors
+réseau. Ces cibles restent à implémenter et à valider.
+
 Les trois portails à construire :
 
 | Portail | Forme | Maquettes | Spécification de parcours (copies locales : [docs/design/parcours/](../design/parcours/)) |

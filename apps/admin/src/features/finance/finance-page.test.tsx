@@ -85,6 +85,10 @@ vi.mock("@teko/api-client", () => ({
   listStatements: vi.fn().mockResolvedValue(fixtures.statements),
   listPayments: vi.fn().mockResolvedValue(fixtures.payments),
   runDailyClose: vi.fn().mockResolvedValue(3),
+  listManualReceipts: vi.fn().mockResolvedValue([]),
+  listCancellationClaims: vi.fn().mockResolvedValue([]),
+  listPayoutRequests: vi.fn().mockResolvedValue([]),
+  listProfiles: vi.fn().mockResolvedValue([]),
 }));
 
 import { listPayments, listStatements } from "@teko/api-client";

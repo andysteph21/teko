@@ -12,6 +12,9 @@ update public.app_config set value = '{"type":"percent","value":15}'::jsonb wher
 insert into auth.users (instance_id, id, aud, role, email) values
   ('00000000-0000-0000-0000-000000000000','cccc0000-cccc-0000-cccc-000000000000','authenticated','authenticated','cli@test.local'),
   ('00000000-0000-0000-0000-000000000000','dddd0000-dddd-0000-dddd-000000000000','authenticated','authenticated','drv@test.local');
+update auth.users set phone='24107000101',phone_confirmed_at=now() where id='cccc0000-cccc-0000-cccc-000000000000';
+update auth.users set phone='24107000102',phone_confirmed_at=now() where id='dddd0000-dddd-0000-dddd-000000000000';
+insert into public.alpha_invites(phone,role) values('24107000101','client'),('24107000102','driver');
 insert into public.drivers (id, kyc_status, categories)
   values ('dddd0000-dddd-0000-dddd-000000000000','validated', array['eco']::public.vehicle_category[]);
 do $$
@@ -43,7 +46,8 @@ create temp table _r as
     5000, 600);
 
 select is( (select status::text from _r), 'requested', 'Course créée au statut requested' );
-select is( (select length(pin_code) from _r), 4, 'Code PIN à 4 chiffres généré' );
+create temp table _pin as select public.ride_pin((select id from _r)) as code;
+select is( (select length(code) from _pin), 4, 'Code PIN privé à 4 chiffres lisible par le passager' );
 
 -- 4-8) Déroulé par le chauffeur D
 set local "request.jwt.claims" = '{"sub":"dddd0000-dddd-0000-dddd-000000000000","role":"authenticated"}';
@@ -51,12 +55,10 @@ set local "request.jwt.claims" = '{"sub":"dddd0000-dddd-0000-dddd-000000000000",
 select is( (public.accept_ride((select id from _r))).status::text, 'accepted', 'Chauffeur accepte -> accepted' );
 select is( (public.mark_arrived((select id from _r))).status::text, 'arrived', 'Chauffeur arrivé -> arrived' );
 
-select throws_ok(
-  $$ select public.start_ride((select id from _r), '00000') $$,
-  'P0001', NULL, 'PIN incorrect rejeté' );
-
-select is( (public.start_ride((select id from _r), (select pin_code from _r))).status::text,
-           'started', 'PIN correct -> started' );
+select is(public.start_ride_checked((select id from _r), '00000')->>'error',
+          'pin_incorrect', 'PIN incorrect rejeté et échec conservé');
+select is(public.start_ride_checked((select id from _r), (select code from _pin))->'ride'->>'status',
+          'started', 'PIN correct -> started');
 select is( (public.complete_ride((select id from _r))).status::text,
            'completed', 'Course terminée -> completed' );
 

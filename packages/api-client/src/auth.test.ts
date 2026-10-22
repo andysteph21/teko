@@ -3,7 +3,10 @@ import { signInWithPhoneOtp, signOut, verifyPhoneOtp } from "./auth";
 import type { TekoClient } from "./client";
 
 function authClient(methods: Record<string, unknown>): TekoClient {
-  return { auth: methods } as unknown as TekoClient;
+  return {
+    auth: methods,
+    rpc: vi.fn().mockResolvedValue({ error: null }),
+  } as unknown as TekoClient;
 }
 
 describe("auth téléphone (OTP SMS)", () => {
@@ -43,5 +46,13 @@ describe("auth téléphone (OTP SMS)", () => {
       signOut: vi.fn().mockResolvedValue({ error: { message: "Network request failed" } }),
     });
     await expect(signOut(ko)).rejects.toMatchObject({ code: "network" });
+  });
+
+  it("signOut conserve la session si le retrait des jetons n'est pas confirmé", async () => {
+    const exit = vi.fn();
+    const client = authClient({ signOut: exit });
+    client.rpc = vi.fn().mockResolvedValue({ error: { message: "Network request failed" } });
+    await expect(signOut(client)).rejects.toMatchObject({ code: "network" });
+    expect(exit).not.toHaveBeenCalled();
   });
 });

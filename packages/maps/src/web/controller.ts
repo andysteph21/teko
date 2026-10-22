@@ -6,7 +6,7 @@
 //   const map = new TekoMapController(container, { eco: true });
 //   map.setLandmarks(fc); map.setRoute(fc); map.setClientPosition({lon, lat});
 
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import { bboxAround, type LonLat } from "../geo";
 import {
   clientPositionToGeoJson,

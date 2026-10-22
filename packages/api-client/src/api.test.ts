@@ -24,7 +24,7 @@ import {
   listMyLedger,
   listMyStatements,
 } from "./finance";
-import { listNotifications, markNotificationRead } from "./notifications";
+import { getNotification, listNotifications, markNotificationRead } from "./notifications";
 import {
   cancelRide,
   completeRide,
@@ -116,12 +116,22 @@ describe("rides", () => {
   });
 
   it("startRide transmet le PIN ; l'erreur backend devient un code stable", async () => {
-    const ok = rpcClient({ id: "r1", status: "started" });
+    const ok = rpcClient({ ride: { id: "r1", status: "started" } });
     await startRide(ok, "r1", "4729");
-    expect(lastRpcCall(ok)).toEqual(["start_ride", { p_ride: "r1", p_pin: "4729" }]);
+    expect(lastRpcCall(ok)).toEqual(["start_ride_checked", { p_ride: "r1", p_pin: "4729" }]);
 
     const ko = rpcClient(null, { message: "PIN incorrect" });
     await expect(startRide(ko, "r1", "0000")).rejects.toMatchObject({ code: "pin_incorrect" });
+  });
+
+  it("un refus de PIN retourné en résultat reste un refus et le verrouillage est explicite", async () => {
+    await expect(
+      startRide(rpcClient({ error: "pin_incorrect" }), "r1", "1111"),
+    ).rejects.toMatchObject({ code: "pin_incorrect" });
+    await expect(
+      startRide(rpcClient({ error: "pin_blocked" }), "r1", "4729"),
+    ).rejects.toMatchObject({ code: "pin_blocked" });
+    await expect(startRide(rpcClient({}), "r1", "4729")).rejects.toMatchObject({ code: "unknown" });
   });
 
   it("estimateCancellationFee : montant serveur converti en number", async () => {
@@ -269,13 +279,14 @@ describe("compte", () => {
     expect(client.update).toHaveBeenCalledWith({ full_name: "Nadia O." });
   });
 
-  it("registerDevice upsert le jeton par (user, token)", async () => {
-    const client = tableClient(null);
-    await registerDevice(client, "u1", "fcm-token-1");
-    expect(client.upsert).toHaveBeenCalledWith(
-      { user_id: "u1", push_token: "fcm-token-1", platform: "android" },
-      { onConflict: "user_id,push_token" },
-    );
+  it("registerDevice demande la liaison de session côté serveur, Android et iOS", async () => {
+    const client = rpcClient(null);
+    await registerDevice(client, "u1", "ExpoPushToken[device-123]", "ios");
+    expect(client.rpc).toHaveBeenCalledWith("register_push_device", {
+      p_user: "u1",
+      p_token: "ExpoPushToken[device-123]",
+      p_platform: "ios",
+    });
   });
 
   it("requestAccountDeletion renvoie la date de purge ; getProfile lit sous RLS", async () => {
@@ -465,5 +476,8 @@ describe("sécurité & notifications", () => {
     const rpc = rpcClient(null);
     await markNotificationRead(rpc, "n1");
     expect(lastRpcCall(rpc)).toEqual(["mark_notification_read", { p_id: "n1" }]);
+    const notification = tableClient({ id: "n1" });
+    expect(await getNotification(notification, "n1")).toEqual({ id: "n1" });
+    expect(notification.eq).toHaveBeenCalledWith("id", "n1");
   });
 });

@@ -50,7 +50,10 @@ const PROPOSALS = [
 
 function renderScreen() {
   const client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: Number.POSITIVE_INFINITY } },
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, gcTime: Infinity },
+    },
   });
   return render(
     <QueryClientProvider client={client}>

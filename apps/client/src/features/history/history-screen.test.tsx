@@ -7,6 +7,11 @@ import { screen, userEvent } from "@testing-library/react-native";
 const mockListMyRides = jest.fn();
 jest.mock("@teko/api-client", () => ({
   listMyRides: (...args: unknown[]) => mockListMyRides(...args),
+  cachedRideHistory: (client: unknown) => mockListMyRides(client, 50),
+}));
+jest.mock("../../lib/history-cache", () => ({ historyCache: {} }));
+jest.mock("../auth/use-session", () => ({
+  useSession: () => ({ session: { user: { id: "history-user" } } }),
 }));
 jest.mock("../../lib/supabase", () => ({ supabase: {} }));
 

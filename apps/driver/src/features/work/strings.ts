@@ -9,7 +9,7 @@ export const workFr = {
     horsLigne: "Hors ligne",
     tekoVousDoit: "Teko vous doit",
     vousDevez: "Vous devez à Teko",
-    reglementAuto: "Règlement automatique cette nuit avant 04 h 00",
+    reglementAuto: "Versement après vérification du justificatif par Finance",
     details: "Détails",
     suspenduTitre: "Compte suspendu",
     suspenduTexte:

@@ -9,7 +9,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run --coverage"
+    "test": "vitest run --maxWorkers=2 --coverage"
   },
   "devDependencies": {
     "@teko/config": "workspace:*",

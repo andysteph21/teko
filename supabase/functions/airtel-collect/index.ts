@@ -4,5 +4,6 @@
 import { admin } from "../_shared/db.ts";
 import type { Db } from "../_shared/db_types.ts";
 import { handleCollect } from "./handler.ts";
+import { paymentGate } from "../_shared/payment-gate.ts";
 
-Deno.serve((req) => handleCollect(req, admin() as unknown as Db));
+Deno.serve(async (req) => (await paymentGate(req)) ?? handleCollect(req, admin() as unknown as Db));

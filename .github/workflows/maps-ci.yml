@@ -10,6 +10,12 @@ on:
       - "packages/maps/**"
       - "packages/api-client/**"
       - "packages/config/**"
+      - "packages/types/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "patches/**"
+      - "tools/audit/prepare-bench.mjs"
+      - "tools/audit/run-bench.mjs"
       - "supabase/migrations/**"
       - "supabase/config.toml"
       - ".github/workflows/maps-ci.yml"
@@ -19,6 +25,12 @@ on:
       - "packages/maps/**"
       - "packages/api-client/**"
       - "packages/config/**"
+      - "packages/types/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "patches/**"
+      - "tools/audit/prepare-bench.mjs"
+      - "tools/audit/run-bench.mjs"
       - "supabase/migrations/**"
       - "supabase/config.toml"
       - ".github/workflows/maps-ci.yml"
@@ -53,22 +65,19 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.120.0
 
       - name: Start Supabase
-        run: supabase start
-
-      - name: Exporter les clés locales
-        run: supabase status -o env >> "$GITHUB_ENV"
+        run: |
+          node tools/audit/prepare-bench.mjs
+          supabase start --workdir /tmp/teko-alpha-bench --exclude studio,postgres-meta,logflare,vector,supavisor
 
       - name: Tests d'intégration (repères, heartbeat, Realtime)
-        working-directory: packages/maps
-        run: pnpm test
+        run: node tools/audit/run-bench.mjs pnpm --dir "$GITHUB_WORKSPACE/packages/maps" test
 
       - name: Tests d'intégration api-client (auth OTP, listes RLS)
-        working-directory: packages/api-client
-        run: pnpm test
+        run: node tools/audit/run-bench.mjs pnpm --dir "$GITHUB_WORKSPACE/packages/api-client" test
 
       - name: Stop Supabase
         if: always()
-        run: supabase stop
+        run: supabase stop --project-id teko-alpha-audit

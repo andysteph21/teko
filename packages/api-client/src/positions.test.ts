@@ -17,16 +17,37 @@ function realtimeClient(insertResult: { error: unknown } = { error: null }) {
     subscribe: vi.fn(() => channel),
   };
   const insert = vi.fn().mockResolvedValue(insertResult);
+  const upsert = vi.fn().mockResolvedValue(insertResult);
   const client = {
     channel: vi.fn(() => channel),
     removeChannel: vi.fn().mockResolvedValue(undefined),
     auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "driver-1" } } }) },
-    from: vi.fn(() => ({ insert })),
+    from: vi.fn(() => ({ insert, upsert })),
   } as unknown as TekoClient;
-  return { client, channel, insert };
+  return { client, channel, insert, upsert };
 }
 
 describe("createRealtimePositionsChannel (ADR-13)", () => {
+  it("la reprise conserve l'heure de collecte et un identifiant stable, sans écrasement", async () => {
+    const { client, upsert } = realtimeClient();
+    const channel = createRealtimePositionsChannel(client, { driverId: "driver-1" });
+    await channel.pushRidePosition(
+      "ride-1",
+      { lon: 9.45, lat: 0.4 },
+      { id: "sample-1", recordedAt: "2026-10-18T10:00:00Z" },
+    );
+    expect(client.auth.getUser).not.toHaveBeenCalled();
+    expect(upsert).toHaveBeenCalledWith(
+      {
+        ride_id: "ride-1",
+        driver_id: "driver-1",
+        geom: "SRID=4326;POINT(9.45 0.4)",
+        sample_id: "sample-1",
+        recorded_at: "2026-10-18T10:00:00Z",
+      },
+      { onConflict: "sample_id", ignoreDuplicates: true },
+    );
+  });
   it("subscribeRidePositions : filtre par course, parse la géométrie GeoJSON", async () => {
     const { client, channel } = realtimeClient();
     const positions = createRealtimePositionsChannel(client);

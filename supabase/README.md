@@ -1,79 +1,74 @@
-# Supabase — base de données Teko
+# Supabase — backend Teko
 
-Schéma initial du MVP (Postgres 17 + PostGIS), aligné sur `docs/architecture/02-backend-et-donnees.md`.
+PostgreSQL 17/PostGIS fait autorité pour les courses, les tarifs et les soldes.
+Les migrations horodatées sont exécutables et versionnées ; les types de
+`packages/types/src/database.ts` sont générés depuis le schéma réel.
 
-## Migrations
+## Contrats alpha
 
-Fichiers SQL versionnés dans `migrations/`, appliqués dans l'ordre lexicographique (horodatage) :
-
-| Fichier | Contenu |
+| Domaine | Contrat |
 |---|---|
-| `…120100_extensions_and_helpers.sql` | PostGIS, types (enums), `set_updated_at()`, `business_day()` (coupure 04:00) |
-| `…120200_profiles.sql` | `profiles`, helpers de rôle (`is_admin`…), création auto du profil, garde anti-escalade, RLS |
-| `…120300_drivers_vehicles_kyc.sql` | `drivers`, `vehicles`, `driver_documents`, garde champs sensibles, RLS |
-| `…120400_geo_referentials.sql` | `zones`, `landmarks`(+propositions), `road_segments`(+propositions), `gps_traces`, index GiST, RLS |
-| `…120500_pricing_and_config.sql` | `pricing_rules`, `app_config`(+historique), valeurs par défaut, RLS |
-| `…120600_rides.sql` | `rides`, `ride_events`, `ride_locations`, `ratings`, FK `gps_traces.ride_id`, RLS |
-| `…120700_finance.sql` | `payments`, `ledger` (immuable), `daily_statements`, RLS |
-| `…120800_notifications_devices_audit.sql` | `devices`, `notifications`, `data_usage`, `audit_log`, RLS |
+| Invitations | Numéro vérifié dans Auth, liste gérée par Ops/superadmin ; le téléphone du profil ne fait pas foi |
+| Devis | Edge Function `price-quote` → Valhalla → `create_ride_quote` réservé au serveur ; devis propriétaire, prix figé, durée configurable de 300 s |
+| Commande | `request_quoted_ride`, devis unique et répétition idempotente ; cash immédiat seulement ; ancien `request_ride` inaccessible aux utilisateurs |
+| Attribution | Offres et présence en base ; nouvelles tentatives et limite configurable de 180 s |
+| PIN | `private.ride_pins`, aucune valeur dans la ligne publique ou Realtime ; lecture `ride_pin` pour le passager ; démarrage `start_ride_checked` pour le chauffeur |
+| Tentatives PIN | Cinq échecs puis cinq minutes de blocage. Les refus retournent un résultat explicite pour conserver le compteur malgré la transaction |
+| Finance | Grand livre append-only ; jamais d’écriture directe depuis l’app. Frais en attente dans `cancellation_claims` |
+| Règlements | `prepare_manual_receipt`, `approve_manual_receipt` ; preuve privée et référence unique ; Ops prépare, Finance/superadmin valide |
+| Corrections | Refus motivé et versions liées, même référence, une seule validation financière possible |
+| Clôture | RPC/job à 4 h Africa/Libreville ; versements dans `payout_requests`, statut payé seulement après validation réelle |
+| Paiements Airtel | Endpoints réels fermés par défaut pour l’alpha. Le fournisseur simulé exige aussi un secret de banc isolé |
 
-Validées avec le parseur officiel Postgres (libpg_query / `pglast`).
+Les comptes `anon`/`authenticated` n’ont aucun droit sur les fonctions internes.
+Les tables portent la RLS ; l’existence d’une politique ne remplace pas les
+contrôles de grants et les gardes des fonctions `SECURITY DEFINER`.
 
-## Conventions
+Les géométries sont en SRID 4326. Les numéros sont normalisés en chiffres seuls.
+Le jour métier change à 4 h en Afrique/Libreville, indépendamment du fuseau de
+l’appareil. Les paramètres de déploiement, URL et secrets de webhook sont
+propres à chaque environnement : le seed ne contacte aucune autre stack.
 
-- **Géométries** PostGIS en **SRID 4326**, type qualifié `extensions.geometry(...)` (PostGIS dans le schéma `extensions`, convention Supabase). Index **GiST** sur chaque colonne géométrique.
-- **Clés** : `gen_random_uuid()` (natif PG17) pour les entités métier ; `identity` pour les journaux à fort volume.
-- **`updated_at`** maintenu par trigger `set_updated_at()`.
-- **Jour ouvré** : `business_day(ts)` rattache une transaction au bon jour (coupure 04:00 Africa/Libreville) — socle du solde journalier.
-- **Téléphones** : stockés en **chiffres seuls** (« 24107000005 », le format que GoTrue expose — jamais de « + » ni d'espaces). `invite_admin` normalise toute entrée (contrainte `admin_invites_phone_digits` en garde-fou) et une **seule invitation en attente** existe par numéro (index unique partiel ; ré-inviter rafraîchit rôle et expiration).
+## Banc d’audit isolé
 
-## Modèle RLS (résumé)
+Ne pas lancer une remise à zéro contre une stack de travail contenant des
+données utiles. Le banc alpha utilise le projet `teko-alpha-audit`, API 58321,
+PostgreSQL 58322 ; les autres projets restent séparés.
 
-- Activée sur toutes les tables. Helpers `SECURITY DEFINER` (`is_admin()`, `is_driver()`, `has_admin_role()`, `is_ride_participant()`) pour éviter la récursion de politiques.
-- **Client** : ses `rides`, `ratings`, son `profile`, ses `devices`/`data_usage` ; lecture des `landmarks`/`road_segments`/`zones` **validés**.
-- **Chauffeur** : sa fiche `drivers` (champs KYC/activation/solde **protégés** par trigger), ses documents, son `ledger` et ses `daily_statements`, ses `gps_traces` (si consentement).
-- **Admin** : accès élargi (sous-rôles ops/carto/finance via `admin_role`), actions journalisées (`audit_log`).
-- **Finance** : `ledger` **append-only** (UPDATE/DELETE interdits) ; écritures financières réalisées par les **Edge Functions** (service role, hors RLS). Aucune écriture directe ouverte aux clients/chauffeurs.
-- **Transitions de statut de paiement : RPC uniquement.** Une Edge Function ne pose jamais `payments.status = 'success'/'failed'` elle-même — seuls `confirm_payment`/`fail_payment` font la transition (écriture grand livre + `maybe_reactivate_driver`). Pré-positionner `success` arme la garde d'idempotence de `confirm_payment` : paiement encaissé mais ledger jamais posté, chauffeur « payé mais toujours suspendu » (régression vécue, corrigée le 1ᵉʳ sept. 2026 — invariant verrouillé par `_shared/payments/apply.ts` + ses tests et `tests/e2e/finance-collect-edge.test.ts`).
+```bash
+node tools/audit/prepare-bench.mjs
+supabase start --workdir /tmp/teko-alpha-bench --exclude studio,postgres-meta,logflare,vector,supavisor
+supabase functions serve --workdir /tmp/teko-alpha-bench --env-file /tmp/teko-alpha-functions.env
+```
 
-## À faire ensuite (hors de ce lot)
+Le préparateur copie les sources et crée des secrets de test locaux sans les
+afficher. Valhalla doit être accessible sur le port 8002 pour le test réel de
+routage. Le seed Libreville reste réservé au développement/staging.
 
-- **Storage** : créer le bucket privé `kyc` (documents chauffeurs) avec policies d'accès admin + propriétaire (URLs signées courtes).
-- **Realtime** : activer la publication sur `ride_locations` et les changements de statut de `rides`.
-- **Edge Functions** : `price-quote`, `ride-complete`, `airtel-*`, `daily-close`, `road-detect`, `guidance`, `landmark-suggest` (cf. `docs/architecture/`).
-- **Seed** : zones initiales + barème `pricing_rules` (à fournir une fois la tarification arrêtée).
-- **Génération des types TS** : `packages/types` à partir de ce schéma.
+Dans un autre terminal :
 
-## Tests automatisés (local + CI)
+```bash
+supabase test db --workdir /tmp/teko-alpha-bench
+node tools/audit/run-bench.mjs
+node tools/audit/check-mutations.mjs
+node tools/audit/generate-types.mjs
+```
 
-Deux niveaux :
+Les mutations injectées ne se lancent jamais en parallèle d’autres tests de
+base. Chaque faute est restaurée dans un `finally`. Le harnais E2E refuse
+explicitement les URL et bases qui ne sont pas celles du banc jetable.
+La génération des types remplace le fichier atomiquement pour ne pas perturber
+Metro ou TypeScript pendant une vérification.
 
-1. **Validation de syntaxe** (rapide, sans base) — parseur officiel Postgres :
-   ```bash
-   pip install pglast
-   python3 - <<'PY'
-   import glob, pglast
-   for f in glob.glob("supabase/**/*.sql", recursive=True):
-       pglast.parse_sql(open(f).read()); print("OK", f)
-   PY
-   ```
+Depuis `supabase/functions` : `deno lint .`, puis `deno test --allow-env .`.
+Les tests Deno couvrent les gardes réseau et les paiements ; les tests E2E
+exercent Auth, PostgREST, RLS et Storage avec de vrais JWT. Les appareils et la
+restauration ont leurs propres validations : des tests unitaires verts ne les
+remplacent pas.
 
-2. **Exécution réelle + RLS** (Postgres + PostGIS via Docker) — **pgTAP** :
-   ```bash
-   supabase start          # applique toutes les migrations sur une base neuve
-   supabase db lint --level warning
-   supabase test db        # exécute supabase/tests/database/*.test.sql
-   ```
+## Références
 
-### Ce que couvrent les tests (`tests/database/`)
-- **`00_schema.test.sql`** : présence des tables clés, colonnes structurantes, **`business_day()`** (coupure 04:00), **immuabilité du `ledger`** (UPDATE/DELETE rejetés), garde anti-escalade de rôle.
-- **`01_rls.test.sql`** : isolation RLS — un client ne voit que ses courses, seuls les **repères validés** sont visibles, un client ne lit pas le `ledger`, on ne crée pas une course au nom d'autrui, un chauffeur **ne peut pas s'auto-activer**.
-
-> Les tests s'exécutent dans une transaction annulée (`rollback`) : aucune donnée résiduelle.
-
-### Intégration continue
-`.github/workflows/db-ci.yml` rejoue, à chaque PR touchant `supabase/`, `supabase start` (migrations) → `supabase db lint` → `supabase test db`. À activer en **required check** sur la branche `main`.
-
-## Application locale (rappel)
-
-Avec la CLI Supabase : `supabase start` puis `supabase migration up` (ou `supabase db reset` pour repartir de zéro). En remote : `supabase db push`.
+- [Plan et critères bloquants](../docs/plan/08-plan-alpha.md).
+- [Décisions et points ouverts](../docs/product/05-questions-ouvertes.md).
+- [Architecture](../docs/architecture/01-vue-ensemble.md).
+- [Catalogue de tests](tests/README.md) et [E2E](tests/e2e/README.md).

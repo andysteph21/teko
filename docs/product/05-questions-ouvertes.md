@@ -2,7 +2,42 @@
 
 Points à trancher pour finaliser le produit. Regroupés par thème. Les décisions arrêtées sont déplacées dans la section « Décisions tranchées » avec leur date — on ne supprime jamais une question, on la clôt.
 
-**Dernière mise à jour : 2 septembre 2026** (arbitrages post-validation générale : part chauffeur 70 % appliquée, no-show payé, Airtel masqué côté client, purge → désactivation auth ; précédente : 1ᵉʳ septembre, plancher d'affichage des offres presque échues).
+**Dernière mise à jour : 18 octobre 2026** (périmètre alpha confirmé par le porteur ; arbitrages précédents du 2 septembre conservés ci-dessous).
+
+## Décisions du porteur du 18 octobre 2026 pour l’alpha
+
+Réponses enregistrées dans [le suivi](../plan/04-suivi-client.md).
+Le [plan alpha](../plan/08-plan-alpha.md) décrit les travaux et les preuves
+attendues. Ces décisions définissent une cible à implémenter et à vérifier.
+
+| Sujet | Décision |
+|---|---|
+| Public et territoire | Alpha fermée à Libreville avec de vraies courses et des utilisateurs invités. |
+| Taille | Environ 20 chauffeurs. Nombre de passagers, durée, créneaux et responsables Finance/SOS encore ouverts. |
+| Paiements | Cash uniquement. Paiements Airtel réels désactivés côté serveur. Règlements en cash ou versement externe : Ops prépare, Finance ou superadmin valide ; référence unique et justificatif joint obligatoires. |
+| Planification | Courses immédiates uniquement pour l’alpha. Les courses programmées restent prévues au MVP ultérieur. |
+| Hors réseau | Historique en cache et GPS conservé temporairement. Commandes et annulations confirmées uniquement par le serveur, sans rejeu tardif automatique. Cette décision amende, pour l’alpha, la file automatique de ces actions décrite au §4 des règles d’ingénierie. |
+| Audit | Audit technique et tests adversariaux, puis revue indépendante avant les premières courses réelles. |
+| Critères bloquants | Aucun risque critique ou élevé ouvert ; tous les scénarios critiques réussis sur build signé ; tests de sécurité éprouvés par fautes injectées ; restauration de sauvegarde vérifiée ; procédures Finance/SOS prêtes ; revue indépendante terminée. |
+| Gouvernance | Soumettre tout nouvel arbitrage au porteur avant application. Une proposition ou une absence de réponse ne vaut pas décision. |
+| Devis | Enregistré en base, lié au passager et au trajet, usage unique avec répétition idempotente ; validité configurable de 5 minutes. Le serveur calcule les métriques et le prix. |
+| Recherche | Retenter les nouveaux chauffeurs éligibles ; fin de recherche à 3 minutes configurables. |
+| Confidentialité du PIN | Stockage privé et lecture réservée au passager. Cinq erreurs maximum, puis blocage de cinq minutes par course ; échecs tracés sans enregistrer le code saisi. |
+| Frais d’annulation | Créance en attente, aucun crédit chauffeur avant encaissement complet et validation Finance. Part chauffeur figée à la création de la créance. |
+| Clôture cash | À 4 h, un solde positif prépare un versement manuel en attente ; statut payé seulement après validation Finance du justificatif. |
+| Distribution | Applications alpha séparées : « Teko Alpha » et « Teko Chauffeur Alpha », identifiants distincts. |
+| SMS et push | Aucun compte SMS ni projet Firebase disponible. Comparer Twilio et un fournisseur régional sur devis et petits essais Airtel/Moov avant sélection. Aucun compte payant ni SMS facturé autorisé à ce stade. |
+| Gravité de l’audit | Critique : prise de contrôle ou écriture financière non autorisée ; élevé : fuite de KYC/GPS/PIN, contournement des règles de course ou de l’alpha. Moyen/faible : impact limité, justifié pour chaque constat. |
+| Invitations | Liste par numéro de téléphone vérifié par Auth, gérée par Ops/superadmin ; refus serveur des courses et de la mise en ligne pour les non-invités. Le champ téléphone du profil ne fait pas foi. |
+| GPS | File locale : 24 h maximum. Positions précises de suivi sur le serveur : 7 jours, suppression automatique. Les traces anonymisées de cartographie restent un traitement distinct. |
+| Arrière-plan chauffeur | Service Android au premier plan avec notification permanente, actif pendant la disponibilité ou une course ; arrêt hors ligne ou fin de course. |
+| Signature alpha | Clé dédiée générée localement et conservée hors Git ; même clé nécessaire pour les mises à jour. Sauvegarde sécurisée à organiser. |
+| Correction des règlements | Finance peut refuser avec motif ; nouvelle version sous la même référence, historique conservé, une seule validation financière pour le dossier. |
+| Correctifs de dépendances | Mises à jour de sécurité compatibles autorisées ; MapLibre GL JS web migré vers 6.4.1 avec vérification des interactions. Moteur Android distinct. |
+
+Les décisions antérieures restent applicables en dehors de ces adaptations
+explicites. Commission, prix ferme, part chauffeur des frais et clôture à 4 h
+ne sont pas modifiés par le choix du cash seul.
 
 ## Décisions déjà validées (5 juin 2026 — rappel)
 Périmètre MVP = ride-hailing seul ; déploiement national progressif ; auth OTP SMS (Supabase) ; **modèle solde journalier** ; paiements client = **cash + Airtel Money** (Moov Money reporté en version future) ; tarif estimé distance/temps GPS ; carte custom complète dès le MVP ; courses immédiates + programmées ; sécurité SOS + partage trajet + code PIN ; français d'abord (i18n prête) ; widget data + mode économie ; KYC avec casier judiciaire obligatoire ; frais d'annulation sur no-show/no-answer.
@@ -119,3 +154,102 @@ foi du détail). **Les 6 bloquantes sont levées** — la Phase 0 démarre.
 - **Hébergeur carto** (Scaleway / OVH / AWS) — bloquant lot 2 (0.2 du plan).
 - **Tuiles managées de repli** (MapTiler vs Stadia) — 0.6 du plan.
 - **Cadence de rebuild Valhalla** (B4 du plan).
+
+## Compléments alpha confirmés — 18 octobre 2026
+
+- KYC réservé au chauffeur concerné, à Ops et au superadmin ; grand livre et
+  relevés globaux réservés à Finance/superadmin. Ops prépare les règlements.
+- Activation après validation des sept pièces et vérification physique.
+- GPS fictif à Libreville autorisé uniquement sur le banc USB, signalé dans
+  l’app. Les essais GPS réels à Libreville restent bloquants avant ouverture.
+- Après validation KYC, le chauffeur ne modifie plus véhicule, plaque ou
+  catégories ; Ops traite le changement avec nouvelle vérification avant
+  remise en ligne.
+
+- SMS : comparaison Twilio et eSMS Africa confirmée, sans engagement, avec qualification, devis et essais Airtel/Moov avant choix. Notifications : comparaison FCM/Expo expliquée pour Android et iOS ; arbitrage encore ouvert.
+
+## Décisions complémentaires du 18 octobre 2026 — notifications et conservation KYC
+
+- **Clôturé :** Expo Push Service retenu pour la couche commune Android/iOS.
+  Projets alpha passager/chauffeur dans l'organisation existante Teko `teko241` ;
+  Firebase `teko-firebase` sur le compte Google confirmé. Projets créés, configurations Android reçues et clé du compte FCM dédié
+  associée aux deux projets Expo. Premier push réel reçu sur l’OPPO ; essais
+  chauffeur, écran éteint et terrain encore ouverts.
+- **KYC :** attendre une durée de conservation fixée par le conseil juridique.
+  Aucune suppression automatique des pièces KYC à J+30 n'est ajoutée avant cet
+  arbitrage. La désactivation du compte reste distincte de la conservation des
+  justificatifs, dont la règle juridique demeure un point bloquant à documenter.
+- **SMS :** comparer Twilio et eSMS Africa sur devis et petits essais Airtel/Moov,
+  sans engagement, création de compte payant ni envoi facturé autorisé ici.
+
+Voir [SMS et notifications](../plan/10-sms-et-notifications-alpha.md).
+
+## Décisions complémentaires — départ manuel et sécurité Expo
+
+- Départ par recherche de repère autorisé sans GPS et accessible même si le GPS
+  est accordé ; le choix manuel ne doit pas être remplacé automatiquement.
+- Protection renforcée Expo approuvée. Le robot dédié `teko-alpha-push`, rôle
+  minimal Viewer dans `teko241`, est explicitement autorisé : lecture des projets
+  de cette organisation, sans publication ni gestion des membres. Secret serveur
+  hors Git/APK ; activation et essais à consigner après vérification.
+
+## Confirmation de la prise en charge et activation Expo — 19 octobre 2026
+
+- Suggestions conservées : si le départ change vers un repère suggéré,
+  recalcul serveur du trajet et nouveau devis à confirmer avant commande.
+  « Garder ma position » conserve exactement le départ initial.
+- Le robot Viewer Expo autorisé et son jeton serveur sont créés ; protection
+  renforcée activée dans teko241, vérifiée après rechargement et par refus
+  d'un envoi sans autorisation. Secret hors Git et hors APK.
+
+## Indisponibilité des tarifs — 19 octobre 2026
+
+Le porteur valide un message distinct « Tarifs temporairement indisponibles »
+lorsque le service de devis ne répond pas. Le message « Pas de connexion »
+reste réservé à une absence de réseau constatée. Le réessai est manuel ; une
+reconnexion ne déclenche aucune commande et ne relance pas ces devis échoués.
+
+## Arrondis cash confirmés — 19 octobre 2026
+
+- **Clôturé :** pour les nouvelles courses, arrondir les prix, frais
+  d’annulation/non-présentation et commissions au multiple de **25 FCFA**
+  le plus proche. Une égalité va vers le multiple supérieur : 112,50 → 125.
+  Cette décision remplace la première proposition d’arrondi au franc.
+- La part chauffeur des frais encaissés suit la même règle :
+  300 × 70 % = 210 → **200 FCFA**, après encaissement complet et validation
+  Finance. La créance conserve la part ainsi calculée.
+- Les devis, créances et écritures antérieurs restent conservés sans recalcul.
+- **Clôturé par la décision ci-dessous :** contrainte du pas de 25 sur les nouveaux dossiers de règlement
+  saisis par Ops, en cash et/ou versement externe. Aucun justificatif
+  d’encaissement réel ne doit être arrondi silencieusement.
+
+## Règlements au pas de 25 — décision du 19 octobre 2026
+
+**Clôturé :** les nouveaux dossiers Ops, y compris les révisions, imposent un
+montant positif multiple de 25 FCFA, en cash comme en versement externe.
+Aucun montant de justificatif n’est arrondi automatiquement, même à deux
+décimales. Les dossiers antérieurs restent conservés à leur montant exact.
+La garde est commune à la préparation des règlements et des versements.
+
+## Chiffrage du mois d’essai — décisions du 22 octobre 2026
+
+- **SMS :** le porteur retient eSMS Africa. Ce choix remplace la comparaison
+  encore ouverte avec Twilio ; les conditions commerciales et les essais
+  réels Airtel/Moov restent à confirmer. Aucun compte payant ni envoi facturé
+  n’est engagé par la préparation du budget.
+- **Stockage :** conserver Supabase pour l’instant. Aucun abonnement de
+  stockage externe n’est ajouté au chiffrage ; la copie et la restauration
+  des objets Storage restent à prévoir.
+- **Hypothèses validées pour le budget :** dix chauffeurs Android, cent
+  passagers invités, 500 SMS sur un mois, renvois et essais compris. Chiffrer
+  le coût total, Supabase et Vercel inclus. Google Play est déjà payé.
+- Expo EAS Build/Update et SMTP sont inclus dans l’estimation. Les offres
+  Starter et Resend Free servent d’hypothèses de calcul, sans abonnement
+  autorisé par ce seul document. OVH reste un candidat à évaluer depuis les
+  réseaux de Libreville ; aucun classement de latence n’est acquis.
+- Le budget des services et du domaine atteint 88 759 FCFA avec provision
+  globale de 30 %, soit une enveloppe proposée de 90 000 FCFA. Le pays de
+  facturation, les frais eSMS non publiés et les prestations humaines restent
+  à préciser. Cette estimation n’autorise pas l’ouverture aux vraies courses.
+
+Document : [Budget Teko pour un mois de tests](../../livrables/budget-alpha-un-mois-2026-10-22.docx).
