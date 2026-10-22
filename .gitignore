@@ -26,6 +26,7 @@ android/app/build/
 ios/Pods/
 
 # Env & secrets
+.local/
 .env
 .env.*
 !.env.example

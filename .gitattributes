@@ -1,0 +1,2 @@
+# Les lignes de contexte vides d’un patch unifié portent un espace obligatoire.
+patches/*.patch -whitespace

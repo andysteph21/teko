@@ -2,13 +2,16 @@
   "name": "teko-e2e",
   "private": true,
   "type": "module",
-  "description": "Tests end-to-end contre la stack Supabase locale : utilisateurs seed réels (JWT), actions via PostgREST, assertions sur l'état de la base.",
+  "description": "Tests end-to-end contre la stack Supabase locale : utilisateurs seed r\u00e9els (JWT), actions via PostgREST, assertions sur l'\u00e9tat de la base.",
   "scripts": {
-    "test": "vitest run --reporter=verbose --pool=forks --poolOptions.forks.singleFork=true"
+    "test": "vitest run --reporter=verbose --pool=forks --maxWorkers=1 --no-file-parallelism"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "pg": "^8.12.0",
-    "vitest": "^2.1.0"
+    "vitest": "4.1.11"
+  },
+  "overrides": {
+    "vite": "6.4.3"
   }
 }

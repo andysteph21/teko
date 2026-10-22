@@ -9,11 +9,11 @@
     "pnpm": ">=10"
   },
   "scripts": {
-    "build": "turbo run build",
+    "build": "turbo run build --concurrency=1",
     "lint": "biome check .",
     "format": "biome check --write .",
-    "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
+    "typecheck": "turbo run typecheck --concurrency=2",
+    "test": "turbo run test --concurrency=2",
     "dev": "turbo run dev",
     "clean": "turbo run clean && rm -rf node_modules",
     "gen:types": "supabase gen types typescript --local > packages/types/src/database.ts"
@@ -21,6 +21,9 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "turbo": "^2.7.0",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "@react-native/metro-config": "0.86.2",
+    "react-dom": "19.2.3",
+    "react": "19.2.3"
   }
 }

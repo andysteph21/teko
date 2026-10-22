@@ -2,7 +2,7 @@
 // lisibles sans texte : épingle-personne au départ, épingle-drapeau à
 // l'arrivée, position qui pulse, attente qui respire, voiture orientée.
 
-import type maplibregl from "maplibre-gl";
+import type * as maplibregl from "maplibre-gl";
 import { LANDMARK_LETTERS } from "../geojson";
 import { TEKO_SOURCES } from "../style";
 import { makeLetterImage, makePin, makePulse } from "./animations";

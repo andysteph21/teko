@@ -11,8 +11,8 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run --reporter=verbose",
-    "test:unit": "vitest run --reporter=verbose --exclude '**/*.integration.test.ts'",
+    "test": "vitest run --maxWorkers=2 --reporter=verbose",
+    "test:unit": "vitest run --maxWorkers=2 --reporter=verbose --exclude '**/*.integration.test.ts'",
     "demo:build": "esbuild demo/demo.ts --bundle --format=iife --outfile=demo/dist/bundle.js --loader:.png=dataurl"
   },
   "dependencies": {
