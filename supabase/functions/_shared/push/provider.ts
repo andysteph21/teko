@@ -7,8 +7,9 @@ export interface PushMessage {
   body: string;
   /** Données applicatives (type + payload de la notification). */
   data: Record<string, string>;
-  /** Durée de vie côté FCM (ex. « 15s » pour une offre de course). */
+  /** Durée de vie côté FCM (ex. « 12s » pour une offre de course). */
   ttl?: string;
+  expiresAt?: number;
 }
 
 export interface PushResult {
@@ -16,6 +17,7 @@ export interface PushResult {
   /** Jeton invalide → l'appareil doit être purgé de `devices`. */
   invalidToken?: boolean;
   detail?: string;
+  receiptId?: string;
 }
 
 export interface PushProvider {
@@ -27,35 +29,71 @@ export interface PushProvider {
  *  par le serveur pour que l'app affiche juste (et pour l'i18n future). */
 export function messageForType(
   type: string,
-  payload: Record<string, unknown>,
+  _payload: Record<string, unknown>,
 ): { title: string; body: string; ttl?: string } {
   switch (type) {
     case "ride_offer":
-      return { title: "Nouvelle course à proximité", body: "Vous avez 12 secondes pour accepter.", ttl: "15s" };
+      return {
+        title: "Nouvelle course à proximité",
+        body: "Ouvrez l’app pour voir la proposition.",
+        ttl: "12s",
+      };
     case "ride_accepted":
-      return { title: "Chauffeur attribué", body: "Votre chauffeur est en route." };
+      return {
+        title: "Chauffeur attribué",
+        body: "Votre chauffeur est en route.",
+      };
     case "driver_arrived":
-      return { title: "Votre chauffeur est arrivé", body: "Communiquez votre code de prise en charge." };
+      return {
+        title: "Votre chauffeur est arrivé",
+        body: "Communiquez votre code de prise en charge.",
+      };
     case "ride_completed":
-      return { title: "Course terminée", body: "Merci d'avoir voyagé avec Teko." };
+      return {
+        title: "Course terminée",
+        body: "Merci d'avoir voyagé avec Teko.",
+      };
     case "cancellation_fee":
-      return { title: "Frais d'annulation appliqués", body: "Le détail est dans vos notifications." };
+      return {
+        title: "Frais d'annulation appliqués",
+        body: "Le détail est dans vos notifications.",
+      };
     case "no_driver_found":
-      return { title: "Aucun chauffeur disponible", body: "Réessayez dans quelques minutes." };
-    case "settlement_reminder": {
-      const amount = typeof payload.amount === "number" ? `${payload.amount} F` : "votre solde";
-      return { title: "Clôture à 04 h 00", body: `Réglez ${amount} avant la clôture pour rester en ligne.` };
-    }
+      return {
+        title: "Aucun chauffeur disponible",
+        body: "Réessayez dans quelques minutes.",
+      };
+    case "settlement_reminder":
+      return {
+        title: "Clôture à 04 h 00",
+        body: "Consultez votre solde dans l’app avant la clôture.",
+      };
     case "sos_alert":
-      return { title: "Alerte SOS", body: "Un utilisateur a déclenché un SOS — ouvrir la console.", ttl: "60s" };
+      return {
+        title: "Alerte SOS",
+        body: "Un utilisateur a déclenché un SOS — ouvrir la console.",
+        ttl: "60s",
+      };
     case "kyc_validated":
-      return { title: "Dossier validé", body: "Vous pouvez passer en ligne et recevoir des courses." };
+      return {
+        title: "Dossier validé",
+        body: "Vous pouvez passer en ligne et recevoir des courses.",
+      };
     case "kyc_rejected":
-      return { title: "Une pièce est à corriger", body: "Ouvrez l'app pour voir le motif et remplacer la pièce." };
+      return {
+        title: "Une pièce est à corriger",
+        body: "Ouvrez l'app pour voir le motif et remplacer la pièce.",
+      };
     case "landmark_accepted":
-      return { title: "Repère accepté", body: "Votre repère aide maintenant tout Libreville." };
+      return {
+        title: "Repère accepté",
+        body: "Votre repère aide maintenant tout Libreville.",
+      };
     case "landmark_rejected":
-      return { title: "Repère refusé", body: "Le motif est dans vos notifications." };
+      return {
+        title: "Repère refusé",
+        body: "Le motif est dans vos notifications.",
+      };
     default:
       return { title: "Teko", body: "Vous avez une nouvelle notification." };
   }

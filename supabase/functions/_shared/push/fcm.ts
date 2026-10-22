@@ -12,10 +12,15 @@ interface ServiceAccount {
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
 function base64url(data: Uint8Array | string): string {
-  const bytes = typeof data === "string" ? new TextEncoder().encode(data) : data;
+  const bytes = typeof data === "string"
+    ? new TextEncoder().encode(data)
+    : data;
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll(
+    "=",
+    "",
+  );
 }
 
 function importKey(pem: string): Promise<CryptoKey> {
@@ -67,7 +72,10 @@ async function accessToken(sa: ServiceAccount): Promise<string> {
     }),
   });
   if (!response.ok) throw new Error(`OAuth Google: ${response.status}`);
-  const data = (await response.json()) as { access_token: string; expires_in: number };
+  const data = (await response.json()) as {
+    access_token: string;
+    expires_in: number;
+  };
   cachedToken = { token: data.access_token, expiresAt: now + data.expires_in };
   return data.access_token;
 }
@@ -82,7 +90,10 @@ export function fcmProvider(serviceAccountJson: string): PushProvider {
         `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`,
         {
           method: "POST",
-          headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+          headers: {
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
           body: JSON.stringify({
             message: {
               token: message.token,
@@ -99,8 +110,13 @@ export function fcmProvider(serviceAccountJson: string): PushProvider {
       if (response.ok) return { ok: true };
       const detail = await response.text();
       // UNREGISTERED / INVALID_ARGUMENT sur le jeton → purger l'appareil.
-      const invalidToken = response.status === 404 || detail.includes("UNREGISTERED");
-      return { ok: false, invalidToken, detail: `${response.status} ${detail.slice(0, 200)}` };
+      const invalidToken = response.status === 404 ||
+        detail.includes("UNREGISTERED");
+      return {
+        ok: false,
+        invalidToken,
+        detail: `${response.status} ${detail.slice(0, 200)}`,
+      };
     },
   };
 }
