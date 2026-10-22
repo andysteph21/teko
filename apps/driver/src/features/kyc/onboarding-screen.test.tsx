@@ -24,7 +24,7 @@ describe("D-02 Onboarding chauffeur", () => {
     const user = userEvent.setup();
     render(<Onboarding />);
 
-    expect(screen.getByText("Vos gains, réglés chaque jour")).toBeOnTheScreen();
+    expect(screen.getByText("Vos courses, votre solde suivi")).toBeOnTheScreen();
     await user.press(screen.getByTestId("onboarding-next"));
     expect(screen.getByText("Guidé par les repères")).toBeOnTheScreen();
     await user.press(screen.getByTestId("onboarding-next"));

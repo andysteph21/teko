@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "App chauffeur Teko (Expo/React Native, Android d'abord) — écrans D-01→D-20.",
-  "main": "expo-router/entry",
+  "main": "index.js",
   "scripts": {
     "dev": "expo start",
     "android": "expo run:android",

@@ -1,3 +1,7 @@
+jest.mock("../../lib/location-service", () => ({
+  configureDriverLocation: jest.fn(async () => undefined),
+}));
+
 // D-11 → D-14b : bannière avec l'indication client, arrivée, PIN (erreur
 // pin_incorrect), passager absent après le délai, fin de course espèces et
 // paiement Airtel confirmé.
@@ -5,6 +9,7 @@
 import { formatXaf } from "@teko/core";
 import { spacing } from "@teko/ui";
 import { fireEvent, render, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { Keyboard } from "react-native";
 
 const mockGetRide = jest.fn();
 const mockMarkArrived = jest.fn();
@@ -94,6 +99,7 @@ jest.mock("react-native-svg", () => {
 });
 
 import DriverRideScreen from "../../../app/(main)/ride/[id]";
+import { configureDriverLocation } from "../../lib/location-service";
 import { useWorkStore } from "./store";
 
 const RIDE = {
@@ -123,6 +129,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.spyOn(Keyboard, "dismiss").mockImplementation(() => {});
   mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
   useWorkStore.setState({ online: false, toast: null });
   mockGetRide.mockResolvedValue({ ...RIDE });
@@ -135,6 +142,13 @@ beforeEach(() => {
 });
 
 describe("D-11 vers le passager", () => {
+  it("préserve le suivi persistant tant que la lecture serveur de la course n'a pas répondu", () => {
+    mockGetRide.mockReturnValue(new Promise(() => {}));
+    const view = render(<DriverRideScreen />);
+    expect(configureDriverLocation).not.toHaveBeenCalled();
+    view.unmount();
+  });
+
   it("bannière sombre avec l'indication C-09, « Je suis arrivé » → mark_arrived", async () => {
     mockMarkArrived.mockResolvedValue({
       ...RIDE,
@@ -175,12 +189,14 @@ describe("D-11b attente / D-12 PIN", () => {
 
     expect(mockStartRide).toHaveBeenCalledWith({}, "ride-1", "0000");
     expect(await screen.findByTestId("pin-error")).toBeOnTheScreen();
+    expect(Keyboard.dismiss).not.toHaveBeenCalled();
 
     // changeText direct : le démarrage démonte D-12 au 4e chiffre, un type
     // complet enverrait encore des événements au champ démonté.
     fireEvent.changeText(screen.getByTestId("pin-input"), "4729");
     expect(mockStartRide).toHaveBeenCalledWith({}, "ride-1", "4729");
     expect(await screen.findByTestId("ride-complete")).toBeOnTheScreen();
+    expect(Keyboard.dismiss).toHaveBeenCalledTimes(1);
   });
 
   it("passager absent : disponible après le délai → cancel_ride statut no_show", async () => {
@@ -242,9 +258,10 @@ describe("D-13 course / D-14 fin", () => {
 
     await screen.findByTestId("ride-complete");
     await waitFor(() =>
-      expect(mockChannel.pushRidePosition).toHaveBeenCalledWith("ride-1", {
-        lon: 9.45,
-        lat: 0.4,
+      expect(require("../../lib/location-service").configureDriverLocation).toHaveBeenCalledWith({
+        userId: "drv-1",
+        rideId: "ride-1",
+        eco: false,
       }),
     );
 

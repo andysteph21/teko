@@ -74,7 +74,7 @@ function AttenteView({ numero, echec, onRenvoyer, renvoiBusy }: AttenteProps) {
   );
 }
 
-export default function SettlementScreen() {
+export function DeferredAirtelSettlementScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const balanceQ = useDriverBalance();
@@ -150,3 +150,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+export { CashSettlement as default } from "../../src/features/money/cash-settlement";

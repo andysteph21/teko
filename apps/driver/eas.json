@@ -1,0 +1,14 @@
+{
+  "build": {
+    "alpha": {
+      "distribution": "internal",
+      "credentialsSource": "local",
+      "env": {
+        "TEKO_APP_VARIANT": "alpha"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}

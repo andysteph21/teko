@@ -7,7 +7,7 @@ import { borderRadius, color, spacing, typography } from "@teko/ui";
 import { OtpInput } from "@teko/ui/native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
 
 export interface PinPanelProps {
@@ -71,7 +71,15 @@ export function PinPanel({ busy, error, fails, onSubmit, onClearError, onBack }:
           <Text style={styles.helpText}>{t("work:pin.aideEchecs")}</Text>
         </View>
       ) : null}
-      <Pressable onPress={onBack} accessibilityRole="button" style={styles.back} testID="pin-back">
+      <Pressable
+        onPress={() => {
+          Keyboard.dismiss();
+          onBack();
+        }}
+        accessibilityRole="button"
+        style={styles.back}
+        testID="pin-back"
+      >
         <Text style={styles.backText}>{t("work:pin.retour")}</Text>
       </Pressable>
     </View>

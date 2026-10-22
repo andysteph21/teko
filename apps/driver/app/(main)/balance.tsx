@@ -1,3 +1,4 @@
+import { PendingCash } from "../../src/features/money/pending-cash";
 // D-15 Solde du jour — solde signé driverBalance à quatre états visuels
 // (créditeur / débiteur / urgence < 4 h avec compte à rebours / suspendu,
 // jamais un écran mort), mouvements du jour métier (grand livre filtré
@@ -66,6 +67,7 @@ export default function BalanceScreen() {
         ) : (
           <SoldeSection solde={balanceQ.data} actif={driverQ.data?.is_active ?? true} now={now} />
         )}
+        <PendingCash />
         <Text style={styles.section}>{t("money:solde.mouvements")}</Text>
         <LedgerCard lignes={lignesDuJour(ledgerQ.data ?? [], aujourdhui)} />
       </ScrollView>

@@ -8,6 +8,7 @@ import type { RideRow } from "@teko/types";
 import { type Href, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Keyboard } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useWorkStore } from "./store";
 
@@ -56,11 +57,16 @@ export function useRideActions(
       setBusy(true);
       setPinError(null);
       try {
-        applyRide(await startRide(supabase, rideId, pin));
+        const started = await startRide(supabase, rideId, pin);
+        // OPPO conserve le clavier si le champ est déjà démonté au blur.
+        Keyboard.dismiss();
+        applyRide(started);
       } catch (e) {
         if (e instanceof TekoApiError && e.code === "pin_incorrect") {
           setPinFails((n) => n + 1);
           setPinError(t("work:pin.incorrect"));
+        } else if (e instanceof TekoApiError && e.code === "pin_blocked") {
+          setPinError("Trop d’essais. Réessayez dans 5 minutes.");
         } else {
           setPinError(t("erreurs.generique"));
         }
@@ -72,7 +78,7 @@ export function useRideActions(
   );
 
   // Statut dédié `no_show` : le backend applique le frais de non-présentation
-  // (part chauffeur créditée au grand livre) et les stats distinguent les
+  // (créance en attente de validation Finance) et les stats distinguent les
   // non-présentations des annulations chauffeur.
   const noShow = useCallback(async () => {
     if (!rideId) return;

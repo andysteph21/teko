@@ -1,3 +1,8 @@
+jest.mock("../../lib/history-cache", () => ({ historyCache: {} }));
+jest.mock("../auth/use-session", () => ({
+  useSession: () => ({ session: { user: { id: "history-driver" } } }),
+}));
+
 // D-20 : groupement par jour avec total brut en tête de section, montant
 // brut + sous-ligne commission, puces d'état, filtre Annulées, état vide.
 
@@ -7,6 +12,7 @@ import { render, screen, userEvent } from "@testing-library/react-native";
 
 const mockListMyRides = jest.fn();
 jest.mock("@teko/api-client", () => ({
+  cachedRideHistory: (client: unknown) => mockListMyRides(client, 50),
   listMyRides: (...args: unknown[]) => mockListMyRides(...args),
 }));
 jest.mock("../../lib/supabase", () => ({ supabase: {} }));

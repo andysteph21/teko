@@ -35,4 +35,5 @@ overrides:
   vite: 6.4.3
 
 patchedDependencies:
+  expo-task-manager@57.0.13: patches/expo-task-manager@57.0.13.patch
   query-string@7.1.3: patches/query-string@7.1.3.patch

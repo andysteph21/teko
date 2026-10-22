@@ -11,9 +11,12 @@ const METRICS = {
 };
 
 export function Providers({ children }: { children: ReactNode }) {
-  // gcTime 0 : pas de timer de cache qui retient le worker jest.
+  // Aucun timer de GC de requête ou de mutation ne doit retenir le worker Jest.
   const client = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity },
+      mutations: { retry: false, gcTime: Infinity },
+    },
   });
   return (
     <SafeAreaProvider initialMetrics={METRICS}>
