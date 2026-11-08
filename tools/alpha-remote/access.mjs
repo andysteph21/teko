@@ -1,12 +1,14 @@
 // Point d'entrée de l'essai : OTP bornés et téléchargement par rôle invité.
 import { randomBytes } from "node:crypto";
-import { createReadStream, readFileSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
 
 const upstream = "http://supabase_kong_teko-alpha-remote:8000";
 const accounts = new Map(Object.entries(JSON.parse(readFileSync("/config/phones.json", "utf8"))));
+const adminPath = "/config/alpha-admin.json";
+const admin = existsSync(adminPath) ? JSON.parse(readFileSync(adminPath, "utf8")) : null;
 const key = readFileSync("/config/anon-key", "utf8").trim();
 const files = { client: "teko-passager.apk", driver: "teko-chauffeur.apk" };
 const attempts = new Map();
@@ -42,10 +44,13 @@ function reserve(phone, operation) {
   return true;
 }
 
-async function auth(operation, input) {
+async function auth(operation, input, operator) {
   const phone = typeof input.phone === "string" ? input.phone.replace(/^\+/, "") : "";
-  const role = accounts.get(phone);
-  if (!Object.hasOwn(files, role)) return { status: 400, data: { msg: "Compte d’essai requis." } };
+  const role = operator ?? accounts.get(phone);
+  const allowed = operator
+    ? Object.hasOwn(admin.operators, operator) && admin.operators[operator] === phone
+    : Object.hasOwn(files, role);
+  if (!allowed) return { status: 400, data: { msg: "Compte d’essai requis." } };
   const payload = { phone: `+${phone}` };
   if (operation === "verify") {
     if (typeof input.token !== "string" || !/^\d{6}$/.test(input.token)) {
@@ -62,7 +67,11 @@ async function auth(operation, input) {
     body: JSON.stringify(payload),
     signal: AbortSignal.timeout(5000),
   });
-  return { status: response.status, data: await response.json(), role };
+  const data = await response.json();
+  if (!operator && data.access_token && !(await isInvited(data.access_token, role))) {
+    return { status: 403, data: { msg: "Invitation d’essai inactive." } };
+  }
+  return { status: response.status, data, role };
 }
 
 async function isInvited(token, role) {
@@ -104,7 +113,7 @@ async function installLogin(req, res) {
   const form = new URLSearchParams(await body(req));
   const result = await auth("verify", { phone: form.get("phone"), token: form.get("code") });
   const token = result.data.access_token;
-  if (!token || !(await isInvited(token, result.role))) {
+  if (!token) {
     return reply(
       res,
       result.status === 429 ? 429 : 401,
@@ -146,8 +155,100 @@ async function download(req, res, pathname) {
   await pipeline(createReadStream(path), res);
 }
 
+async function sessionRequest(token, path, payload) {
+  return fetch(`${upstream}${path}`, {
+    headers: { ...headers, authorization: `Bearer ${token}` },
+    method: payload ? "POST" : "GET",
+    body: payload ? JSON.stringify(payload) : undefined,
+    signal: AbortSignal.timeout(5000),
+  });
+}
+
+async function operatorSession(token, operator) {
+  if (typeof token !== "string" || !Object.hasOwn(admin.operators, operator)) return false;
+  const auth = await sessionRequest(token, "/auth/v1/user");
+  if (!auth.ok) return false;
+  const user = await auth.json();
+  if (user.phone?.replace(/^\+/, "") !== admin.operators[operator]) return false;
+  const profile = await sessionRequest(
+    token,
+    `/rest/v1/profiles?select=role,admin_role&id=eq.${encodeURIComponent(user.id)}`,
+  );
+  if (!profile.ok) return false;
+  const [row] = await profile.json();
+  return row?.role === "admin" && row.admin_role === operator;
+}
+
+let pendingAllocation = Promise.resolve();
+async function allocateTester(token, { role, phone }) {
+  const response = await sessionRequest(token, "/rest/v1/alpha_invites?select=phone,is_active");
+  if (!response.ok) throw new Error("Liste d’invitations indisponible");
+  const invites = new Map((await response.json()).map((entry) => [entry.phone, entry.is_active]));
+  const account = admin.pool.find((entry) => entry.role === role
+    && (phone === undefined ? !invites.has(entry.phone) : entry.phone === phone && invites.get(phone)));
+  if (!account) return null;
+  if (phone === undefined) {
+    const invite = await sessionRequest(token, "/rest/v1/rpc/invite_alpha", {
+      p_phone: account.phone, p_role: role, p_active: true,
+    });
+    if (!invite.ok) throw new Error("Invitation refusée");
+  }
+  if (role === "driver") {
+    const driver = await sessionRequest(
+      token,
+      `/rest/v1/drivers?select=kyc_status&id=eq.${account.id}`,
+    );
+    if (!driver.ok) throw new Error("Dossier fictif indisponible");
+    const [row] = await driver.json();
+    if (row?.kyc_status !== "validated") {
+      const result = await sessionRequest(token, "/rest/v1/rpc/validate_kyc", {
+        p_driver: account.id, p_accept: true, p_note: "Dossier fictif du banc alpha",
+      });
+      if (!result.ok) throw new Error("Dossier fictif à vérifier");
+    }
+  }
+  return { phone: account.phone, role, code: account.code };
+}
+
+async function adminRequest(req, res, pathname) {
+  const operator = req.headers["x-teko-operator"];
+  if (!admin || req.method !== "POST" || req.headers.origin !== admin.origin
+    || typeof operator !== "string" || !Object.hasOwn(admin.operators, operator)) {
+    return reply(res, 403, { msg: "Accès privé requis." });
+  }
+  const input = JSON.parse(await body(req));
+  if (pathname === "/admin/alpha-api/login") {
+    const result = await auth("verify", { phone: input.phone, token: input.code }, operator);
+    const { access_token, refresh_token } = result.data;
+    if (!access_token || !(await operatorSession(access_token, operator))) {
+      return reply(res, result.status === 429 ? 429 : 401, { msg: "Identifiants d’essai invalides." });
+    }
+    return reply(res, 200, { access_token, refresh_token });
+  }
+  if (pathname !== "/admin/alpha-api/testers") return reply(res, 404, { msg: "Action inconnue." });
+  const token = req.headers["x-teko-session"];
+  if (operator !== "ops" || !(await operatorSession(token, operator))) {
+    return reply(res, 403, { msg: "Action réservée aux opérations." });
+  }
+  if (!Object.hasOwn(files, input.role) || (input.phone !== undefined && typeof input.phone !== "string")) {
+    return reply(res, 400, { msg: "Compte de test invalide." });
+  }
+  const allocation = pendingAllocation.then(() => allocateTester(token, input));
+  pendingAllocation = allocation.catch(() => {});
+  try {
+    const account = await allocation;
+    if (account) return reply(res, 200, account);
+    return reply(res, 409, {
+      msg: input.phone === undefined ? "Réserve épuisée pour ce rôle." : "Invitation de test inactive.",
+    });
+  } catch {
+    return reply(res, 503, { msg: "Création incomplète. Vérifiez la liste des invitations avant de réessayer." });
+  }
+}
+
 async function handle(req, res) {
   const pathname = new URL(req.url, "http://localhost").pathname;
+  if (pathname.startsWith("/admin/alpha-api/")) return adminRequest(req, res, pathname);
   if (req.method === "POST" && ["/auth/v1/otp", "/auth/v1/verify"].includes(pathname)) {
     const result = await auth(pathname.split("/").at(-1), JSON.parse(await body(req)));
     return reply(res, result.status, result.data);

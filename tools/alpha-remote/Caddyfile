@@ -5,6 +5,7 @@
 {$ALPHA_SITE:http://:8080} {
 	bind {$ALPHA_BIND:0.0.0.0}
 	header X-Content-Type-Options nosniff
+	import /etc/caddy/alpha.d/*.caddy
 
 	@authPost {
 		method POST

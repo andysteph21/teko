@@ -54,6 +54,16 @@ Lancer `bash tools/alpha-remote/stage-vps.sh` sur le serveur. Contrôler avec `T
 
 Après ces contrôles et la disponibilité du DNS, ajouter `alpha.tekomove.com` comme enregistrement A du VPS. Dans `vps-compose.env`, passer `ALPHA_SITE` à `alpha.tekomove.com` et publier seulement HTTP/HTTPS (`ALPHA_HTTP_BIND=0.0.0.0:80`, `ALPHA_HTTPS_BIND=0.0.0.0:443`). Relancer Compose avec ce fichier ; Caddy gère le certificat. Contrôler depuis un autre réseau le certificat et les refus d’accès avant d’envoyer le lien `/install` aux invités. Ne pas ouvrir les ports de la base, de Martin ni de Valhalla.
 
+## Console privée de l’alpha
+
+Sur le VPS, `node tools/alpha-remote/seed.mjs --admin-pool` prépare 12 comptes par rôle mobile sans invitation active. Les chauffeurs reçoivent des preuves KYC fictives. Cette commande complète le fichier OTP d’Auth ; recharger le service Auth avec cette configuration en dehors d’une course et conserver ses volumes. Les codes existants et la clé publique doivent rester identiques. Garder les fichiers `alpha-admin.json`, `accounts.json` et la configuration Auth hors Git et du contexte de build.
+
+Compiler avec `pnpm --filter @teko/app-admin build` et `NEXT_PUBLIC_TEKO_ALPHA_ADMIN=true`. Définir `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_TILES_URL` et `NEXT_PUBLIC_VALHALLA_URL` avec l’origine HTTPS du banc et ses chemins `/gabon` et `/routing`. Utiliser la clé publique du banc pour `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+Copier le contenu de `apps/admin/.next/alpha-vps/standalone` sur le VPS dans `.local/alpha-remote/admin-runtime`. Copier aussi `apps/admin/.next/alpha-vps/static` sous `apps/admin/.next/alpha-vps/` à l’intérieur de ce dossier. Compose monte ce build en lecture seule dans un conteneur Node sans port hôte. Créer le fichier privé `.local/alpha-remote/admin-passwords` avec une ligne bcrypt au format Caddy pour chacun des identifiants `ops` et `finance`. Ajouter `-f tools/alpha-remote/compose.admin.yml` après `compose.vps.yml` dans les commandes Compose. Les comptes admin passent par le formulaire privé sous `/admin`.
+
+Dans **Utilisateurs → Invitations à l’alpha fermée**, Ops sélectionne un rôle et crée une invitation avec un compte de réserve. Le bouton **Afficher le code** retrouve les identifiants d’une invitation active issue de cette réserve. Retirer une invitation bloque une nouvelle connexion mobile, le téléchargement et la participation à une nouvelle course. Réactiver restitue le même compte au même testeur. Un compte retiré ne retourne pas dans la réserve. Le tableau de bord actualise les courses récentes toutes les 30 secondes.
+
 ## Préparer les APK pour l’adresse retenue
 
 Le domaine ne configure pas l’accès à lui seul. Préparer une passerelle HTTPS avec accès réservé aux invités, puis vérifier Auth, devis, tuiles, téléchargements et Realtime depuis un autre réseau avant de distribuer les APK. La passerelle de prévisualisation ci-dessus reste en boucle locale.
