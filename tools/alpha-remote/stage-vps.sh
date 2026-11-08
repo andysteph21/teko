@@ -11,7 +11,10 @@ network=teko-alpha-remote-private
 compose="$root/tools/alpha-remote/compose.vps.yml"
 [[ "$root" =~ ^/[A-Za-z0-9_./-]+$ ]] || { echo "Chemin de déploiement simple requis" >&2; exit 1; }
 [[ "$(node -p 'process.versions.node.split(".")[0]')" == 24 ]]
-[[ "$(supabase --version)" == 2.120.0 ]]
+case "$(timeout 15 supabase --version)" in
+  2.120.0|2.110.0) ;;
+  *) echo "Supabase CLI 2.120.0 ou compagnon Go 2.110.0 requis" >&2; exit 1 ;;
+esac
 grep -Fxq 'project_id = "teko-alpha-remote"' "$local_dir/supabase/config.toml"
 test -s "$local_dir/accounts.json"
 test -s "$local_dir/functions.env"
