@@ -11,9 +11,9 @@ import {
   landmarkLetter,
   type ProposedRoadRow,
 } from "@teko/maps";
-import { TekoMapController } from "@teko/maps/web";
 import { useEffect, useRef } from "react";
 import { DEFAULT_CENTER, TILES_URL } from "../../config";
+import { TekoMapController } from "../../lib/map-controller";
 import type { ModerationItem } from "./proposals";
 
 export interface CartoMapProps {
