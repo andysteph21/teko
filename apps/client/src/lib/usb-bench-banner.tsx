@@ -4,7 +4,8 @@ import { USB_GPS_FIXTURE } from "../config";
 
 export function UsbBenchBanner() {
   const insets = useSafeAreaInsets();
-  if (!USB_GPS_FIXTURE) return null;
+  const remote = process.env.EXPO_PUBLIC_ALPHA_REMOTE === "1";
+  if (!USB_GPS_FIXTURE && !remote) return null;
   return (
     <View
       pointerEvents="none"
@@ -19,7 +20,7 @@ export function UsbBenchBanner() {
       }}
     >
       <Text style={{ color: "white", fontWeight: "700", fontSize: 12 }}>
-        BANC USB · GPS FICTIF À LIBREVILLE
+        {remote ? "ESSAI PRIVÉ · AUCUNE COURSE RÉELLE" : "BANC USB · GPS FICTIF À LIBREVILLE"}
       </Text>
     </View>
   );

@@ -31,12 +31,35 @@ if (!process.argv.includes("--locked")) {
 }
 const directory = resolve(root, "apps", app);
 const firebaseConfig = resolve(root, ".local/alpha-services", `${app}-google-services.json`);
+const remote = process.argv.includes("--remote");
+const remoteDirectory = resolve(root, ".local/alpha-remote");
+const origin = remote ? new URL(process.env.TEKO_REMOTE_ALPHA_ORIGIN ?? "") : null;
+if (
+  origin &&
+  (origin.protocol !== "https:" ||
+    origin.href !== `${origin.origin}/` ||
+    !existsSync(firebaseConfig))
+) {
+  throw new Error("Origine HTTPS sans chemin et configuration Firebase requises");
+}
 const env = {
   ...process.env,
   ...(existsSync(firebaseConfig) ? { TEKO_GOOGLE_SERVICES_FILE: firebaseConfig } : {}),
   TEKO_APP_VARIANT: "alpha",
-  TEKO_ALLOW_LOCAL_HTTP: "1",
-  EXPO_PUBLIC_ALPHA_USB_GPS: "1",
+  TEKO_ALLOW_LOCAL_HTTP: remote ? "0" : "1",
+  EXPO_PUBLIC_ALPHA_USB_GPS: remote ? "0" : "1",
+  EXPO_PUBLIC_ALPHA_REMOTE: remote ? "1" : "0",
+  ...(origin
+    ? {
+        EXPO_PUBLIC_SUPABASE_URL: origin.origin,
+        EXPO_PUBLIC_SUPABASE_ANON_KEY: readFileSync(
+          resolve(remoteDirectory, "anon-key"),
+          "utf8",
+        ).trim(),
+        EXPO_PUBLIC_TILES_URL: `${origin.origin}/gabon`,
+        EXPO_PUBLIC_VALHALLA_URL: `${origin.origin}/routing`,
+      }
+    : {}),
   JAVA_HOME: "/home/steph/.local/jdk/jdk-17.0.20.1+1",
   ANDROID_HOME: "/home/steph/Android/Sdk",
   NODE_ENV: "production",
@@ -50,6 +73,9 @@ function run(command, args, cwd) {
 const bundleOnly = process.argv.includes("--js-only");
 const assembleOnly = process.argv.includes("--assemble-only");
 const onlyBundle = process.argv.includes("--bundle-only");
+if (remote && (bundleOnly || assembleOnly || onlyBundle)) {
+  throw new Error("Une précompilation Android complète est requise pour l’essai distant");
+}
 if (onlyBundle && (!bundleOnly || assembleOnly))
   throw new Error("--bundle-only exige --js-only et exclut --assemble-only");
 if (

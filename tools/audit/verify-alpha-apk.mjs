@@ -3,9 +3,12 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { parseEnv } from "node:util";
 
 const app = process.argv[2];
 if (!["client", "driver"].includes(app)) throw new Error("Application attendue : client ou driver");
+const remote = process.argv.includes("--remote");
+const remoteDirectory = resolve(import.meta.dirname, "../../.local/alpha-remote");
 const apk = resolve(
   import.meta.dirname,
   `../../apps/${app}/android/app/build/outputs/apk/release/app-release.apk`,
@@ -42,6 +45,22 @@ const entries = run("unzip", ["-Z1", apk])
   .filter((name) => name && !name.endsWith("/"));
 const generated = resolve(import.meta.dirname, `../../apps/${app}/android/app/build`);
 const bundle = run("unzip", ["-p", apk, "assets/index.android.bundle"]);
+if (remote) {
+  const origin = new URL(process.env.TEKO_REMOTE_ALPHA_ORIGIN ?? "");
+  const key = readFileSync(resolve(remoteDirectory, "anon-key"), "utf8").trim();
+  if (
+    origin.protocol !== "https:" ||
+    !key ||
+    !bundle.includes(origin.origin) ||
+    !bundle.includes(key)
+  ) {
+    throw new Error("L’APK ne cible pas l’origine HTTPS et la clé publique attendues");
+  }
+  const native = run(`${sdk}/aapt`, ["dump", "xmltree", apk, "AndroidManifest.xml"]).toString();
+  if (!/android:usesCleartextTraffic\([^)]*\)=\(type 0x12\)0x0\b/.test(native)) {
+    throw new Error("Le manifeste doit refuser HTTP non chiffré");
+  }
+}
 if (
   !bundle.equals(
     readFileSync(resolve(generated, "generated/assets/react/release/index.android.bundle")),
@@ -82,13 +101,30 @@ for (const path of sourcesVerified) {
   )
     throw new Error(`Source du correctif absente ou périmée dans le build : ${path}`);
 }
-const names = [
-  "SUPABASE_SERVICE_ROLE_KEY",
-  "PUSH_TRIGGER_SECRET",
-  "PURGE_TRIGGER_SECRET",
-  "TEKO_SANDBOX_SECRET",
-  "EXPO_ACCESS_TOKEN",
-];
+function serverSecrets() {
+  if (!remote) {
+    return [
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "PUSH_TRIGGER_SECRET",
+      "PURGE_TRIGGER_SECRET",
+      "TEKO_SANDBOX_SECRET",
+      "EXPO_ACCESS_TOKEN",
+    ].map((name) => [name, process.env[name]]);
+  }
+  const vars = parseEnv(
+    run("supabase", ["status", "--workdir", remoteDirectory, "-o", "env"]).toString(),
+  );
+  if (vars.API_URL !== "http://127.0.0.1:58421") throw new Error("Banc distant isolé requis");
+  const cfg = readFileSync(resolve(remoteDirectory, "supabase/config.toml"), "utf8");
+  const settings = parseEnv(readFileSync(resolve(remoteDirectory, "functions.env"), "utf8"));
+  return [
+    ["SUPABASE_SERVICE_ROLE_KEY", vars.SERVICE_ROLE_KEY],
+    ["SUPABASE_JWT_SECRET", cfg.match(/^jwt_secret\s*=\s*"([^"]+)"/m)?.[1]],
+    ["SUPABASE_SECRET_KEY", cfg.match(/^secret_key\s*=\s*"([^"]+)"/m)?.[1]],
+    ["PUSH_TRIGGER_SECRET", settings.PUSH_TRIGGER_SECRET],
+    ["EXPO_ACCESS_TOKEN", settings.EXPO_ACCESS_TOKEN],
+  ];
+}
 const properties = readFileSync(
   resolve(import.meta.dirname, "../../.local/alpha-signing/signing.properties"),
   "utf8",
@@ -97,7 +133,7 @@ const signing = Object.fromEntries(
   properties.split("\n").map((line) => line.split(/=(.*)/s).slice(0, 2)),
 );
 const secrets = [
-  ...names.map((name) => [name, process.env[name]]),
+  ...serverSecrets(),
   ["storePassword", signing.storePassword],
   ["keyPassword", signing.keyPassword],
 ];
@@ -137,6 +173,8 @@ console.info(
     privateSecretsFound: false,
     entriesScanned: entries.length,
     sourcesVerified,
-    scope: "APK USB local ; ne vaut pas validation du build terrain",
+    scope: remote
+      ? "APK signé pour essai fictif distant"
+      : "APK USB local ; ne vaut pas validation du build terrain",
   }),
 );
