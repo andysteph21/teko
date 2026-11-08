@@ -1,0 +1,62 @@
+{
+	admin off
+}
+
+{$ALPHA_SITE:http://:8080} {
+	bind {$ALPHA_BIND:0.0.0.0}
+	header X-Content-Type-Options nosniff
+
+	@authPost {
+		method POST
+		path /auth/v1/token /auth/v1/logout
+	}
+	@gate path /auth/v1/otp /auth/v1/verify /install /install/*
+	handle @gate {
+		header Content-Security-Policy "default-src 'none'; form-action 'self'; frame-ancestors 'none'"
+		request_body {
+			max_size 2KB
+		}
+		reverse_proxy teko-alpha-remote-access:8081
+	}
+	@authUser {
+		method GET
+		path /auth/v1/user
+	}
+	handle @authPost {
+		reverse_proxy supabase_kong_teko-alpha-remote:8000
+	}
+	handle @authUser {
+		reverse_proxy supabase_kong_teko-alpha-remote:8000
+	}
+	@app path /rest/v1/* /realtime/v1/websocket /storage/v1/object/* /functions/v1/price-quote
+	handle @app {
+		request_body {
+			max_size 6MB
+		}
+		reverse_proxy supabase_kong_teko-alpha-remote:8000
+	}
+	@tiles {
+		method GET HEAD
+		path /gabon /gabon/* /font/* /landmarks /landmarks/* /zones /zones/* /teko_roads /teko_roads/*
+	}
+	handle @tiles {
+		reverse_proxy {$ALPHA_MARTIN:host.docker.internal:3333}
+	}
+	@route {
+		method POST
+		path /routing/route
+	}
+	handle @route {
+		uri strip_prefix /routing
+		request_body {
+			max_size 16KB
+		}
+		reverse_proxy {$ALPHA_VALHALLA:host.docker.internal:8002}
+	}
+	handle /health {
+		respond "teko-alpha-remote" 200
+	}
+	handle {
+		respond 404
+	}
+}
