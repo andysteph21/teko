@@ -16,7 +16,10 @@ export interface TekoMapViewProps {
 }
 
 export function TekoMapView({ options, center, zoom = 14, style, children }: TekoMapViewProps) {
-  const mapStyle = useMemo(() => buildMapStyle(options) as never, [options]);
+  const mapStyle = useMemo(
+    () => buildMapStyle({ ...options, communityTiles: true }) as never,
+    [options],
+  );
   return (
     <MapLibreMap mapStyle={mapStyle} style={style ?? styles.fill}>
       <Camera initialViewState={{ center: [center.lon, center.lat], zoom }} />

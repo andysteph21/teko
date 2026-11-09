@@ -59,6 +59,7 @@ export default function CartoMap({ items, focus }: CartoMapProps) {
     if (!container) return;
     const map = new TekoMapController(container, {
       tilesUrl: TILES_URL,
+      communityTiles: true,
       labelDensity: "dense",
       center: DEFAULT_CENTER,
       zoom: 12,

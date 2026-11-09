@@ -13,6 +13,24 @@ const layers = (s: Record<string, unknown>) => s.layers as Layer[];
 const layer = (s: Record<string, unknown>, id: string) => layers(s).find((l) => l.id === id)!;
 
 describe("buildMapStyle", () => {
+  it("branche les repères et les routes Teko sans ajouter de texte en mode éco", () => {
+    const options = { tilesUrl: "https://tiles.example/gabon", communityTiles: true };
+    const style = buildMapStyle(options);
+    expect(style.sources).toMatchObject({
+      "teko-validated-roads": { type: "vector", url: "https://tiles.example/teko_roads" },
+      "teko-validated-landmarks": { type: "vector", url: "https://tiles.example/landmarks" },
+    });
+    expect(layer(style, "teko-validated-road-line")).toMatchObject({
+      "source-layer": "teko_roads",
+    });
+    expect(layer(style, "teko-validated-landmark-name")).toMatchObject({
+      "source-layer": "landmarks",
+    });
+    const eco = buildMapStyle({ ...options, eco: true });
+    expect(layer(eco, "teko-validated-landmark-dot")).toBeDefined();
+    expect(layer(eco, "teko-validated-landmark-name")).toBeUndefined();
+  });
+
   it("contient les 4 sources Teko et le fond du langage carte", () => {
     const s = buildMapStyle({ eco: true });
     const sources = s.sources as Record<string, unknown>;

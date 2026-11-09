@@ -19,6 +19,7 @@ export default function LiveMap() {
     if (!containerRef.current) return;
     const map = new TekoMapController(containerRef.current, {
       tilesUrl: TILES_URL,
+      communityTiles: true,
       center: DEFAULT_CENTER,
       zoom: 12,
       labelDensity: "dense",

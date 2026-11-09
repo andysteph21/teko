@@ -23,6 +23,8 @@ export { TEKO_SOURCES };
 export interface MapStyleOptions {
   /** URL du style de fond (Martin/PMTiles) — ignorée en mode éco. */
   tilesUrl?: string;
+  /** Couches collaboratives Martin pour les clients qui les affichent. */
+  communityTiles?: boolean;
   /** Mode éco : fond uni, pas de requête tuiles (ni glyphes → pas de texte). */
   eco?: boolean;
   /** Glyphes. Défaut : dérivés de l'origine de `tilesUrl` (Martin sert
@@ -54,6 +56,57 @@ function basemapSource(tilesUrl: string, eco: boolean): Record<string, unknown> 
     attribution: "© les contributeurs OpenStreetMap",
     ...(eco ? { maxzoom: 13 } : {}),
   };
+}
+
+function addCommunityTiles(
+  { tilesUrl, communityTiles, eco }: MapStyleOptions,
+  sources: Record<string, unknown>,
+  layers: Layer[],
+  labels: { halo: Record<string, unknown>; font: string; glyphsUrl?: string },
+): void {
+  if (!communityTiles || !tilesUrl) return;
+  const { halo, font, glyphsUrl } = labels;
+  const origin = new URL(tilesUrl).origin;
+  sources["teko-validated-roads"] = { type: "vector", url: `${origin}/teko_roads` };
+  sources["teko-validated-landmarks"] = { type: "vector", url: `${origin}/landmarks` };
+  layers.push(
+    {
+      id: "teko-validated-road-line",
+      type: "line",
+      source: "teko-validated-roads",
+      "source-layer": "teko_roads",
+      paint: { "line-color": "#6847A5", "line-width": 3, "line-opacity": 0.9 },
+    },
+    {
+      id: "teko-validated-landmark-dot",
+      type: "circle",
+      source: "teko-validated-landmarks",
+      "source-layer": "landmarks",
+      paint: {
+        "circle-radius": 5,
+        "circle-color": "#6847A5",
+        "circle-stroke-color": "#FFFFFF",
+        "circle-stroke-width": 1.5,
+      },
+    },
+  );
+  if (!eco && glyphsUrl) {
+    layers.push({
+      id: "teko-validated-landmark-name",
+      type: "symbol",
+      source: "teko-validated-landmarks",
+      "source-layer": "landmarks",
+      minzoom: 14,
+      layout: {
+        "text-field": ["get", "name"],
+        "text-font": [font],
+        "text-offset": [0, 0.65],
+        "text-anchor": "top",
+        "text-size": 12,
+      },
+      paint: { "text-color": "#362655", ...halo },
+    });
+  }
 }
 
 /** Style complet (sources GeoJSON vides + couches Teko). Objet compatible
@@ -95,6 +148,8 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
       layers.push(...basemapLabelLayers({ fonts, padding, zShift, halo }));
     }
   }
+
+  addCommunityTiles(opts, sources, layers, { halo, font: fonts.bold, glyphsUrl });
 
   sources[TEKO_SOURCES.savedPlaces] = { ...emptyGeoJson };
   sources[TEKO_SOURCES.proposedRoads] = { ...emptyGeoJson };
