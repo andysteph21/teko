@@ -31,7 +31,9 @@ if (!process.argv.includes("--locked")) {
 }
 const directory = resolve(root, "apps", app);
 const firebaseConfig = resolve(root, ".local/alpha-services", `${app}-google-services.json`);
-const remote = process.argv.includes("--remote");
+const field = process.argv.includes("--field");
+const remote = field || process.argv.includes("--remote");
+if (field && process.argv.includes("--remote")) throw new Error("Choisir --field ou --remote");
 const remoteDirectory = resolve(root, ".local/alpha-remote");
 const origin = remote ? new URL(process.env.TEKO_REMOTE_ALPHA_ORIGIN ?? "") : null;
 if (
@@ -48,7 +50,7 @@ const env = {
   TEKO_APP_VARIANT: "alpha",
   TEKO_ALLOW_LOCAL_HTTP: remote ? "0" : "1",
   EXPO_PUBLIC_ALPHA_USB_GPS: remote ? "0" : "1",
-  EXPO_PUBLIC_ALPHA_REMOTE: remote ? "1" : "0",
+  EXPO_PUBLIC_ALPHA_REMOTE: remote && !field ? "1" : "0",
   ...(origin
     ? {
         EXPO_PUBLIC_SUPABASE_URL: origin.origin,

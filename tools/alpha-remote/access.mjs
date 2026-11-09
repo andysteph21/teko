@@ -11,6 +11,7 @@ const adminPath = "/config/alpha-admin.json";
 const admin = existsSync(adminPath) ? JSON.parse(readFileSync(adminPath, "utf8")) : null;
 const key = readFileSync("/config/anon-key", "utf8").trim();
 const files = { client: "teko-passager.apk", driver: "teko-chauffeur.apk" };
+const fieldAuthPaths = new Set(["/auth/v1/otp", "/auth/v1/verify", "/install/otp", "/install/session"]);
 const attempts = new Map();
 const sessions = new Map();
 const windowMs = 10 * 60_000;
@@ -33,12 +34,16 @@ async function body(req) {
   return Buffer.concat(chunks).toString("utf8");
 }
 
-function reserve(phone, operation) {
-  const index = `${phone}:${operation}`;
+function reserve(identity, operation, limit = 8) {
+  const index = `${identity}:${operation}`;
   const now = Date.now();
   const previous = attempts.get(index);
+  if (!previous && attempts.size >= 4096) {
+    for (const [key, entry] of attempts) if (entry.until <= now) attempts.delete(key);
+    if (attempts.size >= 4096) return false;
+  }
   const entry = previous?.until > now ? previous : { until: now + windowMs, count: 0 };
-  if (entry.count >= 8) return false;
+  if (entry.count >= limit) return false;
   entry.count += 1;
   attempts.set(index, entry);
   return true;
@@ -46,18 +51,21 @@ function reserve(phone, operation) {
 
 async function auth(operation, input, operator) {
   const phone = typeof input.phone === "string" ? input.phone.replace(/^\+/, "") : "";
-  const role = operator ?? accounts.get(phone);
+  let role = operator ?? accounts.get(phone);
+  const field = !operator && admin?.fieldSignup === true;
   const allowed = operator
     ? Object.hasOwn(admin.operators, operator) && admin.operators[operator] === phone
-    : Object.hasOwn(files, role);
-  if (!allowed) return { status: 400, data: { msg: "Compte d’essai requis." } };
+    : field
+      ? /^241\d{8,9}$/.test(phone) && !Object.values(admin.operators).includes(phone)
+      : Object.hasOwn(files, role);
+  if (!allowed) return { status: 400, data: { msg: "Numéro non autorisé." } };
   const payload = { phone: `+${phone}` };
   if (operation === "verify") {
     if (typeof input.token !== "string" || !/^\d{6}$/.test(input.token)) {
-      return { status: 400, data: { msg: "Code d’essai invalide." } };
+      return { status: 400, data: { msg: "Code invalide." } };
     }
     Object.assign(payload, { type: "sms", token: input.token });
-  } else Object.assign(payload, { channel: "sms", create_user: false });
+  } else Object.assign(payload, { channel: "sms", create_user: field });
   if (!reserve(phone, operation)) {
     return { status: 429, data: { msg: "Trop d’essais. Réessaie dans dix minutes." } };
   }
@@ -68,6 +76,20 @@ async function auth(operation, input, operator) {
     signal: AbortSignal.timeout(5000),
   });
   const data = await response.json();
+  if (field && data.access_token) {
+    const roles = input.role ? [input.role] : Object.keys(files);
+    const invitations = await Promise.all(roles.map((name) =>
+      typeof name === "string" && Object.hasOwn(files, name) && isInvited(data.access_token, name)
+    ));
+    role = roles[invitations.indexOf(true)];
+    if (!role) {
+      return { status: 403, data: { msg: "Invitation requise pour ce rôle." } };
+    }
+    return { status: response.status, data, role };
+  }
+  if (field && operation === "otp" && [400, 403, 404].includes(response.status)) {
+    return { status: 200, data: {} };
+  }
   if (!operator && data.access_token && !(await isInvited(data.access_token, role))) {
     return { status: 403, data: { msg: "Invitation d’essai inactive." } };
   }
@@ -90,28 +112,38 @@ function sessionFrom(req) {
   return session && session.until > Date.now() ? session : null;
 }
 
-function page(res, session) {
+function page(res, session, fieldPhone) {
+  const field = admin?.fieldSignup === true;
+  const otpForm = field && !fieldPhone
+    ? `<form method="post" action="/install/otp"><label>Numéro invité (+241) <input name="phone" type="tel" required pattern="\\+?241[0-9]{8,9}"></label><button>Recevoir le code</button></form>`
+    : null;
+  const identity = field
+    ? `<input name="phone" type="hidden" value="${fieldPhone ?? ""}"><label>Application <select name="role"><option value="client">Passager</option><option value="driver">Chauffeur</option></select></label>`
+    : '<label>Numéro d’essai <input name="phone" type="tel" required maxlength="14"></label>';
   const message = session
     ? `<p><a href="/install/${files[session.role]}">Télécharger l’application Android</a></p>`
-    : `<form method="post" action="/install/session">
-<label>Numéro d’essai <input name="phone" type="tel" required maxlength="14"></label>
-<label>Code d’essai <input name="code" inputmode="numeric" pattern="[0-9]{6}" required></label>
+    : otpForm ?? `<form method="post" action="/install/session">
+${identity}
+<label>${field ? "Code reçu par SMS" : "Code d’essai"} <input name="code" inputmode="numeric" pattern="[0-9]{6}" required></label>
 <button>Accéder à l’APK</button></form>`;
   reply(
     res,
     200,
     `<!doctype html><html lang="fr"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Essai privé Teko</title><main><h1>Essai privé Teko</h1>
-<p>Utilise les identifiants fictifs fournis par l’organisateur. Aucun SMS n’est envoyé.</p>
+<title>Alpha privée Teko</title><main><h1>Alpha privée Teko</h1>
+<p>${field ? "Utilisez le numéro enregistré par l’équipe Teko." : "Utilise les identifiants fictifs fournis par l’organisateur. Aucun SMS n’est envoyé."}</p>
 ${message}</main></html>`,
     "text/html; charset=utf-8",
   );
 }
 
 async function installLogin(req, res) {
+  if (admin?.mobileClosed) return reply(res, 403, { msg: "Les inscriptions terrain ne sont pas ouvertes." });
   const form = new URLSearchParams(await body(req));
-  const result = await auth("verify", { phone: form.get("phone"), token: form.get("code") });
+  const role = form.get("role");
+  if (admin?.fieldSignup && !Object.hasOwn(files, role)) return reply(res, 400, { msg: "Rôle requis." });
+  const result = await auth("verify", { phone: form.get("phone"), token: form.get("code"), role });
   const token = result.data.access_token;
   if (!token) {
     return reply(
@@ -135,7 +167,18 @@ async function installLogin(req, res) {
   res.end();
 }
 
+async function installOtp(req, res) {
+  if (admin?.mobileClosed || !admin?.fieldSignup) return reply(res, 403, { msg: "Inscriptions fermées." });
+  const form = new URLSearchParams(await body(req));
+  const phone = form.get("phone")?.replace(/^\+/, "");
+  if (!phone || !/^241\d{8,9}$/.test(phone)) return reply(res, 400, { msg: "Numéro invalide." });
+  const result = await auth("otp", { phone });
+  if (result.status !== 200) return reply(res, result.status, { msg: "Demande de code indisponible." });
+  return page(res, null, phone);
+}
+
 async function download(req, res, pathname) {
+  if (admin?.mobileClosed) return reply(res, 403, { msg: "Les inscriptions terrain ne sont pas ouvertes." });
   const session = sessionFrom(req);
   if (!session || !(await isInvited(session.token, session.role))) {
     return reply(res, 401, { msg: "Connexion d’essai requise." });
@@ -230,6 +273,9 @@ async function adminRequest(req, res, pathname) {
   if (operator !== "ops" || !(await operatorSession(token, operator))) {
     return reply(res, 403, { msg: "Action réservée aux opérations." });
   }
+  if (admin.mobileClosed) {
+    return reply(res, 409, { msg: "Les comptes fictifs ont été retirés. Les inscriptions terrain ne sont pas ouvertes." });
+  }
   if (!Object.hasOwn(files, input.role) || (input.phone !== undefined && typeof input.phone !== "string")) {
     return reply(res, 400, { msg: "Compte de test invalide." });
   }
@@ -249,12 +295,30 @@ async function adminRequest(req, res, pathname) {
 async function handle(req, res) {
   const pathname = new URL(req.url, "http://localhost").pathname;
   if (pathname.startsWith("/admin/alpha-api/")) return adminRequest(req, res, pathname);
+  if (admin?.fieldSignup && req.method === "POST" && fieldAuthPaths.has(pathname)) {
+    const address = req.headers["x-teko-client-ip"];
+    if (typeof address !== "string" || !reserve(address, "terrain", 30)) {
+      return reply(res, 429, { msg: "Trop d’essais. Réessayez dans dix minutes." });
+    }
+  }
   if (req.method === "POST" && ["/auth/v1/otp", "/auth/v1/verify"].includes(pathname)) {
+    if (admin?.mobileClosed) return reply(res, 403, { msg: "Les inscriptions terrain ne sont pas ouvertes." });
     const result = await auth(pathname.split("/").at(-1), JSON.parse(await body(req)));
     return reply(res, result.status, result.data);
   }
   if (req.method === "POST" && pathname === "/install/session") return installLogin(req, res);
-  if (req.method === "GET" && pathname === "/install") return page(res, sessionFrom(req));
+  if (req.method === "POST" && pathname === "/install/otp") return installOtp(req, res);
+  if (req.method === "GET" && pathname === "/install") {
+    if (admin?.mobileClosed) {
+      return reply(
+        res,
+        200,
+        '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Teko Move · Alpha privée</title><main><h1>Teko Move · Alpha privée</h1><p>Les inscriptions terrain ne sont pas encore ouvertes.</p></main>',
+        "text/html; charset=utf-8",
+      );
+    }
+    return page(res, sessionFrom(req));
+  }
   if (
     req.method === "GET" &&
     Object.values(files).some((name) => pathname === `/install/${name}`)

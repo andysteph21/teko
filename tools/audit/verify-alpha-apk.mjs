@@ -7,7 +7,9 @@ import { parseEnv } from "node:util";
 
 const app = process.argv[2];
 if (!["client", "driver"].includes(app)) throw new Error("Application attendue : client ou driver");
-const remote = process.argv.includes("--remote");
+const field = process.argv.includes("--field");
+const remote = field || process.argv.includes("--remote");
+if (field && process.argv.includes("--remote")) throw new Error("Choisir --field ou --remote");
 const remoteDirectory = resolve(import.meta.dirname, "../../.local/alpha-remote");
 const apk = resolve(
   import.meta.dirname,
@@ -45,6 +47,15 @@ const entries = run("unzip", ["-Z1", apk])
   .filter((name) => name && !name.endsWith("/"));
 const generated = resolve(import.meta.dirname, `../../apps/${app}/android/app/build`);
 const bundle = run("unzip", ["-p", apk, "assets/index.android.bundle"]);
+const fictionalBanners = ["AUCUNE COURSE RÉELLE", "GPS FICTIF À LIBREVILLE"];
+if (
+  field &&
+  fictionalBanners.some(
+    (banner) => bundle.includes(banner) || bundle.includes(Buffer.from(banner, "utf16le")),
+  )
+) {
+  throw new Error("Le build terrain contient encore le bandeau d’essai fictif");
+}
 if (remote) {
   const origin = new URL(process.env.TEKO_REMOTE_ALPHA_ORIGIN ?? "");
   const key = readFileSync(resolve(remoteDirectory, "anon-key"), "utf8").trim();
@@ -117,12 +128,16 @@ function serverSecrets() {
   if (vars.API_URL !== "http://127.0.0.1:58421") throw new Error("Banc distant isolé requis");
   const cfg = readFileSync(resolve(remoteDirectory, "supabase/config.toml"), "utf8");
   const settings = parseEnv(readFileSync(resolve(remoteDirectory, "functions.env"), "utf8"));
+  const fieldSecrets = ["ESMS_SMS_API_KEY", "SEND_FIELD_SMS_HOOK_SECRET"].filter(
+    (name) => settings[name],
+  );
   return [
     ["SUPABASE_SERVICE_ROLE_KEY", vars.SERVICE_ROLE_KEY],
     ["SUPABASE_JWT_SECRET", cfg.match(/^jwt_secret\s*=\s*"([^"]+)"/m)?.[1]],
     ["SUPABASE_SECRET_KEY", cfg.match(/^secret_key\s*=\s*"([^"]+)"/m)?.[1]],
     ["PUSH_TRIGGER_SECRET", settings.PUSH_TRIGGER_SECRET],
     ["EXPO_ACCESS_TOKEN", settings.EXPO_ACCESS_TOKEN],
+    ...fieldSecrets.map((name) => [name, settings[name]]),
   ];
 }
 const properties = readFileSync(
@@ -173,8 +188,10 @@ console.info(
     privateSecretsFound: false,
     entriesScanned: entries.length,
     sourcesVerified,
-    scope: remote
-      ? "APK signé pour essai fictif distant"
-      : "APK USB local ; ne vaut pas validation du build terrain",
+    scope: field
+      ? "APK signé pour l’alpha terrain ; contrôles terrain distincts"
+      : remote
+        ? "APK signé pour essai fictif distant"
+        : "APK USB local ; ne vaut pas validation du build terrain",
   }),
 );

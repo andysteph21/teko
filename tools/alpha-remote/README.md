@@ -64,6 +64,16 @@ Copier le contenu de `apps/admin/.next/alpha-vps/standalone` sur le VPS dans `.l
 
 Dans **Utilisateurs → Invitations à l’alpha fermée**, Ops sélectionne un rôle et crée une invitation avec un compte de réserve. Le bouton **Afficher le code** retrouve les identifiants d’une invitation active issue de cette réserve. Retirer une invitation bloque une nouvelle connexion mobile, le téléchargement et la participation à une nouvelle course. Réactiver restitue le même compte au même testeur. Un compte retiré ne retourne pas dans la réserve. Le tableau de bord actualise les courses récentes toutes les 30 secondes.
 
+Ce flux de réserve exige `NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS=true` et s’applique uniquement au banc fictif.
+
+## Passage à l’alpha terrain
+
+Compiler la console privée sans `NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS`. Dans **Utilisateurs → Invitations à l’alpha fermée**, Ops saisit le vrai numéro au format international et choisit **Passager** ou **Chauffeur**. Cette étape prépare l’autorisation en base. Le compte mobile se crée à la première connexion vérifiée.
+
+Laisser `mobileClosed: true` dans `alpha-admin.json` jusqu’aux contrôles d’ouverture. Préparer Auth avec l’inscription téléphonique et la confirmation OTP, le hook Postgres `public.alpha_before_phone_signup` et le hook HTTP signé `send-field-sms`. Le service Auth et la fonction doivent partager le secret `SEND_FIELD_SMS_HOOK_SECRET`. La fonction doit recevoir `ESMS_SMS_API_KEY` et `ESMS_SMS_SENDER` côté serveur. Vérifier la portée de la clé, l’expéditeur, la joignabilité du hook depuis Auth et les réponses avant d’ouvrir le portail. Le hook vérifie de nouveau l’invitation avant tout envoi. Aucun numéro ni code OTP ne doit être inscrit dans les journaux de support.
+
+Assembler les APK avec `--field` et la même origine HTTPS et clé publique que le déploiement terrain. Vérifier chaque APK avec `verify-alpha-apk.mjs <rôle> --field`, puis éprouver l’inscription réelle, la réception Airtel et Moov et le parcours sur appareils. Une fois les conditions du [plan alpha](../../docs/plan/08-plan-alpha.md#critères-bloquants-confirmés-avant-les-premières-courses-réelles) réunies, activer `fieldSignup: true`, retirer `mobileClosed` et recréer la passerelle d’accès. Conserver le [registre de retours terrain](../../docs/plan/11-procedures-alpha.md#retours-de-terrain).
+
 ## Préparer les APK pour l’adresse retenue
 
 Le domaine ne configure pas l’accès à lui seul. Préparer une passerelle HTTPS avec accès réservé aux invités, puis vérifier Auth, devis, tuiles, téléchargements et Realtime depuis un autre réseau avant de distribuer les APK. La passerelle de prévisualisation ci-dessus reste en boucle locale.

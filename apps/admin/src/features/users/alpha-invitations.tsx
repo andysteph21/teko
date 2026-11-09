@@ -7,6 +7,8 @@ import { supabase } from "../../lib/supabase";
 import { useAdminProfile } from "../shell/use-admin-profile";
 import { useSession } from "../shell/use-session";
 
+const syntheticAccounts = privateAlpha && process.env.NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS === "true";
+
 type TestInvitation = { phone: string; role: "client" | "driver"; code: string };
 
 function InvitationCredentials({
@@ -67,7 +69,7 @@ function InvitedAccounts({
             >
               {row.is_active ? "Retirer l’invitation" : "Réactiver l’invitation"}
             </button>
-            {privateAlpha && row.is_active && /^2410000091\d{2}$/.test(row.phone) && (
+            {syntheticAccounts && row.is_active && /^2410000091\d{2}$/.test(row.phone) && (
               <button
                 type="button"
                 disabled={provisioning}
@@ -121,7 +123,7 @@ function InvitationList() {
   const provision = useTestInvitation(session?.access_token, setCredentials);
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (privateAlpha) {
+    if (syntheticAccounts) {
       setCredentials(null);
       provision.mutate({ role });
     } else update.mutate({ phone, role, active: true });
@@ -130,12 +132,12 @@ function InvitationList() {
     <section className="rounded-xl border border-neutral-200 bg-neutral-0 p-4">
       <h2 className="font-bold">Invitations à l’alpha fermée</h2>
       <p className="my-2 text-sm">
-        {privateAlpha
+        {syntheticAccounts
           ? "Créez une invitation avec un numéro fictif réservé. Aucun SMS n’est envoyé."
-          : "Le numéro doit être vérifié à la connexion. L’invitation n’envoie aucun SMS."}
+          : "Ajoutez le vrai numéro du participant. L’invitation autorise son inscription et n’envoie aucun SMS."}
       </p>
       <form onSubmit={submit} className="flex flex-wrap gap-2">
-        {!privateAlpha && (
+        {!syntheticAccounts && (
           <label>
             Numéro international
             <input
@@ -164,7 +166,7 @@ function InvitationList() {
           disabled={update.isPending || provision.isPending}
           className="rounded bg-brand-600 px-3 text-neutral-0"
         >
-          {privateAlpha ? "Créer une invitation de test" : "Inviter ce numéro"}
+          {syntheticAccounts ? "Créer une invitation de test" : "Inviter ce numéro"}
         </button>
       </form>
       {query.error || update.error ? (

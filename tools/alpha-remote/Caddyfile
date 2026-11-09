@@ -17,7 +17,9 @@
 		request_body {
 			max_size 2KB
 		}
-		reverse_proxy teko-alpha-remote-access:8081
+		reverse_proxy teko-alpha-remote-access:8081 {
+			header_up X-Teko-Client-Ip {http.request.remote.host}
+		}
 	}
 	@authUser {
 		method GET
