@@ -66,6 +66,14 @@ Dans **Utilisateurs → Invitations à l’alpha fermée**, Ops sélectionne un 
 
 Ce flux de réserve exige `NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS=true` et s’applique uniquement au banc fictif.
 
+## Campagne fictive de quinze participants
+
+Sur un banc fermé, `node tools/alpha-remote/seed.mjs --campaign` prépare cinq passagers et dix chauffeurs. Les chauffeurs ont sept pièces fictives validées et un véhicule Éco. Recharger la table des codes fixes dans Auth avant d’ouvrir le portail. Compiler la console avec `NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS=true` et `NEXT_PUBLIC_TEKO_SYNTHETIC_CAMPAIGN=true` pour afficher les codes des invitations de cette campagne.
+
+Assembler et vérifier les deux APK signés avec `--remote`. Si le projet natif alpha HTTPS vient d’être généré et qu’aucune configuration native n’a changé, `--reuse-native` permet de reconstruire le bundle JavaScript et d’assembler à nouveau. Vérifier le téléchargement par rôle après ouverture.
+
+Tant que le portail est fermé, `node tools/alpha-remote/smoke-campaign-cash.mjs` déroule une course simulée, vérifie la commission, le justificatif et la double validation Finance. Le scénario laisse la course de contrôle visible dans la console et remet le solde du chauffeur à zéro.
+
 ## Passage à l’alpha terrain
 
 Compiler la console privée sans `NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS`. Dans **Utilisateurs → Invitations à l’alpha fermée**, Ops saisit le vrai numéro au format international et choisit **Passager** ou **Chauffeur**. Cette étape prépare l’autorisation en base. Le compte mobile se crée à la première connexion vérifiée.

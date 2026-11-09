@@ -8,6 +8,13 @@ import { useAdminProfile } from "../shell/use-admin-profile";
 import { useSession } from "../shell/use-session";
 
 const syntheticAccounts = privateAlpha && process.env.NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS === "true";
+const fixedCampaign =
+  syntheticAccounts && process.env.NEXT_PUBLIC_TEKO_SYNTHETIC_CAMPAIGN === "true";
+const invitationIntro = fixedCampaign
+  ? "Les comptes de la campagne sont prêts. Affichez le code du testeur et transmettez-le en privé."
+  : syntheticAccounts
+    ? "Créez une invitation avec un numéro fictif réservé. Aucun SMS n’est envoyé."
+    : "Ajoutez le vrai numéro du participant. L’invitation autorise son inscription et n’envoie aucun SMS.";
 
 type TestInvitation = { phone: string; role: "client" | "driver"; code: string };
 
@@ -131,44 +138,42 @@ function InvitationList() {
   return (
     <section className="rounded-xl border border-neutral-200 bg-neutral-0 p-4">
       <h2 className="font-bold">Invitations à l’alpha fermée</h2>
-      <p className="my-2 text-sm">
-        {syntheticAccounts
-          ? "Créez une invitation avec un numéro fictif réservé. Aucun SMS n’est envoyé."
-          : "Ajoutez le vrai numéro du participant. L’invitation autorise son inscription et n’envoie aucun SMS."}
-      </p>
-      <form onSubmit={submit} className="flex flex-wrap gap-2">
-        {!syntheticAccounts && (
+      <p className="my-2 text-sm">{invitationIntro}</p>
+      {!fixedCampaign && (
+        <form onSubmit={submit} className="flex flex-wrap gap-2">
+          {!syntheticAccounts && (
+            <label>
+              Numéro international
+              <input
+                type="tel"
+                required
+                placeholder="+241…"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                className="ml-2 rounded border p-2"
+              />
+            </label>
+          )}
           <label>
-            Numéro international
-            <input
-              type="tel"
-              required
-              placeholder="+241…"
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
+            Rôle
+            <select
+              value={role}
+              onChange={(event) => setRole(event.target.value as typeof role)}
               className="ml-2 rounded border p-2"
-            />
+            >
+              <option value="client">Passager</option>
+              <option value="driver">Chauffeur</option>
+            </select>
           </label>
-        )}
-        <label>
-          Rôle
-          <select
-            value={role}
-            onChange={(event) => setRole(event.target.value as typeof role)}
-            className="ml-2 rounded border p-2"
+          <button
+            type="submit"
+            disabled={update.isPending || provision.isPending}
+            className="rounded bg-brand-600 px-3 text-neutral-0"
           >
-            <option value="client">Passager</option>
-            <option value="driver">Chauffeur</option>
-          </select>
-        </label>
-        <button
-          type="submit"
-          disabled={update.isPending || provision.isPending}
-          className="rounded bg-brand-600 px-3 text-neutral-0"
-        >
-          {syntheticAccounts ? "Créer une invitation de test" : "Inviter ce numéro"}
-        </button>
-      </form>
+            {syntheticAccounts ? "Créer une invitation de test" : "Inviter ce numéro"}
+          </button>
+        </form>
+      )}
       {query.error || update.error ? (
         <p role="alert">Invitation non confirmée. Vérifiez le numéro et le réseau.</p>
       ) : null}

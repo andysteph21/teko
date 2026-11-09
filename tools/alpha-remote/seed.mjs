@@ -23,6 +23,7 @@ const admin = createClient(status.API_URL, status.SERVICE_ROLE_KEY, authOptions)
 const accounts = JSON.parse(readFileSync(resolve(workdir, "accounts.json"), "utf8"));
 const poolPath = resolve(workdir, "alpha-admin.json");
 const adminPool = process.argv[2] === "--admin-pool";
+const campaign = process.argv[2] === "--campaign";
 const functions = parseEnv(readFileSync(resolve(workdir, "functions.env"), "utf8"));
 
 async function seedAccount({ role, phone }) {
@@ -144,14 +145,21 @@ async function seedPool() {
       operators: Object.fromEntries(
         accounts.filter(({ role }) => ["ops", "finance"].includes(role)).map(({ role, phone }) => [role, phone]),
       ),
-      pool: Array.from({ length: 24 }, (_, index) => {
+      pool: [],
+    };
+  }
+  if (!config.pool.length) {
+    if (campaign && !config.mobileClosed) throw new Error("Fermer le banc avant de préparer la campagne");
+    config.pool = Array.from({ length: campaign ? 15 : 24 }, (_, index) => {
         let code;
         do code = String(randomInt(100000, 1000000)); while (codes.has(code));
         codes.add(code);
-        return { role: index < 12 ? "client" : "driver", phone: `241000009${100 + index}`, code };
-      }),
-    };
-    writeFileSync(poolPath, JSON.stringify(config), { mode: 0o600, flag: "wx" });
+        return { role: index < (campaign ? 5 : 12) ? "client" : "driver", phone: `241000009${(campaign ? 150 : 100) + index}`, code };
+    });
+    writeFileSync(poolPath, JSON.stringify(config), { mode: 0o600 });
+  }
+  if (campaign && (config.pool.length !== 15 || config.pool.filter(({role}) => role === "driver").length !== 10)) {
+    throw new Error("Campagne attendue : dix chauffeurs et cinq passagers");
   }
   const ops = await signIn("ops");
   for (const account of config.pool) {
@@ -162,6 +170,14 @@ async function seedPool() {
     if (account.role === "driver") {
       await seedVehicle(account.id, `TEST-${account.phone.slice(-3)}`);
       await seedDocuments(account.id, admin, ops, false);
+    }
+    if (campaign) {
+      const invite = await ops.rpc("invite_alpha", {p_phone: account.phone, p_role: account.role, p_active: true});
+      if (invite.error) throw invite.error;
+      if (account.role === "driver") {
+        const validation = await ops.rpc("validate_kyc", {p_driver: account.id, p_accept: true, p_note: "Campagne fictive sans SMS"});
+        if (validation.error) throw validation.error;
+      }
     }
   }
   writeFileSync(poolPath, JSON.stringify(config), { mode: 0o600 });
@@ -176,12 +192,12 @@ async function seedPool() {
     ), { mode: 0o600 });
   }
   saveAllowlist([...accounts, ...config.pool]);
-  console.info("Réserve fictive prête : 12 passagers et 12 chauffeurs, en attente d’invitation.");
+  console.info(campaign ? "Campagne prête : 5 passagers et 10 chauffeurs invités." : "Réserve fictive prête.");
 }
 
 await db.connect();
 try {
-  if (adminPool) await seedPool();
+  if (adminPool || campaign) await seedPool();
   else await seedInitialAccounts();
 } finally {
   await db.end();

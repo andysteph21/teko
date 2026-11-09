@@ -75,6 +75,7 @@ function run(command, args, cwd) {
 const bundleOnly = process.argv.includes("--js-only");
 const assembleOnly = process.argv.includes("--assemble-only");
 const onlyBundle = process.argv.includes("--bundle-only");
+const reuseNative = process.argv.includes("--reuse-native");
 if (remote && (bundleOnly || assembleOnly || onlyBundle)) {
   throw new Error("Une précompilation Android complète est requise pour l’essai distant");
 }
@@ -88,13 +89,22 @@ if (
     ))
 )
   throw new Error("Reprise d’assemblage : projet alpha et bundle déjà construit requis");
-if (bundleOnly) {
+if (bundleOnly || reuseNative) {
   const gradle = readFileSync(resolve(directory, "android/app/build.gradle"), "utf8");
   if (
     !gradle.includes(`applicationId 'ga.teko.${app}.alpha'`) &&
     !gradle.includes(`applicationId "ga.teko.${app}.alpha"`)
   ) {
     throw new Error("Projet natif alpha attendu avant reconstruction JavaScript");
+  }
+  if (reuseNative) {
+    const manifest = readFileSync(
+      resolve(directory, "android/app/src/main/AndroidManifest.xml"),
+      "utf8",
+    );
+    if (!remote || !manifest.includes('android:usesCleartextTraffic="false"')) {
+      throw new Error("La réutilisation exige un projet alpha distant HTTPS");
+    }
   }
 } else {
   run("pnpm", ["exec", "expo", "prebuild", "--platform", "android", "--no-install"], directory);
@@ -108,7 +118,7 @@ const gradleOptions = [
   "--no-daemon",
   "--console=plain",
 ];
-if (bundleOnly && !assembleOnly) {
+if ((bundleOnly || reuseNative) && !assembleOnly) {
   // Metro exclut node_modules des entrées Gradle : une mise à jour transitive
   // doit reconstruire le bundle, même si aucun fichier applicatif ne change.
   run(
