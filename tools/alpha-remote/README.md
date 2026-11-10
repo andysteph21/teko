@@ -1,6 +1,8 @@
 # Banc privé pour l’essai distant
 
-Ce banc contient quatre comptes fictifs, une invitation par rôle mobile et des pièces KYC de fixture. Les courses sont simulées par les participants ; ni SMS facturé ni paiement mobile n’est activé. Les APK distants utilisent le GPS réel et affichent « ESSAI PRIVÉ · AUCUNE COURSE RÉELLE ». Ne pas utiliser de vrais justificatifs ni de numéros personnels pendant cet essai.
+Le scénario minimal de ce banc contient quatre comptes fictifs, une invitation par rôle mobile et des pièces KYC de test. Les APK distants utilisent le GPS réel et affichent « ESSAI PRIVÉ · GPS RÉEL · PAIEMENT SIMULÉ ». Les participants peuvent effectuer le trajet en voiture. Aucun SMS facturé ni paiement réel n’est activé. Ne pas utiliser de vrais justificatifs ni de numéros personnels pendant cet essai.
+
+Voir le [guide d’exploitation du VPS de Libreville](../../docs/plan/12-exploitation-alpha-vps.md) pour l’accès, la distribution des APK, le diagnostic des devis et le protocole sur place.
 
 ## Préparer et vérifier sur le poste
 
@@ -103,7 +105,7 @@ node tools/audit/verify-alpha-apk.mjs driver --remote
 ## Premier passage à Libreville
 
 1. Une paire de testeurs ouvre `/install` sur deux Android, idéalement dont un bas de gamme, et installe l’APK correspondant à son rôle. Remettre les codes d’essai individuellement et expliquer l’usage du GPS réel pendant le créneau.
-2. Sur réseau mobile, charger la carte et commander un trajet fictif proche. Vérifier le devis, la réception de l’offre, l’acceptation, le PIN et le reçu cash simulé. Aucun encaissement.
+2. Sur réseau mobile, charger la carte et commander un trajet d’essai entre deux repères distincts. Effectuer le trajet en voiture et vérifier le devis, la réception de l’offre, l’acceptation, le PIN et le reçu cash simulé. Aucun encaissement.
 3. Sur un appareil à l’arrêt, verrouiller l’écran chauffeur, couper brièvement le réseau puis le rétablir. Mesurer la reprise GPS sans rouvrir l’app. Refaire le parcours sur l’autre opérateur si les deux SIM Airtel et Moov sont disponibles.
 4. Pour chaque écart, relever l’heure, le modèle Android, l’opérateur, le rôle et la version du build. Ne joindre ni code, ni pièce personnelle, ni capture affichant une position privée.
 
