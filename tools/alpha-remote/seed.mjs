@@ -95,7 +95,10 @@ async function seedDocuments(driver, client, ops, finalize = true) {
       .eq("id", documentId);
     if (review.error) throw review.error;
   }
-  const verification = await db.query("select physical_verified_at from public.drivers where id=$1", [driver]);
+  const verification = await db.query(
+    "select physical_verified_at from public.drivers where id=$1",
+    [driver],
+  );
   if (!verification.rows[0]?.physical_verified_at) {
     const physical = await ops.rpc("record_physical_verification", {
       p_driver: driver,
@@ -143,22 +146,33 @@ async function seedPool() {
     config = {
       origin: "https://alpha.tekomove.com",
       operators: Object.fromEntries(
-        accounts.filter(({ role }) => ["ops", "finance"].includes(role)).map(({ role, phone }) => [role, phone]),
+        accounts
+          .filter(({ role }) => ["ops", "finance"].includes(role))
+          .map(({ role, phone }) => [role, phone]),
       ),
       pool: [],
     };
   }
   if (!config.pool.length) {
-    if (campaign && !config.mobileClosed) throw new Error("Fermer le banc avant de préparer la campagne");
+    if (campaign && !config.mobileClosed)
+      throw new Error("Fermer le banc avant de préparer la campagne");
     config.pool = Array.from({ length: campaign ? 15 : 24 }, (_, index) => {
-        let code;
-        do code = String(randomInt(100000, 1000000)); while (codes.has(code));
-        codes.add(code);
-        return { role: index < (campaign ? 5 : 12) ? "client" : "driver", phone: `241000009${(campaign ? 150 : 100) + index}`, code };
+      let code;
+      do code = String(randomInt(100000, 1000000));
+      while (codes.has(code));
+      codes.add(code);
+      return {
+        role: index < (campaign ? 5 : 12) ? "client" : "driver",
+        phone: `241000009${(campaign ? 150 : 100) + index}`,
+        code,
+      };
     });
     writeFileSync(poolPath, JSON.stringify(config), { mode: 0o600 });
   }
-  if (campaign && (config.pool.length !== 15 || config.pool.filter(({role}) => role === "driver").length !== 10)) {
+  if (
+    campaign &&
+    (config.pool.length !== 15 || config.pool.filter(({ role }) => role === "driver").length !== 10)
+  ) {
     throw new Error("Campagne attendue : dix chauffeurs et cinq passagers");
   }
   const ops = await signIn("ops");
@@ -172,10 +186,18 @@ async function seedPool() {
       await seedDocuments(account.id, admin, ops, false);
     }
     if (campaign) {
-      const invite = await ops.rpc("invite_alpha", {p_phone: account.phone, p_role: account.role, p_active: true});
+      const invite = await ops.rpc("invite_alpha", {
+        p_phone: account.phone,
+        p_role: account.role,
+        p_active: true,
+      });
       if (invite.error) throw invite.error;
       if (account.role === "driver") {
-        const validation = await ops.rpc("validate_kyc", {p_driver: account.id, p_accept: true, p_note: "Campagne fictive sans SMS"});
+        const validation = await ops.rpc("validate_kyc", {
+          p_driver: account.id,
+          p_accept: true,
+          p_note: "Campagne fictive sans SMS",
+        });
         if (validation.error) throw validation.error;
       }
     }
@@ -186,13 +208,16 @@ async function seedPool() {
   const entries = config.pool.map(({ phone, code }) => `${phone} = "${code}"`);
   const missing = entries.filter((line) => !original.includes(`\n${line}\n`));
   if (missing.length) {
-    writeFileSync(configPath, original.replace(
-      "[auth.sms.test_otp]\n",
-      `[auth.sms.test_otp]\n${missing.join("\n")}\n`,
-    ), { mode: 0o600 });
+    writeFileSync(
+      configPath,
+      original.replace("[auth.sms.test_otp]\n", `[auth.sms.test_otp]\n${missing.join("\n")}\n`),
+      { mode: 0o600 },
+    );
   }
   saveAllowlist([...accounts, ...config.pool]);
-  console.info(campaign ? "Campagne prête : 5 passagers et 10 chauffeurs invités." : "Réserve fictive prête.");
+  console.info(
+    campaign ? "Campagne prête : 5 passagers et 10 chauffeurs invités." : "Réserve fictive prête.",
+  );
 }
 
 await db.connect();
@@ -216,7 +241,8 @@ async function seedInitialAccounts() {
   const documents = await db.query("select id from public.driver_documents where driver_id=$1", [
     ids.driver,
   ]);
-  if (!documents.rowCount) await seedDocuments(ids.driver, await signIn("driver"), await signIn("ops"));
+  if (!documents.rowCount)
+    await seedDocuments(ids.driver, await signIn("driver"), await signIn("ops"));
   for (const [key, value] of [
     ["push_webhook_url", "http://supabase_kong_teko-alpha-remote:8000/functions/v1/notify-push"],
     ["push_webhook_secret", functions.PUSH_TRIGGER_SECRET],

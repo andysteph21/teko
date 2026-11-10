@@ -1,3 +1,4 @@
+// biome-ignore-all lint/style/noExcessiveLinesPerFile: La passerelle alpha monte un seul script dans son conteneur.
 // Point d'entrée de l'essai : OTP bornés et téléchargement par rôle invité.
 import { randomBytes } from "node:crypto";
 import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
@@ -11,7 +12,12 @@ const adminPath = "/config/alpha-admin.json";
 const admin = existsSync(adminPath) ? JSON.parse(readFileSync(adminPath, "utf8")) : null;
 const key = readFileSync("/config/anon-key", "utf8").trim();
 const files = { client: "teko-passager.apk", driver: "teko-chauffeur.apk" };
-const fieldAuthPaths = new Set(["/auth/v1/otp", "/auth/v1/verify", "/install/otp", "/install/session"]);
+const fieldAuthPaths = new Set([
+  "/auth/v1/otp",
+  "/auth/v1/verify",
+  "/install/otp",
+  "/install/session",
+]);
 const attempts = new Map();
 const sessions = new Map();
 const windowMs = 10 * 60_000;
@@ -78,9 +84,14 @@ async function auth(operation, input, operator) {
   const data = await response.json();
   if (field && data.access_token) {
     const roles = input.role ? [input.role] : Object.keys(files);
-    const invitations = await Promise.all(roles.map((name) =>
-      typeof name === "string" && Object.hasOwn(files, name) && isInvited(data.access_token, name)
-    ));
+    const invitations = await Promise.all(
+      roles.map(
+        (name) =>
+          typeof name === "string" &&
+          Object.hasOwn(files, name) &&
+          isInvited(data.access_token, name),
+      ),
+    );
     role = roles[invitations.indexOf(true)];
     if (!role) {
       return { status: 403, data: { msg: "Invitation requise pour ce rôle." } };
@@ -114,18 +125,20 @@ function sessionFrom(req) {
 
 function page(res, session, fieldPhone) {
   const field = admin?.fieldSignup === true;
-  const otpForm = field && !fieldPhone
-    ? `<form method="post" action="/install/otp"><label>Numéro invité (+241) <input name="phone" type="tel" required pattern="\\+?241[0-9]{8,9}"></label><button>Recevoir le code</button></form>`
-    : null;
+  const otpForm =
+    field && !fieldPhone
+      ? `<form method="post" action="/install/otp"><label>Numéro invité (+241) <input name="phone" type="tel" required pattern="\\+?241[0-9]{8,9}"></label><button>Recevoir le code</button></form>`
+      : null;
   const identity = field
     ? `<input name="phone" type="hidden" value="${fieldPhone ?? ""}"><label>Application <select name="role"><option value="client">Passager</option><option value="driver">Chauffeur</option></select></label>`
     : '<label>Numéro d’essai <input name="phone" type="tel" required maxlength="14"></label>';
   const message = session
     ? `<p><a href="/install/${files[session.role]}">Télécharger l’application Android</a></p>`
-    : otpForm ?? `<form method="post" action="/install/session">
+    : (otpForm ??
+      `<form method="post" action="/install/session">
 ${identity}
 <label>${field ? "Code reçu par SMS" : "Code d’essai"} <input name="code" inputmode="numeric" pattern="[0-9]{6}" required></label>
-<button>Accéder à l’APK</button></form>`;
+<button>Accéder à l’APK</button></form>`);
   reply(
     res,
     200,
@@ -139,10 +152,12 @@ ${message}</main></html>`,
 }
 
 async function installLogin(req, res) {
-  if (admin?.mobileClosed) return reply(res, 403, { msg: "Les inscriptions terrain ne sont pas ouvertes." });
+  if (admin?.mobileClosed)
+    return reply(res, 403, { msg: "Les inscriptions terrain ne sont pas ouvertes." });
   const form = new URLSearchParams(await body(req));
   const role = form.get("role");
-  if (admin?.fieldSignup && !Object.hasOwn(files, role)) return reply(res, 400, { msg: "Rôle requis." });
+  if (admin?.fieldSignup && !Object.hasOwn(files, role))
+    return reply(res, 400, { msg: "Rôle requis." });
   const result = await auth("verify", { phone: form.get("phone"), token: form.get("code"), role });
   const token = result.data.access_token;
   if (!token) {
@@ -168,17 +183,20 @@ async function installLogin(req, res) {
 }
 
 async function installOtp(req, res) {
-  if (admin?.mobileClosed || !admin?.fieldSignup) return reply(res, 403, { msg: "Inscriptions fermées." });
+  if (admin?.mobileClosed || !admin?.fieldSignup)
+    return reply(res, 403, { msg: "Inscriptions fermées." });
   const form = new URLSearchParams(await body(req));
   const phone = form.get("phone")?.replace(/^\+/, "");
   if (!phone || !/^241\d{8,9}$/.test(phone)) return reply(res, 400, { msg: "Numéro invalide." });
   const result = await auth("otp", { phone });
-  if (result.status !== 200) return reply(res, result.status, { msg: "Demande de code indisponible." });
+  if (result.status !== 200)
+    return reply(res, result.status, { msg: "Demande de code indisponible." });
   return page(res, null, phone);
 }
 
 async function download(req, res, pathname) {
-  if (admin?.mobileClosed) return reply(res, 403, { msg: "Les inscriptions terrain ne sont pas ouvertes." });
+  if (admin?.mobileClosed)
+    return reply(res, 403, { msg: "Les inscriptions terrain ne sont pas ouvertes." });
   const session = sessionFrom(req);
   if (!session || !(await isInvited(session.token, session.role))) {
     return reply(res, 401, { msg: "Connexion d’essai requise." });
@@ -227,12 +245,19 @@ async function allocateTester(token, { role, phone }) {
   const response = await sessionRequest(token, "/rest/v1/alpha_invites?select=phone,is_active");
   if (!response.ok) throw new Error("Liste d’invitations indisponible");
   const invites = new Map((await response.json()).map((entry) => [entry.phone, entry.is_active]));
-  const account = admin.pool.find((entry) => entry.role === role
-    && (phone === undefined ? !invites.has(entry.phone) : entry.phone === phone && invites.get(phone)));
+  const account = admin.pool.find(
+    (entry) =>
+      entry.role === role &&
+      (phone === undefined
+        ? !invites.has(entry.phone)
+        : entry.phone === phone && invites.get(phone)),
+  );
   if (!account) return null;
   if (phone === undefined) {
     const invite = await sessionRequest(token, "/rest/v1/rpc/invite_alpha", {
-      p_phone: account.phone, p_role: role, p_active: true,
+      p_phone: account.phone,
+      p_role: role,
+      p_active: true,
     });
     if (!invite.ok) throw new Error("Invitation refusée");
   }
@@ -245,7 +270,9 @@ async function allocateTester(token, { role, phone }) {
     const [row] = await driver.json();
     if (row?.kyc_status !== "validated") {
       const result = await sessionRequest(token, "/rest/v1/rpc/validate_kyc", {
-        p_driver: account.id, p_accept: true, p_note: "Dossier fictif du banc alpha",
+        p_driver: account.id,
+        p_accept: true,
+        p_note: "Dossier fictif du banc alpha",
       });
       if (!result.ok) throw new Error("Dossier fictif à vérifier");
     }
@@ -255,8 +282,13 @@ async function allocateTester(token, { role, phone }) {
 
 async function adminRequest(req, res, pathname) {
   const operator = req.headers["x-teko-operator"];
-  if (!admin || req.method !== "POST" || req.headers.origin !== admin.origin
-    || typeof operator !== "string" || !Object.hasOwn(admin.operators, operator)) {
+  if (
+    !admin ||
+    req.method !== "POST" ||
+    req.headers.origin !== admin.origin ||
+    typeof operator !== "string" ||
+    !Object.hasOwn(admin.operators, operator)
+  ) {
     return reply(res, 403, { msg: "Accès privé requis." });
   }
   const input = JSON.parse(await body(req));
@@ -264,7 +296,9 @@ async function adminRequest(req, res, pathname) {
     const result = await auth("verify", { phone: input.phone, token: input.code }, operator);
     const { access_token, refresh_token } = result.data;
     if (!access_token || !(await operatorSession(access_token, operator))) {
-      return reply(res, result.status === 429 ? 429 : 401, { msg: "Identifiants d’essai invalides." });
+      return reply(res, result.status === 429 ? 429 : 401, {
+        msg: "Identifiants d’essai invalides.",
+      });
     }
     return reply(res, 200, { access_token, refresh_token });
   }
@@ -274,9 +308,14 @@ async function adminRequest(req, res, pathname) {
     return reply(res, 403, { msg: "Action réservée aux opérations." });
   }
   if (admin.mobileClosed) {
-    return reply(res, 409, { msg: "Les comptes fictifs ont été retirés. Les inscriptions terrain ne sont pas ouvertes." });
+    return reply(res, 409, {
+      msg: "Les comptes fictifs ont été retirés. Les inscriptions terrain ne sont pas ouvertes.",
+    });
   }
-  if (!Object.hasOwn(files, input.role) || (input.phone !== undefined && typeof input.phone !== "string")) {
+  if (
+    !Object.hasOwn(files, input.role) ||
+    (input.phone !== undefined && typeof input.phone !== "string")
+  ) {
     return reply(res, 400, { msg: "Compte de test invalide." });
   }
   const allocation = pendingAllocation.then(() => allocateTester(token, input));
@@ -285,10 +324,15 @@ async function adminRequest(req, res, pathname) {
     const account = await allocation;
     if (account) return reply(res, 200, account);
     return reply(res, 409, {
-      msg: input.phone === undefined ? "Réserve épuisée pour ce rôle." : "Invitation de test inactive.",
+      msg:
+        input.phone === undefined
+          ? "Réserve épuisée pour ce rôle."
+          : "Invitation de test inactive.",
     });
   } catch {
-    return reply(res, 503, { msg: "Création incomplète. Vérifiez la liste des invitations avant de réessayer." });
+    return reply(res, 503, {
+      msg: "Création incomplète. Vérifiez la liste des invitations avant de réessayer.",
+    });
   }
 }
 
@@ -302,7 +346,8 @@ async function handle(req, res) {
     }
   }
   if (req.method === "POST" && ["/auth/v1/otp", "/auth/v1/verify"].includes(pathname)) {
-    if (admin?.mobileClosed) return reply(res, 403, { msg: "Les inscriptions terrain ne sont pas ouvertes." });
+    if (admin?.mobileClosed)
+      return reply(res, 403, { msg: "Les inscriptions terrain ne sont pas ouvertes." });
     const result = await auth(pathname.split("/").at(-1), JSON.parse(await body(req)));
     return reply(res, result.status, result.data);
   }

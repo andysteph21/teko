@@ -23,5 +23,5 @@ docker run --rm \
   -e use_default_speeds_config=False -e traffic_name= \
   ghcr.io/valhalla/valhalla-scripted:latest
 
-ls -lh "$DATA/custom_files" | head
+du -sh "$DATA/custom_files"
 echo "✓ Graphe Valhalla prêt (infra/_data/valhalla/custom_files)."
