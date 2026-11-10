@@ -22,6 +22,8 @@ fonts:
 postgres:
   connection_string: ${DATABASE_URL}
   auto_publish: false
+  # Les repères validés peuvent dépasser l’emprise connue au démarrage.
+  auto_bounds: skip
   tables:
     landmarks:
       schema: public
