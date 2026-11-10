@@ -6,7 +6,7 @@ export function UsbBenchBanner() {
   const insets = useSafeAreaInsets();
   const remote = process.env.EXPO_PUBLIC_ALPHA_REMOTE === "1";
   const label = remote
-    ? "ESSAI PRIVÉ · AUCUNE COURSE RÉELLE"
+    ? "ESSAI PRIVÉ · GPS RÉEL · PAIEMENT SIMULÉ"
     : process.env.EXPO_PUBLIC_ALPHA_USB_GPS === "1" && USB_GPS_FIXTURE
       ? "BANC USB · GPS FICTIF À LIBREVILLE"
       : null;

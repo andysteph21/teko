@@ -22,6 +22,7 @@ export {
   PlusIcon,
   RecentIcon,
 } from "./icons";
+export { useLocationRefresh, withLocationDeadline } from "./location-refresh";
 export { OtpInput, type OtpInputProps } from "./otp-input";
 export {
   DriverCard,

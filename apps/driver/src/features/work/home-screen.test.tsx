@@ -7,7 +7,7 @@ jest.mock("../../lib/location-service", () => ({
 }));
 
 // D-09 : solde du jour + toggle hors ligne/en ligne (heartbeat), permission
-// localisation demandée au premier passage en ligne (bandeau si refus/GPS
+// localisation demandée à l'accueil et vérifiée au passage en ligne (bandeau si refus/GPS
 // muet), modal d'offre D-10 (accepter → navigation course), état suspendu.
 
 import { formatXaf } from "@teko/core";
@@ -76,7 +76,7 @@ jest.mock("expo-location", () => ({
   getForegroundPermissionsAsync: (...args: unknown[]) => mockGetPermissions(...args),
   requestForegroundPermissionsAsync: (...args: unknown[]) => mockRequestPermissions(...args),
   getCurrentPositionAsync: (...args: unknown[]) => mockGetPosition(...args),
-  Accuracy: { Balanced: 3 },
+  Accuracy: { Balanced: 3, High: 4 },
 }));
 jest.mock("react-native-safe-area-context", () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -157,6 +157,25 @@ describe("D-09 Accueil", () => {
 
     expect(await screen.findByText(`+${formatXaf(12_500)}`)).toBeOnTheScreen();
     expect(screen.getByText("Hors ligne")).toBeOnTheScreen();
+    expect(mockHeartbeat).not.toHaveBeenCalled();
+  });
+
+  it("demande le GPS dès l'accueil puis actualise la position sans mettre le chauffeur en ligne", async () => {
+    const user = userEvent.setup();
+    const undetermined = { status: "undetermined", canAskAgain: true };
+    mockGetPermissions.mockResolvedValueOnce(undetermined).mockResolvedValueOnce(undetermined);
+    render(<DriverHome />);
+    await waitFor(() =>
+      expect(useWorkStore.getState().devicePosition).toEqual({ lon: 9.45, lat: 0.4 }),
+    );
+    expect(mockRequestPermissions).toHaveBeenCalledTimes(1);
+
+    mockGetPosition.mockResolvedValue({ coords: { longitude: 9.47, latitude: 0.41 } });
+    await user.press(screen.getByTestId("gps-recenter"));
+    await waitFor(() =>
+      expect(useWorkStore.getState().devicePosition).toEqual({ lon: 9.47, lat: 0.41 }),
+    );
+    expect(mockGetPosition).toHaveBeenLastCalledWith({ accuracy: 4 });
     expect(mockHeartbeat).not.toHaveBeenCalled();
   });
 

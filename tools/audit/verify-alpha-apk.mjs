@@ -57,6 +57,22 @@ if (
   throw new Error("Le build terrain contient encore le bandeau d’essai fictif");
 }
 if (remote) {
+  for (const permission of [
+    "android.permission.ACCESS_COARSE_LOCATION",
+    "android.permission.ACCESS_FINE_LOCATION",
+  ]) {
+    if (!manifest.includes(permission)) throw new Error(`Permission GPS absente : ${permission}`);
+  }
+  if (
+    !bundle.includes("gps-recenter") ||
+    (!field &&
+      !bundle.includes("GPS RÉEL · PAIEMENT SIMULÉ") &&
+      !bundle.includes(Buffer.from("GPS RÉEL · PAIEMENT SIMULÉ", "utf16le")))
+  ) {
+    throw new Error("Commande de recentrage ou bandeau GPS réel absent");
+  }
+}
+if (remote) {
   const origin = new URL(process.env.TEKO_REMOTE_ALPHA_ORIGIN ?? "");
   const key = readFileSync(resolve(remoteDirectory, "anon-key"), "utf8").trim();
   if (
@@ -103,6 +119,14 @@ const sourcesVerified =
         "apps/client/src/features/booking/strings.ts",
         "packages/api-client/src/quotes.ts",
       ];
+sourcesVerified.push(
+  `apps/${app}/app/(main)/home.tsx`,
+  `apps/${app}/src/features/map/native-map.tsx`,
+  app === "driver"
+    ? "apps/driver/src/features/work/use-device-position.ts"
+    : "apps/client/src/features/places/use-home-position.ts",
+  "packages/ui/src/native/location-refresh.ts",
+);
 for (const path of sourcesVerified) {
   const index = sourceMap.sources.findIndex((source) => source.endsWith(`/${path}`));
   if (
@@ -191,7 +215,7 @@ console.info(
     scope: field
       ? "APK signé pour l’alpha terrain ; contrôles terrain distincts"
       : remote
-        ? "APK signé pour essai fictif distant"
+        ? "APK signé pour essai privé avec GPS réel et paiement simulé"
         : "APK USB local ; ne vaut pas validation du build terrain",
   }),
 );

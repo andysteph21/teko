@@ -4,7 +4,7 @@
 // (drivers.is_active = false) : bandeau explicite + lien règlement.
 
 import { color, spacing } from "@teko/ui";
-import { DataWidget, EcoPill } from "@teko/ui/native";
+import { Button, DataWidget, EcoPill } from "@teko/ui/native";
 import { type Href, useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,7 +23,7 @@ import { VehicleDot } from "../../src/features/work/map-layers";
 import { OfferModal } from "../../src/features/work/offer-modal";
 import { useWorkStore } from "../../src/features/work/store";
 import { WorkToast } from "../../src/features/work/toast";
-import { useDevicePosition } from "../../src/features/work/use-device-position";
+import { useDriverHomePosition } from "../../src/features/work/use-device-position";
 import { useDriverHome } from "../../src/features/work/use-driver-home";
 import { useHeartbeat } from "../../src/features/work/use-heartbeat";
 import { useOfferFeed } from "../../src/features/work/use-offer-feed";
@@ -39,7 +39,8 @@ export default function DriverHome() {
   const toggleOnline = useOnlineToggle();
   const mode = useResolvedMapMode();
   const usage = useDataUsage();
-  const position = useDevicePosition();
+  const gps = useDriverHomePosition();
+  const { position } = gps;
 
   const eco = mode.mode === "eco";
   const effectiveOnline = online && !suspended;
@@ -60,6 +61,7 @@ export default function DriverHome() {
           options={{ tilesUrl: TILES_URL, eco }}
           center={position ?? DEFAULT_CENTER}
           zoom={14.2}
+          recenter={gps.recenter}
         >
           <VehicleDot position={position} />
         </TekoMapView>
@@ -70,6 +72,15 @@ export default function DriverHome() {
             state={usage.state}
             onPress={() => router.push("/(main)/settings" as Href)}
             testID="data-widget"
+          />
+        </View>
+        <View style={styles.gps} pointerEvents="box-none">
+          <Button
+            label="Ma position"
+            variant="secondary"
+            busy={gps.busy}
+            onPress={gps.refresh}
+            testID="gps-recenter"
           />
         </View>
       </View>
@@ -101,6 +112,7 @@ const styles = StyleSheet.create({
     bottom: 14,
     gap: spacing[2],
   },
+  gps: { position: "absolute", right: spacing[4], bottom: 14 },
   panel: {
     backgroundColor: color.neutral[50],
     paddingHorizontal: spacing[4],
