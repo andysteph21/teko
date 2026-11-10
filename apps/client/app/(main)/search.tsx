@@ -7,7 +7,7 @@ import { color, spacing } from "@teko/ui";
 import { type Href, useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet } from "react-native";
+import { Alert, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useBookingStore } from "../../src/features/booking/store";
 import { formatDistanceText } from "../../src/features/places/format";
@@ -16,6 +16,12 @@ import { IdleSections, SearchResults } from "../../src/features/places/search-se
 import { useLandmarkSearch } from "../../src/features/places/use-landmark-search";
 import { useRecentDestinations } from "../../src/features/places/use-recent-destinations";
 import { useSavedPlaces } from "../../src/features/places/use-saved-places";
+
+function rejectSamePoint(origin: LonLat, destination: LonLat): boolean {
+  if (distanceM(origin, destination) >= 1) return false;
+  Alert.alert("Départ et arrivée trop proches", "Choisis une autre destination.");
+  return true;
+}
 
 export default function Search() {
   const router = useRouter();
@@ -36,6 +42,7 @@ export default function Search() {
       setQuery("");
       return;
     }
+    if (origin && rejectSamePoint(origin.position, position)) return;
     setDestination({ position, label, landmarkId });
     router.push("/(main)/refine" as Href);
   };

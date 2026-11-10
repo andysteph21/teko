@@ -5,14 +5,50 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import { OfflineScreen } from "../../components/offline-screen";
 
-export function QuoteErrorScreen({ error, onRetry }: { error: Error; onRetry: () => void }) {
+const tripErrors: Partial<Record<TekoApiError["code"], [string, string]>> = {
+  quote_points_too_close: [
+    "Départ et arrivée trop proches",
+    "Choisis deux points distincts pour calculer le tarif.",
+  ],
+  quote_route_not_found: [
+    "Itinéraire introuvable",
+    "Choisis un autre point de départ ou d’arrivée.",
+  ],
+  quote_outside_service_area: [
+    "Départ hors de la zone desservie",
+    "Choisis un point de départ dans la zone couverte à Libreville.",
+  ],
+};
+
+export function QuoteErrorScreen({
+  error,
+  onRetry,
+  onEdit,
+}: {
+  error: Error;
+  onRetry: () => void;
+  onEdit: () => void;
+}) {
   const { t } = useTranslation();
-  if ((error as TekoApiError).code === "network") return <OfflineScreen onRetry={onRetry} />;
+  const code = (error as TekoApiError).code;
+  if (code === "network") return <OfflineScreen onRetry={onRetry} />;
+  const [title, description] = tripErrors[code] ?? [
+    t("booking:tarifsIndisponibles.titre"),
+    t("booking:tarifsIndisponibles.texte"),
+  ];
   return (
     <View style={styles.screen}>
-      <Text style={styles.title}>{t("booking:tarifsIndisponibles.titre")}</Text>
-      <Text style={styles.text}>{t("booking:tarifsIndisponibles.texte")}</Text>
-      <Button label={t("commun.reessayer")} onPress={onRetry} testID="quote-retry" />
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.text}>{description}</Text>
+      {!tripErrors[code] && (
+        <Button label={t("commun.reessayer")} onPress={onRetry} testID="quote-retry" />
+      )}
+      <Button
+        label="Modifier le trajet"
+        variant={tripErrors[code] ? "primary" : "secondary"}
+        onPress={onEdit}
+        testID="quote-edit"
+      />
     </View>
   );
 }
