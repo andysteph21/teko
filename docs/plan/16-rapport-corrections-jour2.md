@@ -113,12 +113,14 @@ Point d’attention n° 1 de l’audit, corrigé dans le dépôt. La migration `
 
 Vérifié : 91 tests pgTAP (dont deux nouveaux), tests `places` et `ride` de l’app passager (43), test du client d’API, typage, et les deux formes d’appel via PostgREST sur le banc local.
 
-**Non déployé.** L’application de cette migration sur le VPS n’a pas été autorisée dans la session. L’APK passager correspondant n’a pas été construit : il ne doit être publié qu’après la migration, sinon la recherche échouerait.
+Déployé le 11 novembre après accord du porteur : sauvegarde, migration appliquée à 02 h 36 UTC (60 migrations enregistrées), puis APK passager reconstruit, vérifié et publié. Son SHA-256 est `51c3fd5d147e7d2c2fbda8e27cc74a821e904dc296b9b2b56d54e75e5aae027b` ; il remplace celui du tableau « APK du 11 novembre ». Le téléchargement par rôle a été recontrôlé depuis HTTPS.
+
+Contrôle depuis HTTPS : depuis Mont-Bouët, les huit résultats de « pharmacie » sont à moins de 1,1 km ; depuis Port-Gentil, les premiers résultats sont à Port-Gentil. L’appel sans point de référence, celui des APK antérieurs, répond toujours.
 
 ## Reste à faire
 
-1. Appliquer la migration `20261111100000` sur le VPS, puis construire, vérifier et publier l’APK passager, et mettre à jour son SHA-256 dans le guide d’exploitation.
-2. Rejouer le protocole du jour 3 avec deux téléphones, après réinstallation des deux applications par le testeur, et compléter ce rapport.
-3. Donner `sudo` au compte `teko`, vérifier, puis passer `PermitRootLogin no` dans `/etc/ssh/sshd_config.d/00-teko-key-only.conf` et recharger SSH.
-4. Organiser la copie des sauvegardes hors du serveur.
-5. Borner la distance de dispatch avant d’inviter des testeurs hors de Libreville.
+1. Rejouer le protocole du jour 3 avec deux téléphones, après réinstallation des deux applications par le testeur, et compléter ce rapport.
+2. Donner `sudo` au compte `teko`, vérifier, puis passer `PermitRootLogin no` dans `/etc/ssh/sshd_config.d/00-teko-key-only.conf` et recharger SSH.
+3. Organiser la copie des sauvegardes hors du serveur.
+4. Borner la distance de dispatch avant d’inviter des testeurs hors de Libreville.
+5. Filtrer les repères importés au nom générique.

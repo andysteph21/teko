@@ -121,6 +121,8 @@ const sourcesVerified =
         "packages/api-client/src/quotes.ts",
         "apps/client/src/features/ride/ride-entry.ts",
         "apps/client/app/(main)/ride/[id].tsx",
+        "apps/client/src/features/places/use-landmark-search.ts",
+        "packages/api-client/src/places.ts",
       ];
 sourcesVerified.push(
   `apps/${app}/app/(main)/home.tsx`,
