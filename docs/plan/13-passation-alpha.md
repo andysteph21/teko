@@ -1,20 +1,20 @@
 # Passation technique de l’alpha Teko
 
-État vérifié le 10 novembre 2026. Cette note permet à une autre session de reprendre le code et le banc de Libreville. Le guide détaillé des opérations se trouve dans [12-exploitation-alpha-vps.md](12-exploitation-alpha-vps.md). Les décisions et seuils d’ouverture de l’alpha restent consignés dans [08-plan-alpha.md](08-plan-alpha.md) et [11-procedures-alpha.md](11-procedures-alpha.md).
+État vérifié le 10 novembre 2026, corrigé le 11 novembre après contrôle direct du VPS et du jour 2 d’essai. Cette note permet à une autre session de reprendre le code et le banc de Libreville. Le guide détaillé des opérations se trouve dans [12-exploitation-alpha-vps.md](12-exploitation-alpha-vps.md). Les décisions et seuils d’ouverture de l’alpha restent consignés dans [08-plan-alpha.md](08-plan-alpha.md) et [11-procedures-alpha.md](11-procedures-alpha.md).
 
 ## Priorités produit convenues
 
 - Petit essai fermé à Libreville avec environ dix chauffeurs Android et des passagers invités. Les invités utilisent leurs propres appareils pendant des trajets en voiture. Le GPS, le trajet et l’affectation chauffeur-passager doivent être réels.
 - Comptes, recettes et justificatifs sont ceux du banc de test. Paiements mobiles, SMS et encaissements sont désactivés. Le circuit cash/Finance sert à évaluer l’affichage et les soldes.
 - Les applications demandent la permission GPS Android à la première ouverture de la carte. Le bouton **Ma position** doit lire une nouvelle position et déplacer la caméra. Le chauffeur doit tester l’écran verrouillé.
-- Les notifications et SMS terrain ne sont pas configurés pour cette alpha. Aucun secret Firebase/Expo ni aucune clé de prestataire ne doit être copié dans le dépôt ou la conversation.
+- Les SMS terrain ne sont pas configurés. Les notifications push Expo sont en revanche actives sur le VPS (`PUSH_PROVIDER=expo`, jeton présent dans `functions.env`, quatre appareils Android enregistrés et sept envois acceptés au 11 novembre). Aucun secret Firebase/Expo ni aucune clé de prestataire ne doit être copié dans le dépôt ou la conversation.
 
 ## Projet et branche
 
 - Dépôt local : `/home/steph/Teko`
 - Dépôt GitHub : `andysteph21/teko`, branche de travail `codex/alpha-essai-distance`, cible `main`
 - Pull request ouverte et brouillon : [#2 Alpha privée Teko à Libreville](https://github.com/andysteph21/teko/pull/2)
-- Le commit vérifié au moment de cette passation est `7e88337`. La PR a passé les contrôles GitHub carto, base, E2E, fonctions, carte et monorepo au dernier relevé. Une nouvelle modification relancera ces contrôles.
+- Le commit vérifié au moment de cette passation est `7e88337` ; la note elle-même est le commit `b0de71d`. Sur `b0de71d`, le contrôle `deno-test` a échoué : esm.sh a republié `fast-sha256@1.3.0` avec une autre empreinte que celle de `deno.lock`. Les contrôles carto, base, E2E, carte et monorepo étaient verts. Le correctif du jour 2 remplace l’import esm.sh de `standardwebhooks` par `npm:standardwebhooks@1.0.0`.
 - La working tree contenait des changements utilisateur à `supabase/.temp/cli-latest` et le document non suivi `docs/plan/07-deploiement-beta.md`. Ne pas les écraser, supprimer ou inclure par inadvertance.
 - La branche comprend de l’historique de travail antérieur à la correction. Les correctifs de cette intervention sont répartis en commits autour de `1286d1f` (devis), `f8fa6bd` (GPS), `55fb7c2` (repères OSM), `92b9c62` (emprise Martin) et `8892aa7` (CI).
 
@@ -33,7 +33,7 @@ Le VPS sert le banc privé sur `alpha.tekomove.com`.
 | `/routing` | API Valhalla pour les devis et itinéraires. |
 | `/functions/v1`, `/auth/v1` | Fonctions Edge et Auth Supabase dans Docker. |
 
-Caddy publie HTTPS sur 443 et redirige HTTP. Postgres, Kong interne, Martin et Valhalla ne sont pas publiés directement. Le root de déploiement VPS est `/opt/teko-alpha`. Les fonctions servent depuis `/opt/teko-alpha/.local/alpha-remote/supabase/functions`, avec service utilisateur `teko-alpha-functions.service` sous le compte système `teko`. Consulte les noms précis de conteneurs et commandes dans le guide d’exploitation.
+Caddy publie HTTPS sur 443 et redirige HTTP. Postgres, Kong interne, Martin et Valhalla ne sont pas publiés directement. Le root de déploiement VPS est `/opt/teko-alpha`. Les fonctions servent depuis `/opt/teko-alpha/.local/alpha-remote/supabase/functions`, avec service utilisateur `teko-alpha-functions.service` sous le compte système `teko`. `/opt/teko-alpha` n’est pas un dépôt Git : c’est une copie des sources des 8 et 9 novembre, complétée par les correctifs transférés ensuite. Le VPS tourne sous Ubuntu 26.04 avec le compagnon Supabase CLI 2.110.0. La migration `20261019102000_alpha_field_signup_hook` n’y est volontairement pas appliquée, car elle est réservée à l’Auth terrain. Consulte les noms précis de conteneurs et commandes dans le guide d’exploitation.
 
 La base et les fichiers du banc sont privés. Sur le poste de développement, la configuration locale est sous `.local/alpha-remote`, les clés dans `.local/alpha-signing` et les services externes dans `.local/alpha-services`. Ces chemins sont hors Git. Ne pas en afficher le contenu, transmettre des OTP ou mots de passe, ni recopier des journaux bruts comprenant des coordonnées.
 
@@ -60,7 +60,7 @@ Les APK sont servis uniquement par rôle invité. Le téléchargement correspond
 - TypeScript : `@teko/ui`, `@teko/api-client`, `@teko/app-client`, `@teko/app-driver` passent.
 - Apps : tests ciblés passager 21/21 et chauffeur 22/22. Le test spécifique de refus du devis et de navigation vers la recherche passe également.
 - Fonctions : lint Deno et 47 tests passent en local.
-- GitHub Actions, PR #2 : dernière exécution observée verte sur carto, db-test, e2e, deno-test, maps et verifier.
+- GitHub Actions, PR #2 : verte sur `7e88337` ; sur `b0de71d`, `deno-test` est rouge (voir plus haut), les cinq autres contrôles sont verts.
 - APK : signature alpha, identifiants, mode release, destination HTTPS, permissions GPS, absence de secrets incorporés et sources embarquées vérifiés.
 - VPS HTTPS : santé, portail privé, console privée, tuiles, invitation et téléchargement par rôle, refus de devis point-identique, trois catégories de devis, route routable et repères testés.
 
@@ -76,7 +76,7 @@ Ces contrôles n’établissent pas encore le fonctionnement du GPS sur téléph
 
 ## Connexion et diagnostic du VPS
 
-Les secrets de connexion existent uniquement sur le poste et le serveur. Utiliser les variables ou chemins privés déjà présents dans l’environnement du développeur. Ne pas mettre la valeur de la clé privée ici.
+Les secrets de connexion existent uniquement sur le poste et le serveur. Les variables `TEKO_ALPHA_DEPLOY_KEY` et `TEKO_ALPHA_SSH_USER` ne sont pas définies par défaut : la clé de déploiement est `.local/alpha-remote/ssh/deploy_ed25519` et la clé d’hôte épinglée `.local/alpha-remote/ssh/vps-known_hosts` (à passer avec `-o UserKnownHostsFile=`). Au 11 novembre, cette clé n’ouvre que le compte `root` ; le compte `teko` la refuse tant que `tools/alpha-remote/harden-vps.sh` n’a pas été exécuté. Ne pas mettre la valeur de la clé privée ici.
 
 ```sh
 ssh -o StrictHostKeyChecking=yes -i "$TEKO_ALPHA_DEPLOY_KEY" \
@@ -90,3 +90,7 @@ docker stats --no-stream
 ```
 
 Les commandes de journalisation filtrent les identifiants avant affichage. Sur le VPS, les fonctions sont contrôlées avec systemd utilisateur pour `teko`. Ne pas redémarrer ou remplacer Valhalla/Martin pendant une course. Pour corriger les cartes ou un APK, sauvegarder l’actif et suivre la recette de retour arrière déjà documentée.
+
+## État constaté le 11 novembre et suite
+
+Le contrôle direct du VPS et l’analyse du jour 2 ont relevé des points absents de cette note : chauffeurs du banc limités à la catégorie Éco, offre jamais reproposée après expiration, zone de service limitée à Libreville, deux repères validés seulement, pare-feu inactif et aucune sauvegarde planifiée. Ils sont traités dans [le plan du jour 2](14-plan-alpha-jour2.md), [le rapport de test](15-rapport-test-jour2.md) et [le rapport de correction](16-rapport-corrections-jour2.md).
