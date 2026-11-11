@@ -84,10 +84,33 @@ Construits avec `build-alpha.mjs <rôle> --remote --reuse-native`, vérifiés av
 
 Publiés par renommage dans `.local/alpha-remote/apks/` ; les fichiers du 10 novembre sont gardés dans `.local/alpha-remote/jour2-apks-precedents.*`. Contrôle depuis HTTPS : téléchargement anonyme refusé (401), chaque rôle obtient son APK à l’empreinte attendue et se voit refuser l’autre (403). Aucune installation sur téléphone n’a été faite.
 
+## Mises à jour, redémarrage et audit final, 11 novembre
+
+Après une sauvegarde de la base, les mises à jour système ont été appliquées (il en reste 5 en diffusion progressive, sans redémarrage requis) et le VPS a redémarré à 02 h 29 UTC sur le noyau `7.0.0-43`. L’interruption a duré environ 40 secondes. Les 12 conteneurs, le service des fonctions, le pare-feu, fail2ban, le swap et la minuterie de sauvegarde sont revenus seuls. Le battement de présence du chauffeur resté en ligne a repris. La PR #2 est verte sur les six contrôles, `deno-test` compris.
+
+Contrôle depuis HTTPS avec le compte de contrôle du développeur, sans commande de course :
+
+| Essai | Résultat |
+| --- | --- |
+| Même point au départ et à l’arrivée | 422 `POINTS_TOO_CLOSE` |
+| Mont-Bouët → Glass en Éco, Moto, Confort | 1 600, 950 et 2 750 FCFA |
+| Départ à l’ouest de l’ancienne zone, Akanda, Owendo | Devis obtenus (refusés le jour 2) |
+| Port-Gentil et Franceville, trajets en ville | Devis obtenus |
+| Départ hors du Gabon | 422 `ROUTE_NOT_FOUND` |
+| Recherche « sta », « marché », « pharmacie », « église », « port-gentil » | 6 à 8 résultats chacune ; « akanda » : 2 |
+
+Points d’attention relevés par l’audit, non corrigés :
+
+1. **La recherche de repères ne tient pas compte de la position.** `search_landmarks` trie par notoriété puis par nom et rend 8 résultats. Avec 1 697 repères dans tout le pays, « pharmacie » ou « église » peut afficher d’abord des lieux d’une autre ville. Corriger demande un paramètre de position dans la RPC et dans l’app passager, donc un nouvel APK.
+2. **Qualité des repères importés.** 160 repères portent un nom générique d’un seul mot court (« Église », « Total ») et 63 noms existent en plusieurs exemplaires. Ops peut les repasser en brouillon ; un filtre à l’import est à prévoir.
+3. **Aucune distance maximale dans le dispatch.** Avec la zone « Gabon », une course commandée à Port-Gentil serait proposée à un chauffeur en ligne à Libreville. Sans effet tant que les testeurs sont tous à Libreville.
+4. **La connexion SSH root reste ouverte.** Le compte `teko` n’a pas `sudo` : fermer root couperait toute administration du serveur. L’attribution de `sudo` à `teko` n’a pas été autorisée dans la session ; elle revient au porteur.
+5. **Les sauvegardes restent sur le VPS**, et les erreurs 502/503 horaires du push (J2-08) n’ont pas été diagnostiquées.
+
 ## Reste à faire
 
-1. Demander aux testeurs de réinstaller les deux applications depuis le portail.
-2. Rejouer le protocole du jour 3 avec deux téléphones et compléter ce rapport.
-3. Vérifier la connexion `teko`, fermer l’accès SSH root, puis redémarrer le VPS hors essai pour les mises à jour.
+1. Rejouer le protocole du jour 3 avec deux téléphones, après réinstallation des deux applications par le testeur, et compléter ce rapport.
+2. Trier la recherche de repères par proximité (RPC, app passager, nouvel APK).
+3. Donner `sudo` au compte `teko`, vérifier, puis passer `PermitRootLogin no` dans `/etc/ssh/sshd_config.d/00-teko-key-only.conf` et recharger SSH.
 4. Organiser la copie des sauvegardes hors du serveur.
-5. Contrôler la PR #2 après le push.
+5. Borner la distance de dispatch avant d’inviter des testeurs hors de Libreville.
