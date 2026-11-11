@@ -299,6 +299,17 @@ describe("D-10 Demande de course", () => {
     expect(await screen.findByTestId("offer-modal")).toBeOnTheScreen();
     expect(mockRespondOffer).not.toHaveBeenCalled();
   });
+  it("sans événement temps réel ni push, l'interrogation périodique affiche la proposition", async () => {
+    const user = userEvent.setup();
+    render(<DriverHome />);
+    await user.press(await screen.findByTestId("online-toggle"));
+    await waitFor(() => expect(mockSubscribeNotifications).toHaveBeenCalled());
+    expect(screen.queryByTestId("offer-modal")).toBeNull();
+    mockListPendingOffers.mockResolvedValue([
+      { id: "off-1", expires_at: new Date(Date.now() + 30_000).toISOString() },
+    ]);
+    expect(await screen.findByTestId("offer-modal", {}, { timeout: 8000 })).toBeOnTheScreen();
+  }, 12_000);
   it("notification ride_offer → modal avec le net en grand, accepter → course", async () => {
     mockRespondOffer.mockResolvedValue({ id: "ride-9", status: "accepted" });
     const user = userEvent.setup();
