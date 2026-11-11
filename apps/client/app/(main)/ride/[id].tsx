@@ -17,6 +17,7 @@ import { useBookingStore } from "../../../src/features/booking/store";
 import { useDataUsage, useResolvedMapMode } from "../../../src/features/data/data-state";
 import { ClientDot } from "../../../src/features/map/client-dot";
 import { TekoMapView } from "../../../src/features/map/native-map";
+import { rideEntryRedirect } from "../../../src/features/ride/ride-entry";
 import {
   DestinationFlag,
   OriginPin,
@@ -81,7 +82,13 @@ export default function RideScreen() {
   const { sharing, share } = useShareTrip(id);
 
   const { ride } = tracking;
-  if (!ride) return <LoadingView loadError={tracking.loadError} onRetry={tracking.reload} />;
+  const redirect = ride ? rideEntryRedirect(ride) : null;
+  useEffect(() => {
+    if (redirect) router.replace(redirect);
+  }, [redirect, router]);
+  if (!ride || redirect) {
+    return <LoadingView loadError={tracking.loadError} onRetry={tracking.reload} />;
+  }
 
   return (
     <View style={styles.screen}>
