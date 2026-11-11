@@ -1885,7 +1885,7 @@ isOneToOne: false
 { Args: { "p_ride": string }; Returns: string
                            },
 "search_landmarks":
-{ Args: { "p_limit"?: number,"p_query": string }; Returns: {
+{ Args: { "p_limit"?: number,"p_near"?: unknown,"p_query": string }; Returns: {
               "aliases": (string)[],
 "category": Database["public"]['Enums']["landmark_category"],
 "created_at": string,

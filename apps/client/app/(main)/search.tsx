@@ -31,7 +31,7 @@ export default function Search() {
   const setOrigin = useBookingStore((s) => s.setOrigin);
   const [choosingOrigin, setChoosingOrigin] = useState(!origin);
   const setDestination = useBookingStore((s) => s.setDestination);
-  const search = useLandmarkSearch(query);
+  const search = useLandmarkSearch(query, origin?.position);
   const savedPlaces = useSavedPlaces();
   const recents = useRecentDestinations();
 

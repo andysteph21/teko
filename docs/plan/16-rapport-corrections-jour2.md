@@ -107,10 +107,18 @@ Points d’attention relevés par l’audit, non corrigés :
 4. **La connexion SSH root reste ouverte.** Le compte `teko` n’a pas `sudo` : fermer root couperait toute administration du serveur. L’attribution de `sudo` à `teko` n’a pas été autorisée dans la session ; elle revient au porteur.
 5. **Les sauvegardes restent sur le VPS**, et les erreurs 502/503 horaires du push (J2-08) n’ont pas été diagnostiquées.
 
+## Recherche de repères par proximité, 11 novembre
+
+Point d’attention n° 1 de l’audit, corrigé dans le dépôt. La migration `20261111100000_alpha_recherche_proximite.sql` ajoute à `search_landmarks` un point de référence optionnel : les repères sont classés par tranches de 2 km autour de ce point, puis par notoriété, puis par distance. Sans ce point, l’ordre antérieur est conservé, donc les APK déjà installés continuent de fonctionner. L’app passager transmet le départ choisi.
+
+Vérifié : 91 tests pgTAP (dont deux nouveaux), tests `places` et `ride` de l’app passager (43), test du client d’API, typage, et les deux formes d’appel via PostgREST sur le banc local.
+
+**Non déployé.** L’application de cette migration sur le VPS n’a pas été autorisée dans la session. L’APK passager correspondant n’a pas été construit : il ne doit être publié qu’après la migration, sinon la recherche échouerait.
+
 ## Reste à faire
 
-1. Rejouer le protocole du jour 3 avec deux téléphones, après réinstallation des deux applications par le testeur, et compléter ce rapport.
-2. Trier la recherche de repères par proximité (RPC, app passager, nouvel APK).
+1. Appliquer la migration `20261111100000` sur le VPS, puis construire, vérifier et publier l’APK passager, et mettre à jour son SHA-256 dans le guide d’exploitation.
+2. Rejouer le protocole du jour 3 avec deux téléphones, après réinstallation des deux applications par le testeur, et compléter ce rapport.
 3. Donner `sudo` au compte `teko`, vérifier, puis passer `PermitRootLogin no` dans `/etc/ssh/sshd_config.d/00-teko-key-only.conf` et recharger SSH.
 4. Organiser la copie des sauvegardes hors du serveur.
 5. Borner la distance de dispatch avant d’inviter des testeurs hors de Libreville.

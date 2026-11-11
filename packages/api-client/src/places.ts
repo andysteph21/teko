@@ -2,22 +2,28 @@
 // propositions du compte (C-31). Les RPC géo (nearest/suggest/propose)
 // vivent dans l'adaptateur de @teko/maps.
 
+import { ewktPoint, type LonLat } from "@teko/maps";
 import type { TableRow } from "@teko/types";
 import type { TekoClient } from "./client";
 import { unwrap } from "./errors";
 
 /** Recherche de repères VALIDÉS — RPC search_landmarks : insensible aux
- *  accents et à la casse, nom ET alias, saillance d'abord (constat appareil
- *  réel : « Marche » doit trouver « Marché »). */
+ *  accents et à la casse, nom ET alias (constat appareil réel : « Marche »
+ *  doit trouver « Marché »). Avec `near`, les repères proches passent
+ *  d'abord, par tranches de 2 km puis saillance ; sinon saillance seule. */
 export async function searchLandmarksByName(
   client: TekoClient,
   query: string,
-  limit = 8,
+  options: { limit?: number; near?: LonLat | null } = {},
 ): Promise<TableRow<"landmarks">[]> {
   const term = query.trim();
   if (term.length < 2) return [];
   return unwrap(
-    await client.rpc("search_landmarks", { p_query: term, p_limit: limit }),
+    await client.rpc("search_landmarks", {
+      p_query: term,
+      p_limit: options.limit ?? 8,
+      ...(options.near ? { p_near: ewktPoint(options.near) } : {}),
+    }),
   ) as TableRow<"landmarks">[];
 }
 
