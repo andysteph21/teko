@@ -110,6 +110,7 @@ const sourcesVerified =
         "apps/driver/src/features/work/use-ride-actions.ts",
         "apps/driver/app/(main)/ride/[id].tsx",
         "packages/api-client/src/session-identity.ts",
+        "apps/driver/src/features/work/use-offer-resume.ts",
       ]
     : [
         "apps/client/src/features/booking/use-pickup-confirmation.ts",
@@ -118,6 +119,8 @@ const sourcesVerified =
         "apps/client/src/features/booking/quote-error-screen.tsx",
         "apps/client/src/features/booking/strings.ts",
         "packages/api-client/src/quotes.ts",
+        "apps/client/src/features/ride/ride-entry.ts",
+        "apps/client/app/(main)/ride/[id].tsx",
       ];
 sourcesVerified.push(
   `apps/${app}/app/(main)/home.tsx`,
