@@ -4,18 +4,18 @@
 
 ## Synthèse
 
-Les correctifs côté serveur sont en service sur le VPS depuis le 11 novembre 2026, 01 h 57 UTC (02 h 57 à Libreville), après accord du porteur. Ils profitent aux APK déjà installés. Restent à faire : la reconstruction des APK, le durcissement du VPS et un essai sur téléphone.
+Les correctifs côté serveur sont en service sur le VPS depuis le 11 novembre 2026, 01 h 57 UTC (02 h 57 à Libreville), après accord du porteur. Ils profitent aux APK déjà installés. Les deux APK corrigés sont publiés sur le portail et le VPS est durci depuis le même jour. Reste à faire : un essai sur téléphone, la fermeture de la connexion root et le redémarrage du VPS.
 
 | Anomalie | Correction | Dépôt | VPS | APK |
 | --- | --- | --- | --- | --- |
-| J2-01 Proposition invisible pour le chauffeur | Nouvelle proposition après expiration, délai de 30 s, interrogation toutes les 5 s | Fait, testé | Déployé (nouvelle proposition, 30 s) | À reconstruire (interrogation seulement) |
+| J2-01 Proposition invisible pour le chauffeur | Nouvelle proposition après expiration, délai de 30 s, interrogation toutes les 5 s | Fait, testé | Déployé (nouvelle proposition, 30 s) | Publié le 11 novembre |
 | J2-02 Confort sans chauffeur | Éco et Confort pour les chauffeurs voiture du banc | Script prêt | Déployé : 10 chauffeurs en Éco et Confort | Sans objet |
 | J2-03 Départ hors zone | Zone de service « Gabon » | Script prêt | Déployé | Sans objet |
 | J2-04 Deux repères seulement | Import de 1 695 repères OpenStreetMap | Outil et fichier prêts | Déployé : 1 697 repères validés | Sans objet |
-| J2-05 « Votre chauffeur arrive » sans chauffeur | Redirection selon le statut de la course | Fait, testé | Sans objet | À reconstruire |
+| J2-05 « Votre chauffeur arrive » sans chauffeur | Redirection selon le statut de la course | Fait, testé | Sans objet | Publié le 11 novembre |
 | J2-08 Erreurs 502/503 du push | Non traité | — | — | — |
 | CI `deno-test` rouge | Import `npm:standardwebhooks@1.0.0`, verrou nettoyé | Fait, testé | Sans objet | Sans objet |
-| VPS non protégé, sans sauvegarde | Scripts de durcissement et de sauvegarde | Scripts prêts | Deux sauvegardes manuelles faites ; durcissement non exécuté | Sans objet |
+| VPS non protégé, sans sauvegarde | Scripts de durcissement et de sauvegarde | Scripts prêts | Durcissement exécuté, sauvegarde quotidienne planifiée | Sans objet |
 
 ## Détail des corrections
 
@@ -40,7 +40,7 @@ Les correctifs côté serveur sont en service sur le VPS depuis le 11 novembre 2
 | `terrain-jour2.sql` et import des repères, à blanc sur le banc d’audit (annulés ensuite) | Zone créée, catégories mises à jour, 1 695 repères insérés |
 | Syntaxe des deux scripts shell | Correcte |
 
-Non vérifié : aucun essai sur téléphone, aucune exécution de `harden-vps.sh`, aucun contrôle sur le VPS après correction, aucune reconstruction d’APK. Sur le banc d’audit local, 123 courses restées ouvertes par d’anciens tests ont été annulées pour rejouer la suite.
+Non vérifié : aucun essai sur téléphone. Sur le banc d’audit local, 123 courses restées ouvertes par d’anciens tests ont été annulées pour rejouer la suite.
 
 ## Déploiement du 11 novembre sur le VPS
 
@@ -55,15 +55,39 @@ Fait hors course (aucune course ouverte), après une sauvegarde de la base à 01
 | Services | 12 conteneurs actifs, `/health`, `/install`, `/gabon`, `/landmarks`, `/teko_roads` en HTTP 200, tuiles de repères servies à Port-Gentil et Franceville |
 | Tâches planifiées | `retry-dispatch`, `expire-offers`, `push-delivery` en succès dans les minutes suivantes ; aucune erreur Postgres |
 
-Les fichiers appliqués sont copiés dans `/opt/teko-alpha` (migration, `terrain-jour2.sql`, `osm-landmarks.py`, `backup-db.sh`, `harden-vps.sh`). Fonctions, APK, pare-feu et configuration SSH sont inchangés.
+Les fichiers appliqués sont copiés dans `/opt/teko-alpha` (migration, `terrain-jour2.sql`, `osm-landmarks.py`, `backup-db.sh`, `harden-vps.sh`). Les fonctions Edge sont inchangées.
 
 Retour arrière : restaurer la sauvegarde de 01 h 56 UTC avec `pg_restore --clean`, hors course, puis redémarrer Martin.
 
 Non vérifié sur le VPS : aucun devis ni aucune course n’a été rejoué avec un compte de test après le déploiement. La nouvelle proposition après expiration est prouvée par le test E2E local, pas par un essai réel.
 
+## Durcissement du VPS, 11 novembre
+
+`harden-vps.sh` exécuté hors course. Contrôles après exécution :
+
+- pare-feu actif : entrées refusées par défaut, 22 limité, 80 et 443 ouverts ; les ports 5432, 58421 et 8002 restent fermés de l’extérieur ;
+- fail2ban actif sur SSH ; swap de 2 Go monté ;
+- sauvegarde quotidienne planifiée à 03 h 30 UTC ;
+- nouvelles connexions SSH réussies pour `root` et pour `teko` ;
+- 12 conteneurs actifs, URL publiques en HTTP 200, liaison passerelle → Valhalla vérifiée.
+
+Non fait : fermeture de la connexion root, redémarrage pour les 74 mises à jour, copie des sauvegardes hors serveur.
+
+## APK du 11 novembre
+
+Construits avec `build-alpha.mjs <rôle> --remote --reuse-native`, vérifiés avec `verify-alpha-apk.mjs <rôle> --remote` (signature alpha, identifiant, mode release, origine HTTPS, permissions GPS, absence de secrets, sources des correctifs embarquées). Version `0.1.0`, même signature : ils s’installent par-dessus les précédents.
+
+| APK | SHA-256 |
+| --- | --- |
+| Passager | `f2d5e7c52ccd7786e4a3c076289f2dbafdc8b7689194f1dad656c6806aa346fb` |
+| Chauffeur | `6fd25d0dee90f28805a09276cfa225512319feffc5e338084f49b771daa6ef71` |
+
+Publiés par renommage dans `.local/alpha-remote/apks/` ; les fichiers du 10 novembre sont gardés dans `.local/alpha-remote/jour2-apks-precedents.*`. Contrôle depuis HTTPS : téléchargement anonyme refusé (401), chaque rôle obtient son APK à l’empreinte attendue et se voit refuser l’autre (403). Aucune installation sur téléphone n’a été faite.
+
 ## Reste à faire
 
-1. Exécuter `harden-vps.sh` en gardant une session SSH ouverte, vérifier une nouvelle connexion, puis fermer l’accès root et redémarrer pour les mises à jour.
-2. Reconstruire et vérifier les deux APK, les publier sur le portail en conservant les précédents, mettre à jour les SHA-256 du guide d’exploitation.
-3. Commiter, pousser la branche et contrôler la PR #2.
-4. Rejouer le protocole du jour 3 avec deux téléphones et compléter ce rapport.
+1. Demander aux testeurs de réinstaller les deux applications depuis le portail.
+2. Rejouer le protocole du jour 3 avec deux téléphones et compléter ce rapport.
+3. Vérifier la connexion `teko`, fermer l’accès SSH root, puis redémarrer le VPS hors essai pour les mises à jour.
+4. Organiser la copie des sauvegardes hors du serveur.
+5. Contrôler la PR #2 après le push.

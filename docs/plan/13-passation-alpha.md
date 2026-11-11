@@ -76,7 +76,7 @@ Ces contrôles n’établissent pas encore le fonctionnement du GPS sur téléph
 
 ## Connexion et diagnostic du VPS
 
-Les secrets de connexion existent uniquement sur le poste et le serveur. Les variables `TEKO_ALPHA_DEPLOY_KEY` et `TEKO_ALPHA_SSH_USER` ne sont pas définies par défaut : la clé de déploiement est `.local/alpha-remote/ssh/deploy_ed25519` et la clé d’hôte épinglée `.local/alpha-remote/ssh/vps-known_hosts` (à passer avec `-o UserKnownHostsFile=`). Au 11 novembre, cette clé n’ouvre que le compte `root` ; le compte `teko` la refuse tant que `tools/alpha-remote/harden-vps.sh` n’a pas été exécuté. Ne pas mettre la valeur de la clé privée ici.
+Les secrets de connexion existent uniquement sur le poste et le serveur. Les variables `TEKO_ALPHA_DEPLOY_KEY` et `TEKO_ALPHA_SSH_USER` ne sont pas définies par défaut : la clé de déploiement est `.local/alpha-remote/ssh/deploy_ed25519` et la clé d’hôte épinglée `.local/alpha-remote/ssh/vps-known_hosts` (à passer avec `-o UserKnownHostsFile=`). Depuis l’exécution de `tools/alpha-remote/harden-vps.sh` le 11 novembre, elle ouvre les comptes `root` et `teko`. Ne pas mettre la valeur de la clé privée ici.
 
 ```sh
 ssh -o StrictHostKeyChecking=yes -i "$TEKO_ALPHA_DEPLOY_KEY" \
