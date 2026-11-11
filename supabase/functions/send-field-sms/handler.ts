@@ -1,5 +1,5 @@
 // deno-lint-ignore no-import-prefix -- le runtime Edge utilise cette URL épinglée sans import map.
-import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
+import { Webhook } from "npm:standardwebhooks@1.0.0";
 import { json } from "../_shared/http.ts";
 
 const endpoint = "https://sms.esmsafrica.io/api/messages/send";

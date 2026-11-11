@@ -1,6 +1,6 @@
 import { assert, assertEquals } from "@std/assert";
 // deno-lint-ignore no-import-prefix -- même version que le vérificateur du runtime Edge.
-import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
+import { Webhook } from "npm:standardwebhooks@1.0.0";
 import { fieldSms } from "./handler.ts";
 
 const key = btoa("fixture-only-sms-signing-secret--");
