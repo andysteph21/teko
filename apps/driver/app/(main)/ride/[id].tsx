@@ -20,6 +20,7 @@ import { CompletePanel } from "../../../src/features/work/complete-panel";
 import { CoursePanel } from "../../../src/features/work/course-panel";
 import { useDataUsage, useResolvedMapMode } from "../../../src/features/work/data-state";
 import {
+  ClientPin,
   DestinationDot,
   MeetingPin,
   RouteLine,
@@ -29,8 +30,10 @@ import { PassengerPanel } from "../../../src/features/work/passenger-panel";
 import { PinPanel } from "../../../src/features/work/pin-panel";
 import { RideBanner } from "../../../src/features/work/ride-banner";
 import { WorkToast } from "../../../src/features/work/toast";
+import { useClientPosition } from "../../../src/features/work/use-client-position";
 import { useDevicePosition } from "../../../src/features/work/use-device-position";
 import { type DriverRide, useDriverRide } from "../../../src/features/work/use-driver-ride";
+import { useLivePosition } from "../../../src/features/work/use-live-position";
 import { usePushPositions } from "../../../src/features/work/use-push-positions";
 import { type RideActions, useRideActions } from "../../../src/features/work/use-ride-actions";
 import { supabase } from "../../../src/lib/supabase";
@@ -129,6 +132,8 @@ function ActiveRideView({ state, actions, eco, onRequestPin }: ActiveViewProps) 
   const router = useRouter();
   const usage = useDataUsage();
   const devicePosition = useDevicePosition();
+  useLivePosition(true);
+  const clientPosition = useClientPosition(state.ride?.id, state.status);
   const ride = state.ride;
   const status = state.status;
   if (!ride || !status) return null;
@@ -139,9 +144,11 @@ function ActiveRideView({ state, actions, eco, onRequestPin }: ActiveViewProps) 
         options={{ tilesUrl: TILES_URL, eco }}
         center={state.origin ?? DEFAULT_CENTER}
         zoom={14.5}
+        recenter={devicePosition}
       >
         <RouteLine coordinates={state.routeCoords} />
         <MeetingPin position={isPickup(status) ? state.origin : null} />
+        <ClientPin position={clientPosition} />
         <DestinationDot position={state.destination} />
         <VehicleDot position={devicePosition} />
       </TekoMapView>
