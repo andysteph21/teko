@@ -70,14 +70,32 @@ Non vérifié : aucune installation sur téléphone. Le rendu des pastilles dans
 
 En CI, le nouveau test de transmission temps réel échouait à froid : après l’abonnement, Realtime met plusieurs secondes à brancher la réplication. Le test envoie désormais une position par seconde jusqu’à la première réception. Dans les apps, la relecture périodique couvre ce même délai.
 
+## Clôture automatique des courses (J3-06)
+
+Décision du porteur du 12 novembre 2026. Une course démarrée et jamais terminée est clôturée par le serveur après le plus long de deux délais comptés depuis le départ : 3 heures (`ride_auto_complete_h`) ou quatre fois la durée estimée du trajet. La tâche tourne toutes les 5 minutes.
+
+La clôture suit le circuit normal au nom du chauffeur assigné : prix annoncé, commission, reçu, notification au passager. Elle ajoute un événement `auto_completed` et une notification au chauffeur. Le suivi GPS du téléphone s’arrête de lui-même, puisque l’app vérifie le statut de la course. Migration `20261112100000_alpha_cloture_automatique.sql`.
+
+Vérifications : deux nouveaux tests E2E (course récente intacte, clôture après le délai avec commission unique, trajet long protégé, tâche interdite aux usagers), suite E2E complète (132), pgTAP (91), tests des fonctions (47).
+
+Non couvert : une course acceptée dont le chauffeur n’arrive jamais reste ouverte jusqu’à l’annulation par l’un des deux.
+
+## Remise en état du banc, 12 novembre
+
+Fait sur le VPS après accord du porteur, sauvegarde préalable.
+
+- **Course restée ouverte.** La règle déployée a clôturé la course Confort du 11 novembre à 00 h 01 le 13 novembre, heure de Libreville : prix final 2 250 FCFA, commission de 350 FCFA portée au solde du chauffeur. Plus aucune course ouverte sur le banc.
+- **Chauffeur suspendu.** Solde dû : 600 FCFA (250 de la course terminée, 350 de la course clôturée). Règlement simulé par le circuit prévu : Ops a préparé le dossier `SIM-J3-DFE429C2` en cash avec un justificatif de simulation, Finance l’a validé. Solde à 0, compte réactivé, motif de suspension effacé.
+- **CI.** Le contrôle `e2e` est repassé au vert. Le contrôle `maps` a échoué une fois sur un port déjà occupé du serveur d’intégration, sans rapport avec le code ; il a été relancé.
+
 ## Actions d’exploitation avant la prochaine salve
 
-1. **Clore la course restée « en cours » (J3-06).** Le chauffeur peut la terminer dans son app, ou Ops l’annule depuis la console. Tant qu’elle est ouverte, le téléphone du chauffeur continue d’envoyer sa position.
-2. **Réactiver le chauffeur suspendu (J3-05).** Finance valide un règlement manuel de 250 FCFA dans la console ; la réactivation est automatique. C’est le circuit prévu par [les procédures](11-procedures-alpha.md#dossiers-de-règlement-manuel).
+1. Course restée « en cours » (J3-06) : close le 12 novembre, voir plus haut.
+2. Chauffeur suspendu (J3-05) : réglé et réactivé le 12 novembre, voir plus haut. Après chaque course cash, le chauffeur doit la commission ; sans règlement validé avant la clôture de 04 h, il est suspendu. Prévoir ce règlement dans la console à chaque salve.
 3. Demander aux testeurs de réinstaller les deux applications depuis le portail (fait côté serveur le 12 novembre).
 
 ## À prévoir
 
-- Fermeture automatique d’une course « en cours » sans mouvement depuis plusieurs heures, avec arrêt du suivi GPS.
+- Fermeture automatique d’une course acceptée mais jamais démarrée.
 - Message clair dans l’app chauffeur quand la présence est refusée pour solde en retard (le bandeau « suspendu » existe ; vérifier qu’il s’affiche après une suspension survenue pendant que l’app est ouverte).
 - Reste du jour 2 : distance maximale de dispatch, tri des repères au nom générique, copie des sauvegardes hors serveur, fermeture de la connexion SSH root.

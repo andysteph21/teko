@@ -294,8 +294,13 @@ Détail dans [le plan du jour 3](../plan/18-plan-corrections-jour3.md).
 - **Appliqué à l’alpha, à confirmer par le porteur — précision GPS :** haute
   précision pendant une course, au prix d’une consommation de batterie plus
   élevée ; précision équilibrée hors course.
-- **Ouvert :** guidage vocal intégré ou bouton vers Google Maps ; fermeture
-  automatique d’une course restée « en cours ».
+- **Clôturé — clôture automatique :** demande du porteur. Une course
+  démarrée est terminée par le serveur après 3 heures, ou quatre fois la
+  durée estimée si c’est plus long. Elle suit le circuit normal : prix
+  annoncé et commission due par le chauffeur en cash. Le délai de 3 heures
+  est une valeur de départ, à ajuster après les essais.
+- **Ouvert :** guidage vocal intégré ou bouton vers Google Maps ; sort d’une
+  course acceptée mais jamais démarrée.
 - **Clôturé — marqueur des repères :** le porteur retient la « pastille
   Teko » (carré arrondi ambre, pictogramme violet nuit par catégorie, taille
   selon la saillance) à la place du cercle lettré. Le langage carte

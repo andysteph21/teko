@@ -49,6 +49,15 @@ le montant complet n’a pas été encaissé et validé. La part chauffeur de 70
 ne devient un crédit qu’après cette validation. Aucun encaissement partiel ne
 suffit dans l’alpha.
 
+## Course restée ouverte
+
+Une course démarrée que le chauffeur n’a pas terminée est clôturée par le
+serveur après 3 heures, ou quatre fois la durée estimée si c’est plus long
+(`ride_auto_complete_h`, tâche toutes les 5 minutes). La commission est due
+comme pour une fin normale. Ops repère ces courses par l’événement
+`auto_completed` et vérifie avec le chauffeur que le trajet a bien eu lieu
+avant le règlement.
+
 ## Clôture quotidienne à 04 h, heure de Libreville
 
 Finance examine les relevés et les dossiers en attente après l’exécution du
