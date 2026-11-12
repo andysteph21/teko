@@ -282,3 +282,23 @@ couverture, prise en charge partout au Gabon). Détail dans
 - **Ouvert :** destination de la copie hors serveur des sauvegardes ;
   diagnostic des erreurs 502/503 de la livraison push.
 
+## Retours du jour 3 de l’alpha — décisions du 12 novembre 2026
+
+Détail dans [le plan du jour 3](../plan/18-plan-corrections-jour3.md).
+
+- **Clôturé — position du passager :** le porteur retient l’option A. Le
+  chauffeur attribué voit la position du téléphone du passager au moment de
+  la commande, en plus du point de rencontre. Elle est effacée à la prise en
+  charge. L’adressage par repères reste la règle ; la position en direct
+  (option B) n’est pas retenue à ce stade.
+- **Appliqué à l’alpha, à confirmer par le porteur — précision GPS :** haute
+  précision pendant une course, au prix d’une consommation de batterie plus
+  élevée ; précision équilibrée hors course.
+- **Ouvert :** guidage vocal intégré ou bouton vers Google Maps ; fermeture
+  automatique d’une course restée « en cours ».
+- **Clôturé — marqueur des repères :** le porteur retient la « pastille
+  Teko » (carré arrondi ambre, pictogramme violet nuit par catégorie, taille
+  selon la saillance) à la place du cercle lettré. Le langage carte
+  (`docs/design/08-carte-langage.md`) est mis à jour ; l’ambre reste la
+  couleur réservée aux repères.
+

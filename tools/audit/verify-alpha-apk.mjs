@@ -111,6 +111,9 @@ const sourcesVerified =
         "apps/driver/app/(main)/ride/[id].tsx",
         "packages/api-client/src/session-identity.ts",
         "apps/driver/src/features/work/use-offer-resume.ts",
+        "apps/driver/src/features/work/use-live-position.ts",
+        "apps/driver/src/features/work/use-client-position.ts",
+        "apps/driver/src/lib/location-service.ts",
       ]
     : [
         "apps/client/src/features/booking/use-pickup-confirmation.ts",
@@ -123,6 +126,8 @@ const sourcesVerified =
         "apps/client/app/(main)/ride/[id].tsx",
         "apps/client/src/features/places/use-landmark-search.ts",
         "packages/api-client/src/places.ts",
+        "apps/client/src/features/ride/use-position-fallback.ts",
+        "apps/client/src/features/booking/share-order-position.ts",
       ];
 sourcesVerified.push(
   `apps/${app}/app/(main)/home.tsx`,
@@ -131,6 +136,7 @@ sourcesVerified.push(
     ? "apps/driver/src/features/work/use-device-position.ts"
     : "apps/client/src/features/places/use-home-position.ts",
   "packages/ui/src/native/location-refresh.ts",
+  "packages/maps/src/style/landmark-layers.ts",
 );
 for (const path of sourcesVerified) {
   const index = sourceMap.sources.findIndex((source) => source.endsWith(`/${path}`));

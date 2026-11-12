@@ -1,0 +1,60 @@
+# Plan et corrections après le jour 3
+
+Établi le 12 novembre 2026 à partir du [rapport de test du jour 3](17-rapport-test-jour3.md).
+
+## Corrigé dans le dépôt
+
+| Anomalie | Correction | Où |
+| --- | --- | --- |
+| J3-01 Point du chauffeur figé | L’écran de course écoute le GPS toutes les 2 secondes ou tous les 5 mètres, et la carte suit le véhicule | `apps/driver`, `use-live-position.ts`, écran `ride/[id]` |
+| J3-02 Position par sauts | GPS en haute précision pendant une course ; la précision « équilibrée » reste réservée à la présence hors course | `apps/driver`, `location-service.ts` |
+| J3-04 Suivi passager fragile | Lecture de la dernière position à l’ouverture puis toutes les 10 secondes, en plus du temps réel ; la carte suit le véhicule | `packages/api-client` (`latestRidePosition`), `apps/client`, `use-position-fallback.ts` |
+
+Vérifications : nouveau test E2E de transmission temps réel (le passager reçoit la position, un tiers ne reçoit rien), tests du client d’API (7), suite complète de l’app chauffeur (115, dont le nouveau test du point vivant), tests `ride` de l’app passager (21), typage et Biome. Un test de l’écran Paramètres chauffeur échoue par intermittence quand toute la suite tourne en parallèle ; il passe seul, avec ou sans ces changements.
+
+Les trois corrections ci-dessus ne demandent aucun changement sur le serveur. La position du passager, décrite plus bas, ajoute une migration. Dans tous les cas il faut reconstruire et republier les deux APK, après la migration. La haute précision consomme plus de batterie pendant les courses : à surveiller sur le téléphone d’entrée de gamme.
+
+Non vérifié : aucun essai sur téléphone.
+
+## Position du passager à la commande (J3-03)
+
+Décision du porteur du 12 novembre 2026 : option A. Corrigé dans le dépôt.
+
+- À la commande, l’app passager transmet la position GPS du téléphone, si la localisation est autorisée. Sans permission ou sans GPS, la commande continue sans cette position.
+- Après avoir accepté la course, le chauffeur voit deux points : le point de rencontre (ambre) et la position du passager à la commande (magenta). Le point ne bouge pas si le passager se déplace.
+- La position n’est pas dans la proposition : le chauffeur ne la voit qu’après acceptation. Le serveur l’efface à la prise en charge, à l’annulation ou à la fin de la course. Un tiers ne peut ni la lire ni l’écrire.
+- Migration `20261112090000_alpha_position_passager.sql` : table dédiée et RPC `set_ride_client_position`. Les RPC de commande ne changent pas, donc les APK déjà installés continuent de fonctionner.
+
+Vérifications : trois nouveaux tests E2E (écriture réservée au passager, lecture par le chauffeur après acceptation seulement, effacement à la prise en charge), suite E2E complète (130), pgTAP (91), tests du client d’API (112), tests chauffeur `work` (38) et passager `booking` et `ride` (50), typage.
+
+L’option B (position en direct) reste possible plus tard sur la même table : il suffirait que l’app passager renvoie sa position périodiquement.
+
+## Pastille Teko pour les repères
+
+Décision du porteur du 12 novembre 2026, après trois propositions. Fait dans le dépôt.
+
+- Dix pastilles SVG, une par catégorie de repère, dans `infra/tiles/martin/sprites/teko`. Martin les assemble en planche sur `/sprite/teko`.
+- Le style de carte partagé (`packages/maps`) affiche les repères validés en pastilles sur trois paliers de saillance, avec le nom en violet nuit. En mode éco, la pastille reste et le nom disparaît. Les repères proches de la commande utilisent la même pastille.
+- Sans planche (éco hors-ligne), l’ancien cercle ambre lettré sert de repli.
+
+Vérifications : la planche est générée par Martin (conteneur jetable), les styles complet et éco passent le validateur de spécification MapLibre sans erreur, tests du paquet `maps` (49). Le rendu des dix pastilles a été contrôlé sur une planche statique. **Non vérifié : le rendu dans la carte réelle**, le navigateur de contrôle n’ayant pas WebGL ; à confirmer sur téléphone.
+
+Déploiement : la nouvelle configuration Martin, le dossier des pastilles et la route `/sprite/*` de Caddy doivent être en service sur le VPS **avant** la publication des APK. Sans planche servie, les nouveaux APK n’afficheraient aucun repère sur la carte. Les APK déjà installés ne sont pas touchés.
+
+Reste hors périmètre : le marqueur du repère sélectionné pendant la commande (app passager) et la carte de la console gardent leur rendu actuel.
+
+## À décider par le porteur
+
+**Guidage vocal.** Valhalla fournit déjà les manœuvres en français. Il reste à les afficher et à les lire à voix haute dans l’app chauffeur. La synthèse vocale demande un module natif, donc une reconstruction complète de l’APK chauffeur. Alternative immédiate : un bouton « Ouvrir dans Google Maps » vers le point de rencontre puis la destination, sans développement de guidage.
+
+## Actions d’exploitation avant la prochaine salve
+
+1. **Clore la course restée « en cours » (J3-06).** Le chauffeur peut la terminer dans son app, ou Ops l’annule depuis la console. Tant qu’elle est ouverte, le téléphone du chauffeur continue d’envoyer sa position.
+2. **Réactiver le chauffeur suspendu (J3-05).** Finance valide un règlement manuel de 250 FCFA dans la console ; la réactivation est automatique. C’est le circuit prévu par [les procédures](11-procedures-alpha.md#dossiers-de-règlement-manuel).
+3. Sur le VPS : appliquer la migration `20261112090000`, déployer les pastilles (configuration Martin, dossier `sprites`, Caddyfile) et vérifier `/sprite/teko.json`. Publier ensuite les deux APK corrigés et demander aux testeurs de les réinstaller.
+
+## À prévoir
+
+- Fermeture automatique d’une course « en cours » sans mouvement depuis plusieurs heures, avec arrêt du suivi GPS.
+- Message clair dans l’app chauffeur quand la présence est refusée pour solde en retard (le bandeau « suspendu » existe ; vérifier qu’il s’affiche après une suspension survenue pendant que l’app est ouverte).
+- Reste du jour 2 : distance maximale de dispatch, tri des repères au nom générique, copie des sauvegardes hors serveur, fermeture de la connexion SSH root.
