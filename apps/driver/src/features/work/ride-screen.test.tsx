@@ -8,7 +8,7 @@ jest.mock("../../lib/location-service", () => ({
 
 import { formatXaf } from "@teko/core";
 import { spacing } from "@teko/ui";
-import { fireEvent, render, screen, userEvent, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, userEvent, waitFor } from "@testing-library/react-native";
 import { Keyboard } from "react-native";
 
 const mockGetRide = jest.fn();
@@ -26,6 +26,7 @@ const mockChannel = {
 };
 
 jest.mock("@teko/api-client", () => ({
+  rideClientPosition: (...args: unknown[]) => mockClientPosition(...args),
   getRide: (...args: unknown[]) => mockGetRide(...args),
   markArrived: (...args: unknown[]) => mockMarkArrived(...args),
   startRide: (...args: unknown[]) => mockStartRide(...args),
@@ -59,6 +60,8 @@ jest.mock("expo-router", () => ({
 }));
 
 const mockFetchRoute = jest.fn();
+const mockClientPosition = jest.fn(async (..._args: unknown[]) => null as unknown);
+const mockWatchPosition = jest.fn(async (..._args: unknown[]) => ({ remove: jest.fn() }));
 jest.mock("@teko/maps", () => ({
   ...jest.requireActual("@teko/maps"),
   fetchRoute: (...args: unknown[]) => mockFetchRoute(...args),
@@ -80,7 +83,8 @@ jest.mock("expo-location", () => ({
   getCurrentPositionAsync: jest.fn(async () => ({
     coords: { longitude: 9.45, latitude: 0.4 },
   })),
-  Accuracy: { Balanced: 3 },
+  watchPositionAsync: (...args: unknown[]) => mockWatchPosition(...args),
+  Accuracy: { Balanced: 3, High: 4 },
 }));
 let mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
 jest.mock("react-native-safe-area-context", () => ({
@@ -287,5 +291,29 @@ describe("D-13 course / D-14 fin", () => {
 
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/(main)/home"));
     expect(useWorkStore.getState().toast).toBe("Paiement Airtel confirmé");
+  });
+});
+
+describe("point véhicule vivant (retour terrain du 11 novembre 2026)", () => {
+  it("écoute le GPS précis pendant la course et met à jour la position affichée", async () => {
+    const { useWorkStore } = require("./store");
+    render(<DriverRideScreen />);
+    await waitFor(() => expect(mockWatchPosition).toHaveBeenCalled());
+    const [options, onLocation] = mockWatchPosition.mock.calls[0] as unknown as [
+      { accuracy: number; timeInterval: number },
+      (l: { coords: { longitude: number; latitude: number } }) => void,
+    ];
+    expect(options).toMatchObject({ accuracy: 4, timeInterval: 2000 });
+    act(() => onLocation({ coords: { longitude: 9.4612, latitude: 0.4051 } }));
+    expect(useWorkStore.getState().devicePosition).toEqual({ lon: 9.4612, lat: 0.4051 });
+  });
+});
+
+describe("position du passager à la commande (décision du 12 novembre 2026)", () => {
+  it("lue pendant l'approche avec l'identifiant de la course", async () => {
+    mockClientPosition.mockResolvedValue({ lon: 9.455, lat: 0.404 });
+    render(<DriverRideScreen />);
+    await waitFor(() => expect(mockClientPosition).toHaveBeenCalled());
+    expect(mockClientPosition.mock.calls[0]?.[1]).toBe(RIDE.id);
   });
 });

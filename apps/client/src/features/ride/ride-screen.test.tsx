@@ -8,6 +8,7 @@ import { Share } from "react-native";
 const mockGetRide = jest.fn();
 const mockGetProfile = jest.fn();
 const mockCreateTripShare = jest.fn();
+const mockLatestPosition = jest.fn(async (..._args: unknown[]) => null as unknown);
 const mockChannel = {
   subscribeRideStatus: jest.fn(),
   subscribeRidePositions: jest.fn(),
@@ -18,6 +19,7 @@ jest.mock("@teko/api-client", () => ({
   rideDriverCard: (...args: unknown[]) => mockGetProfile(...args),
   createTripShare: (...args: unknown[]) => mockCreateTripShare(...args),
   createRealtimePositionsChannel: () => mockChannel,
+  latestRidePosition: (...args: unknown[]) => mockLatestPosition(...args),
   TekoApiError: class TekoApiError extends Error {
     code = "unknown";
   },
@@ -191,5 +193,20 @@ describe("C-14 en course", () => {
     expect(shareSpy).toHaveBeenCalledWith({
       message: expect.stringContaining("https://teko.ga/t/tok-42"),
     });
+  });
+});
+
+describe("repli du suivi véhicule (retour terrain du 11 novembre 2026)", () => {
+  it("lit la dernière position connue dès l'ouverture d'une course attribuée", async () => {
+    mockLatestPosition.mockResolvedValue({
+      rideId: "ride-1",
+      recordedAt: new Date().toISOString(),
+      lon: 9.4612,
+      lat: 0.4051,
+    });
+    render(<RideScreen />);
+    await screen.findByTestId("ride-sos");
+    expect(mockLatestPosition).toHaveBeenCalled();
+    expect(mockLatestPosition.mock.calls[0]?.[1]).toBeTruthy();
   });
 });

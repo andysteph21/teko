@@ -7,7 +7,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { ewktPoint, type GeomInput, type LonLat, roundPosition, toLonLat } from "@teko/maps";
 import type { RideStatus } from "@teko/types";
 import type { TekoClient } from "./client";
-import { mapApiError } from "./errors";
+import { mapApiError, unwrap } from "./errors";
 
 export interface RidePositionEvent extends LonLat {
   rideId: string;
@@ -27,6 +27,48 @@ export interface PositionsChannel {
     position: LonLat,
     sample?: { id: string; recordedAt: string },
   ): Promise<void>;
+}
+
+/** Dernière position enregistrée de la course (RLS : participants) — point
+ *  de départ du suivi et repli quand un événement temps réel est manqué. */
+export async function latestRidePosition(
+  client: TekoClient,
+  rideId: string,
+): Promise<RidePositionEvent | null> {
+  const rows = unwrap(
+    await client
+      .from("ride_locations")
+      .select("ride_id, geom, recorded_at")
+      .eq("ride_id", rideId)
+      .order("recorded_at", { ascending: false })
+      .limit(1),
+  ) as { ride_id: string; geom: GeomInput; recorded_at: string }[];
+  const row = rows[0];
+  return row ? { rideId: row.ride_id, recordedAt: row.recorded_at, ...toLonLat(row.geom) } : null;
+}
+
+/** Passager : transmet la position de son téléphone à la commande (décision
+ *  du 12 novembre 2026). Refusé une fois la course prise en charge. */
+export async function setRideClientPosition(
+  client: TekoClient,
+  rideId: string,
+  position: LonLat,
+): Promise<void> {
+  unwrap(
+    await client.rpc("set_ride_client_position", { p_ride: rideId, p_point: ewktPoint(position) }),
+  );
+}
+
+/** Chauffeur attribué : position du passager à la commande, ou null si elle
+ *  n'a pas été transmise ou si la prise en charge a eu lieu (effacée). */
+export async function rideClientPosition(
+  client: TekoClient,
+  rideId: string,
+): Promise<LonLat | null> {
+  const rows = unwrap(
+    await client.from("ride_client_positions").select("geom").eq("ride_id", rideId).limit(1),
+  ) as { geom: GeomInput }[];
+  return rows[0] ? toLonLat(rows[0].geom) : null;
 }
 
 export interface RealtimePositionsOptions {

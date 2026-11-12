@@ -50,6 +50,7 @@ export default function Category() {
       <QuoteErrorScreen
         error={estimatesQuery.error}
         onRetry={() => void estimatesQuery.refetch()}
+        onEdit={() => router.dismissTo("/(main)/search" as Href)}
       />
     );
   }

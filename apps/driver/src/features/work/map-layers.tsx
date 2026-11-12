@@ -39,6 +39,24 @@ export function VehicleDot({ position }: { position: LonLat | null }) {
   );
 }
 
+/** Passager à la commande : point magenta (même teinte que côté passager). */
+export function ClientPin({ position }: { position: LonLat | null }) {
+  if (!position) return null;
+  return (
+    <GeoJSONSource id="drv-client" data={pointFc(position) as never}>
+      <Layer
+        type="circle"
+        paint={{
+          "circle-color": MAP_COLORS.markerClient,
+          "circle-radius": 7,
+          "circle-stroke-color": MAP_COLORS.halo,
+          "circle-stroke-width": 2.5,
+        }}
+      />
+    </GeoJSONSource>
+  );
+}
+
 /** Point de rencontre : goutte repère ambre avec halo doux. */
 export function MeetingPin({ position }: { position: LonLat | null }) {
   if (!position) return null;

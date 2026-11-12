@@ -253,3 +253,57 @@ La garde est commune à la préparation des règlements et des versements.
   à préciser. Cette estimation n’autorise pas l’ouverture aux vraies courses.
 
 Document : [Budget Teko pour un mois de tests](../../livrables/budget-alpha-un-mois-2026-10-22.docx).
+
+## Retours du jour 2 de l’alpha — décisions du 11 novembre 2026
+
+Suite au retour du porteur du 10 novembre (interaction chauffeur-passager,
+couverture, prise en charge partout au Gabon). Détail dans
+[le plan du jour 2](../plan/14-plan-alpha-jour2.md).
+
+- **Clôturé — prise en charge partout au Gabon :** demande du porteur. Le banc
+  alpha reçoit une zone de service couvrant le pays ; Libreville reste une
+  zone distincte. Les tarifs ne dépendent pas de la zone à ce stade.
+- **Appliqué à l’alpha, à confirmer par le porteur — module d’acceptation chauffeur :** conservé. La fenêtre de
+  proposition D-10 reste le seul moyen d’accepter ou de refuser.
+- **Appliqué à l’alpha, à confirmer par le porteur — délai de réponse :**
+  30 secondes au lieu de 12. Le compte à rebours de la maquette D-10 suit
+  l’échéance du serveur. La valeur de lancement reste à arrêter.
+- **Appliqué à l’alpha, à confirmer par le porteur — nouvelle proposition :**
+  une offre expirée sans réponse est reproposée au même chauffeur quand aucun
+  autre n’est disponible. Un refus explicite reste définitif. La règle
+  antérieure (« jamais deux offres au même chauffeur ») bloquait toute
+  course avec un seul chauffeur en ligne.
+- **Appliqué à l’alpha, à confirmer par le porteur — repères OpenStreetMap :**
+  les lieux nommés d’OSM sont publiés directement comme repères validés
+  (source et provenance `osm`, ODbL). Ops peut les repasser en brouillon.
+- **Banc uniquement — catégories :** les chauffeurs voiture de test reçoivent
+  Éco et Confort. La règle d’attribution des catégories selon le véhicule
+  n’est pas modifiée.
+- **Ouvert :** destination de la copie hors serveur des sauvegardes ;
+  diagnostic des erreurs 502/503 de la livraison push.
+
+## Retours du jour 3 de l’alpha — décisions du 12 novembre 2026
+
+Détail dans [le plan du jour 3](../plan/18-plan-corrections-jour3.md).
+
+- **Clôturé — position du passager :** le porteur retient l’option A. Le
+  chauffeur attribué voit la position du téléphone du passager au moment de
+  la commande, en plus du point de rencontre. Elle est effacée à la prise en
+  charge. L’adressage par repères reste la règle ; la position en direct
+  (option B) n’est pas retenue à ce stade.
+- **Appliqué à l’alpha, à confirmer par le porteur — précision GPS :** haute
+  précision pendant une course, au prix d’une consommation de batterie plus
+  élevée ; précision équilibrée hors course.
+- **Clôturé — clôture automatique :** demande du porteur. Une course
+  démarrée est terminée par le serveur après 3 heures, ou quatre fois la
+  durée estimée si c’est plus long. Elle suit le circuit normal : prix
+  annoncé et commission due par le chauffeur en cash. Le délai de 3 heures
+  est une valeur de départ, à ajuster après les essais.
+- **Ouvert :** guidage vocal intégré ou bouton vers Google Maps ; sort d’une
+  course acceptée mais jamais démarrée.
+- **Clôturé — marqueur des repères :** le porteur retient la « pastille
+  Teko » (carré arrondi ambre, pictogramme violet nuit par catégorie, taille
+  selon la saillance) à la place du cercle lettré. Le langage carte
+  (`docs/design/08-carte-langage.md`) est mis à jour ; l’ambre reste la
+  couleur réservée aux repères.
+

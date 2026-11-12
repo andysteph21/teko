@@ -6,9 +6,10 @@ import { render, screen, userEvent } from "@testing-library/react-native";
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockDismissTo = jest.fn();
 const mockRedirect = jest.fn();
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn() }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace, dismissTo: mockDismissTo }),
   Redirect: ({ href }: { href: string }) => {
     mockRedirect(href);
     return null;
@@ -129,5 +130,23 @@ describe("C-10 Catégorie", () => {
     await user.press(screen.getByTestId("quote-retry"));
     expect(refetch).toHaveBeenCalledTimes(1);
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("un trajet invalide revient à la sélection sans relancer le même devis", async () => {
+    const refetch = jest.fn();
+    mockEstimatesQuery.mockReturnValue({
+      isPending: false,
+      error: new TekoApiError("quote_points_too_close", "POINTS_TOO_CLOSE"),
+      refetch,
+    });
+    const user = userEvent.setup();
+    render(<Category />);
+
+    expect(screen.getByText("Départ et arrivée trop proches")).toBeOnTheScreen();
+    expect(screen.queryByTestId("quote-retry")).toBeNull();
+    expect(screen.queryByTestId("order-cta")).toBeNull();
+    await user.press(screen.getByTestId("quote-edit"));
+    expect(mockDismissTo).toHaveBeenCalledWith("/(main)/search");
+    expect(refetch).not.toHaveBeenCalled();
   });
 });

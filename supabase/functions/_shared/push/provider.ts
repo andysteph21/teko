@@ -58,6 +58,11 @@ export function messageForType(
         title: "Frais d'annulation appliqués",
         body: "Le détail est dans vos notifications.",
       };
+    case "ride_auto_completed":
+      return {
+        title: "Course terminée automatiquement",
+        body: "Elle était restée ouverte. Vérifiez votre solde du jour.",
+      };
     case "no_driver_found":
       return {
         title: "Aucun chauffeur disponible",

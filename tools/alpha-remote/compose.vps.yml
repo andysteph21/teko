@@ -1,0 +1,62 @@
+name: teko-alpha-vps
+
+services:
+  gateway:
+    image: caddy@sha256:0bbb055bda6793c999bde78b1b5ce3e89f829fb031af2cf50056ea1246559fee
+    environment:
+      ALPHA_SITE: ${ALPHA_SITE:?adresse Caddy requise}
+      ALPHA_MARTIN: martin:3000
+      ALPHA_VALHALLA: valhalla:8002
+    ports:
+      - "${ALPHA_HTTP_BIND:?adresse HTTP requise}:80"
+      - "${ALPHA_HTTPS_BIND:?adresse HTTPS requise}:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on: [teko-alpha-remote-access, martin, valhalla]
+    restart: unless-stopped
+
+  teko-alpha-remote-access:
+    image: node@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03
+    user: ${ALPHA_UID:?UID du déployeur requis}:${ALPHA_GID:?GID du déployeur requis}
+    command: [node, /app/access.mjs]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - ./access.mjs:/app/access.mjs:ro
+      - ../../.local/alpha-remote/phones.json:/config/phones.json:ro
+      - ../../.local/alpha-remote/anon-key:/config/anon-key:ro
+      - ../../.local/alpha-remote/apks:/apks:ro
+    restart: unless-stopped
+
+  martin:
+    image: ghcr.io/maplibre/martin@sha256:fe5e8952312ca8ea0a25c4b1f72ceb13676f2b50dca310843e48b31c8ceb2264
+    command: [--config, /config/martin-config.yaml]
+    env_file: ../../.local/alpha-remote/martin.env
+    volumes:
+      - ../../infra/tiles/martin/martin-config.yaml:/config/martin-config.yaml:ro
+      - ../../infra/tiles/martin/fonts:/fonts:ro
+      - ../../infra/tiles/martin/sprites:/sprites:ro
+      - ../../infra/_data/tiles:/data/tiles:ro
+    restart: unless-stopped
+
+  valhalla:
+    image: ghcr.io/valhalla/valhalla-scripted@sha256:84a16139deb6c94db9bf9cc66b8a79d4ced6fd31417f54c0c3ed2fdb6a699e2a
+    environment:
+      serve_tiles: "True"
+      build_elevation: "False"
+      build_admins: "False"
+      build_time_zones: "False"
+      use_default_speeds_config: "False"
+    volumes:
+      - ${ALPHA_VALHALLA_DATA:-../../infra/_data/valhalla/custom_files}:/custom_files
+    restart: unless-stopped
+
+networks:
+  default:
+    external: true
+    name: teko-alpha-remote-private
+
+volumes:
+  caddy_data:

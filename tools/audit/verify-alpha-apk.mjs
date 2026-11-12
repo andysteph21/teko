@@ -3,9 +3,14 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { parseEnv } from "node:util";
 
 const app = process.argv[2];
 if (!["client", "driver"].includes(app)) throw new Error("Application attendue : client ou driver");
+const field = process.argv.includes("--field");
+const remote = field || process.argv.includes("--remote");
+if (field && process.argv.includes("--remote")) throw new Error("Choisir --field ou --remote");
+const remoteDirectory = resolve(import.meta.dirname, "../../.local/alpha-remote");
 const apk = resolve(
   import.meta.dirname,
   `../../apps/${app}/android/app/build/outputs/apk/release/app-release.apk`,
@@ -42,6 +47,47 @@ const entries = run("unzip", ["-Z1", apk])
   .filter((name) => name && !name.endsWith("/"));
 const generated = resolve(import.meta.dirname, `../../apps/${app}/android/app/build`);
 const bundle = run("unzip", ["-p", apk, "assets/index.android.bundle"]);
+const fictionalBanners = ["AUCUNE COURSE RÉELLE", "GPS FICTIF À LIBREVILLE"];
+if (
+  field &&
+  fictionalBanners.some(
+    (banner) => bundle.includes(banner) || bundle.includes(Buffer.from(banner, "utf16le")),
+  )
+) {
+  throw new Error("Le build terrain contient encore le bandeau d’essai fictif");
+}
+if (remote) {
+  for (const permission of [
+    "android.permission.ACCESS_COARSE_LOCATION",
+    "android.permission.ACCESS_FINE_LOCATION",
+  ]) {
+    if (!manifest.includes(permission)) throw new Error(`Permission GPS absente : ${permission}`);
+  }
+  if (
+    !bundle.includes("gps-recenter") ||
+    (!field &&
+      !bundle.includes("GPS RÉEL · PAIEMENT SIMULÉ") &&
+      !bundle.includes(Buffer.from("GPS RÉEL · PAIEMENT SIMULÉ", "utf16le")))
+  ) {
+    throw new Error("Commande de recentrage ou bandeau GPS réel absent");
+  }
+}
+if (remote) {
+  const origin = new URL(process.env.TEKO_REMOTE_ALPHA_ORIGIN ?? "");
+  const key = readFileSync(resolve(remoteDirectory, "anon-key"), "utf8").trim();
+  if (
+    origin.protocol !== "https:" ||
+    !key ||
+    !bundle.includes(origin.origin) ||
+    !bundle.includes(key)
+  ) {
+    throw new Error("L’APK ne cible pas l’origine HTTPS et la clé publique attendues");
+  }
+  const native = run(`${sdk}/aapt`, ["dump", "xmltree", apk, "AndroidManifest.xml"]).toString();
+  if (!/android:usesCleartextTraffic\([^)]*\)=\(type 0x12\)0x0\b/.test(native)) {
+    throw new Error("Le manifeste doit refuser HTTP non chiffré");
+  }
+}
 if (
   !bundle.equals(
     readFileSync(resolve(generated, "generated/assets/react/release/index.android.bundle")),
@@ -64,6 +110,10 @@ const sourcesVerified =
         "apps/driver/src/features/work/use-ride-actions.ts",
         "apps/driver/app/(main)/ride/[id].tsx",
         "packages/api-client/src/session-identity.ts",
+        "apps/driver/src/features/work/use-offer-resume.ts",
+        "apps/driver/src/features/work/use-live-position.ts",
+        "apps/driver/src/features/work/use-client-position.ts",
+        "apps/driver/src/lib/location-service.ts",
       ]
     : [
         "apps/client/src/features/booking/use-pickup-confirmation.ts",
@@ -72,7 +122,22 @@ const sourcesVerified =
         "apps/client/src/features/booking/quote-error-screen.tsx",
         "apps/client/src/features/booking/strings.ts",
         "packages/api-client/src/quotes.ts",
+        "apps/client/src/features/ride/ride-entry.ts",
+        "apps/client/app/(main)/ride/[id].tsx",
+        "apps/client/src/features/places/use-landmark-search.ts",
+        "packages/api-client/src/places.ts",
+        "apps/client/src/features/ride/use-position-fallback.ts",
+        "apps/client/src/features/booking/share-order-position.ts",
       ];
+sourcesVerified.push(
+  `apps/${app}/app/(main)/home.tsx`,
+  `apps/${app}/src/features/map/native-map.tsx`,
+  app === "driver"
+    ? "apps/driver/src/features/work/use-device-position.ts"
+    : "apps/client/src/features/places/use-home-position.ts",
+  "packages/ui/src/native/location-refresh.ts",
+  "packages/maps/src/style/landmark-layers.ts",
+);
 for (const path of sourcesVerified) {
   const index = sourceMap.sources.findIndex((source) => source.endsWith(`/${path}`));
   if (
@@ -82,13 +147,34 @@ for (const path of sourcesVerified) {
   )
     throw new Error(`Source du correctif absente ou périmée dans le build : ${path}`);
 }
-const names = [
-  "SUPABASE_SERVICE_ROLE_KEY",
-  "PUSH_TRIGGER_SECRET",
-  "PURGE_TRIGGER_SECRET",
-  "TEKO_SANDBOX_SECRET",
-  "EXPO_ACCESS_TOKEN",
-];
+function serverSecrets() {
+  if (!remote) {
+    return [
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "PUSH_TRIGGER_SECRET",
+      "PURGE_TRIGGER_SECRET",
+      "TEKO_SANDBOX_SECRET",
+      "EXPO_ACCESS_TOKEN",
+    ].map((name) => [name, process.env[name]]);
+  }
+  const vars = parseEnv(
+    run("supabase", ["status", "--workdir", remoteDirectory, "-o", "env"]).toString(),
+  );
+  if (vars.API_URL !== "http://127.0.0.1:58421") throw new Error("Banc distant isolé requis");
+  const cfg = readFileSync(resolve(remoteDirectory, "supabase/config.toml"), "utf8");
+  const settings = parseEnv(readFileSync(resolve(remoteDirectory, "functions.env"), "utf8"));
+  const fieldSecrets = ["ESMS_SMS_API_KEY", "SEND_FIELD_SMS_HOOK_SECRET"].filter(
+    (name) => settings[name],
+  );
+  return [
+    ["SUPABASE_SERVICE_ROLE_KEY", vars.SERVICE_ROLE_KEY],
+    ["SUPABASE_JWT_SECRET", cfg.match(/^jwt_secret\s*=\s*"([^"]+)"/m)?.[1]],
+    ["SUPABASE_SECRET_KEY", cfg.match(/^secret_key\s*=\s*"([^"]+)"/m)?.[1]],
+    ["PUSH_TRIGGER_SECRET", settings.PUSH_TRIGGER_SECRET],
+    ["EXPO_ACCESS_TOKEN", settings.EXPO_ACCESS_TOKEN],
+    ...fieldSecrets.map((name) => [name, settings[name]]),
+  ];
+}
 const properties = readFileSync(
   resolve(import.meta.dirname, "../../.local/alpha-signing/signing.properties"),
   "utf8",
@@ -97,7 +183,7 @@ const signing = Object.fromEntries(
   properties.split("\n").map((line) => line.split(/=(.*)/s).slice(0, 2)),
 );
 const secrets = [
-  ...names.map((name) => [name, process.env[name]]),
+  ...serverSecrets(),
   ["storePassword", signing.storePassword],
   ["keyPassword", signing.keyPassword],
 ];
@@ -137,6 +223,10 @@ console.info(
     privateSecretsFound: false,
     entriesScanned: entries.length,
     sourcesVerified,
-    scope: "APK USB local ; ne vaut pas validation du build terrain",
+    scope: field
+      ? "APK signé pour l’alpha terrain ; contrôles terrain distincts"
+      : remote
+        ? "APK signé pour essai privé avec GPS réel et paiement simulé"
+        : "APK USB local ; ne vaut pas validation du build terrain",
   }),
 );

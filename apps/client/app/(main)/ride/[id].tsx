@@ -17,6 +17,7 @@ import { useBookingStore } from "../../../src/features/booking/store";
 import { useDataUsage, useResolvedMapMode } from "../../../src/features/data/data-state";
 import { ClientDot } from "../../../src/features/map/client-dot";
 import { TekoMapView } from "../../../src/features/map/native-map";
+import { rideEntryRedirect } from "../../../src/features/ride/ride-entry";
 import {
   DestinationFlag,
   OriginPin,
@@ -81,7 +82,13 @@ export default function RideScreen() {
   const { sharing, share } = useShareTrip(id);
 
   const { ride } = tracking;
-  if (!ride) return <LoadingView loadError={tracking.loadError} onRetry={tracking.reload} />;
+  const redirect = ride ? rideEntryRedirect(ride) : null;
+  useEffect(() => {
+    if (redirect) router.replace(redirect);
+  }, [redirect, router]);
+  if (!ride || redirect) {
+    return <LoadingView loadError={tracking.loadError} onRetry={tracking.reload} />;
+  }
 
   return (
     <View style={styles.screen}>
@@ -89,6 +96,7 @@ export default function RideScreen() {
         options={{ tilesUrl: TILES_URL, eco: mode.mode === "eco" }}
         center={tracking.origin ?? DEFAULT_CENTER}
         zoom={14.5}
+        recenter={tracking.vehicle}
       >
         <RouteLine coordinates={tracking.routeCoords} />
         <OriginPin position={tracking.origin} />

@@ -13,6 +13,9 @@ end $$;
 
 grant usage on schema public, extensions to martin_tiles;
 grant select on public.landmarks, public.road_segments, public.zones to martin_tiles;
+-- La politique de lecture des routes évalue aussi ce prédicat sous Martin.
+-- Sans JWT administrateur, il reste faux ; aucune permission d'écriture n'est ajoutée.
+grant execute on function public.is_admin() to martin_tiles;
 
 -- Martin interroge en direct : la RLS s'applique aussi à lui. Politiques de
 -- lecture dédiées, limitées au contenu validé/actif (idempotent).

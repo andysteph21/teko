@@ -13,6 +13,7 @@ export interface PlacePick {
   position: LonLat;
   label: string;
   landmarkId?: string;
+  source?: "gps";
   hint?: string;
 }
 
