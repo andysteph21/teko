@@ -14,6 +14,7 @@ import { ecoBasemapLayers } from "./style/eco-basemap";
 import { fullBasemapLayers } from "./style/full-basemap";
 import type { FontStacks, Layer } from "./style/helpers";
 import { basemapLabelLayers } from "./style/labels";
+import { LANDMARK_SPRITE, validatedLandmarkLayers } from "./style/landmark-layers";
 import { TEKO_SOURCES } from "./style/sources";
 import { tekoOverlayLayers } from "./style/teko-layers";
 import { MAP_COLORS } from "./tokens";
@@ -30,6 +31,9 @@ export interface MapStyleOptions {
   /** Glyphes. Défaut : dérivés de l'origine de `tilesUrl` (Martin sert
    *  /font/{fontstack}/{range}). */
   glyphsUrl?: string;
+  /** Planche des pastilles de repères. Défaut : dérivée de l'origine de
+   *  `tilesUrl` (Martin sert /sprite/teko). */
+  spriteUrl?: string;
   /** Piles de polices servies par Martin (défaut : DejaVu du compose dev ;
    *  en prod, pointer les Noto déposées dans infra/_data/fonts). */
   fonts?: FontStacks;
@@ -44,6 +48,14 @@ export interface MapStyleOptions {
 function resolveGlyphsUrl(opts: MapStyleOptions, eco: boolean): string | undefined {
   if (opts.glyphsUrl) return opts.glyphsUrl;
   if (!eco && opts.tilesUrl) return `${new URL(opts.tilesUrl).origin}/font/{fontstack}/{range}`;
+  return undefined;
+}
+
+/** Pastilles : explicites, sinon servies par le même Martin que les tuiles.
+ *  Quelques kilo-octets chargés une fois — conservées en éco. */
+function resolveSpriteUrl(opts: MapStyleOptions): string | undefined {
+  if (opts.spriteUrl) return opts.spriteUrl;
+  if (opts.tilesUrl) return `${new URL(opts.tilesUrl).origin}/sprite/${LANDMARK_SPRITE}`;
   return undefined;
 }
 
@@ -69,44 +81,14 @@ function addCommunityTiles(
   const origin = new URL(tilesUrl).origin;
   sources["teko-validated-roads"] = { type: "vector", url: `${origin}/teko_roads` };
   sources["teko-validated-landmarks"] = { type: "vector", url: `${origin}/landmarks` };
-  layers.push(
-    {
-      id: "teko-validated-road-line",
-      type: "line",
-      source: "teko-validated-roads",
-      "source-layer": "teko_roads",
-      paint: { "line-color": "#6847A5", "line-width": 3, "line-opacity": 0.9 },
-    },
-    {
-      id: "teko-validated-landmark-dot",
-      type: "circle",
-      source: "teko-validated-landmarks",
-      "source-layer": "landmarks",
-      paint: {
-        "circle-radius": 5,
-        "circle-color": "#6847A5",
-        "circle-stroke-color": "#FFFFFF",
-        "circle-stroke-width": 1.5,
-      },
-    },
-  );
-  if (!eco && glyphsUrl) {
-    layers.push({
-      id: "teko-validated-landmark-name",
-      type: "symbol",
-      source: "teko-validated-landmarks",
-      "source-layer": "landmarks",
-      minzoom: 14,
-      layout: {
-        "text-field": ["get", "name"],
-        "text-font": [font],
-        "text-offset": [0, 0.65],
-        "text-anchor": "top",
-        "text-size": 12,
-      },
-      paint: { "text-color": "#362655", ...halo },
-    });
-  }
+  layers.push({
+    id: "teko-validated-road-line",
+    type: "line",
+    source: "teko-validated-roads",
+    "source-layer": "teko_roads",
+    paint: { "line-color": "#6847A5", "line-width": 3, "line-opacity": 0.9 },
+  });
+  layers.push(...validatedLandmarkLayers({ halo, font, labels: !eco && Boolean(glyphsUrl) }));
 }
 
 /** Style complet (sources GeoJSON vides + couches Teko). Objet compatible
@@ -116,6 +98,7 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
   const emptyGeoJson = { type: "geojson", data: { type: "FeatureCollection", features: [] } };
 
   const glyphsUrl = resolveGlyphsUrl(opts, eco);
+  const spriteUrl = resolveSpriteUrl(opts);
   const fonts = opts.fonts ?? { regular: "DejaVu Sans Book", bold: "DejaVu Sans Bold" };
   const densite = opts.labelDensity ?? "normale";
   // Le padding de collision est LE réglage de densité de MapLibre : plus il
@@ -155,12 +138,13 @@ export function buildMapStyle(opts: MapStyleOptions = {}): Record<string, unknow
   sources[TEKO_SOURCES.proposedRoads] = { ...emptyGeoJson };
   sources[TEKO_SOURCES.departureHotspots] = { ...emptyGeoJson };
 
-  layers.push(...tekoOverlayLayers({ fonts, padding, halo, glyphsUrl }));
+  layers.push(...tekoOverlayLayers({ fonts, padding, halo, glyphsUrl, spriteUrl }));
 
   return {
     version: 8,
     name: eco ? "Teko éco" : "Teko",
     ...(glyphsUrl ? { glyphs: glyphsUrl } : {}),
+    ...(spriteUrl ? { sprite: spriteUrl } : {}),
     sources,
     layers,
   };

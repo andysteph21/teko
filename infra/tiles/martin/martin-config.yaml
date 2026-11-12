@@ -17,6 +17,11 @@ pmtiles:
 fonts:
   - /fonts
 
+# Pastilles des repères Teko (servies sur /sprite/teko.json et .png, @2x compris)
+sprites:
+  paths:
+    - /sprites/teko
+
 # Chaîne de connexion : substituée depuis l'environnement du conteneur
 # (référence non guillemetée, requise par l'interpolation de Martin).
 postgres:

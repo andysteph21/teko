@@ -40,7 +40,7 @@
 	}
 	@tiles {
 		method GET HEAD
-		path /gabon /gabon/* /font/* /landmarks /landmarks/* /zones /zones/* /teko_roads /teko_roads/*
+		path /gabon /gabon/* /font/* /sprite/* /landmarks /landmarks/* /zones /zones/* /teko_roads /teko_roads/*
 	}
 	handle @tiles {
 		reverse_proxy {$ALPHA_MARTIN:host.docker.internal:3333}

@@ -4,6 +4,7 @@
 
 import { MAP_COLORS } from "../tokens";
 import type { FontStacks, Layer } from "./helpers";
+import { LANDMARK_LABEL_COLOR, nearbyLandmarkIconLayer } from "./landmark-layers";
 import { TEKO_SOURCES } from "./sources";
 
 export interface TekoLayerContext {
@@ -11,10 +12,12 @@ export interface TekoLayerContext {
   padding: number;
   halo: Record<string, unknown>;
   glyphsUrl: string | undefined;
+  /** Planche des pastilles ; absente (éco hors-ligne) → cercle lettré. */
+  spriteUrl?: string | undefined;
 }
 
 export function tekoOverlayLayers(ctx: TekoLayerContext): Layer[] {
-  const { fonts, padding, halo, glyphsUrl } = ctx;
+  const { fonts, padding, halo, glyphsUrl, spriteUrl } = ctx;
   return [
     // Zones de départ fréquentes (chauffeur, D-09) : halos magenta très
     // doux, taille selon la fréquence — un fond d'aide, jamais un marqueur.
@@ -68,27 +71,10 @@ export function tekoOverlayLayers(ctx: TekoLayerContext): Layer[] {
       layout: { "line-cap": "round", "line-join": "round" },
       paint: { "line-color": MAP_COLORS.routeLine, "line-width": 5 },
     },
-    // Repères : épingle ambre, TAILLE SELON LA SAILLANCE (le repère connu
-    // de tous est plus gros), initiale de catégorie au centre.
-    {
-      id: "teko-landmarks-dot",
-      type: "circle",
-      source: TEKO_SOURCES.landmarks,
-      paint: {
-        "circle-color": MAP_COLORS.markerLandmark,
-        "circle-radius": [
-          "interpolate",
-          ["linear"],
-          ["to-number", ["get", "salience"], 0],
-          0,
-          7,
-          10,
-          10,
-        ],
-        "circle-stroke-color": MAP_COLORS.halo,
-        "circle-stroke-width": 2,
-      },
-    },
+    // Repères : pastille Teko (planche servie par Martin), TAILLE SELON LA
+    // SAILLANCE. Sans planche (éco hors-ligne) : cercle ambre et initiale.
+    ...(spriteUrl ? [nearbyLandmarkIconLayer(TEKO_SOURCES.landmarks)] : []),
+    ...(spriteUrl ? [] : landmarkDotLayers(fonts, glyphsUrl)),
     ...(glyphsUrl ? textLayers(fonts, padding, halo) : []),
     ...(glyphsUrl ? landmarkLabelLayer(fonts, padding) : []),
     // Véhicules : teal cerclé de blanc + flèche de cap (▲ pivote avec la
@@ -120,22 +106,51 @@ export function tekoOverlayLayers(ctx: TekoLayerContext): Layer[] {
   ];
 }
 
+/** Repli sans planche : cercle ambre selon la saillance et initiale. */
+function landmarkDotLayers(fonts: FontStacks, glyphsUrl: string | undefined): Layer[] {
+  return [
+    {
+      id: "teko-landmarks-dot",
+      type: "circle",
+      source: TEKO_SOURCES.landmarks,
+      paint: {
+        "circle-color": MAP_COLORS.markerLandmark,
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["to-number", ["get", "salience"], 0],
+          0,
+          7,
+          10,
+          10,
+        ],
+        "circle-stroke-color": MAP_COLORS.halo,
+        "circle-stroke-width": 2,
+      },
+    },
+    ...(glyphsUrl ? [landmarkLetterLayer(fonts)] : []),
+  ];
+}
+
+function landmarkLetterLayer(fonts: FontStacks): Layer {
+  return {
+    id: "teko-landmarks-letter",
+    type: "symbol",
+    source: TEKO_SOURCES.landmarks,
+    layout: {
+      "text-field": ["get", "lettre"],
+      "text-font": [fonts.bold],
+      "text-size": 10,
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+    },
+    paint: { "text-color": "#4A2F03" },
+  };
+}
+
 /** Couches à texte des surcouches (lettres, favoris, mention « à confirmer »). */
 function textLayers(fonts: FontStacks, padding: number, halo: Record<string, unknown>): Layer[] {
   return [
-    {
-      id: "teko-landmarks-letter",
-      type: "symbol",
-      source: TEKO_SOURCES.landmarks,
-      layout: {
-        "text-field": ["get", "lettre"],
-        "text-font": [fonts.bold],
-        "text-size": 10,
-        "text-allow-overlap": true,
-        "text-ignore-placement": true,
-      },
-      paint: { "text-color": "#4A2F03" },
-    },
     // Lieux favoris / départs habituels : pastille blanche cerclée de
     // magenta, D (domicile), T (travail), ★ (favori) — langage client.
     {
@@ -216,7 +231,7 @@ function landmarkLabelLayer(fonts: FontStacks, padding: number): Layer[] {
         "symbol-sort-key": ["*", -1, ["to-number", ["get", "salience"], 0]],
       },
       paint: {
-        "text-color": "#854F0B",
+        "text-color": LANDMARK_LABEL_COLOR,
         "text-halo-color": MAP_COLORS.halo,
         "text-halo-width": 1.2,
       },

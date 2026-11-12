@@ -37,6 +37,7 @@ services:
     volumes:
       - ../../infra/tiles/martin/martin-config.yaml:/config/martin-config.yaml:ro
       - ../../infra/tiles/martin/fonts:/fonts:ro
+      - ../../infra/tiles/martin/sprites:/sprites:ro
       - ../../infra/_data/tiles:/data/tiles:ro
     restart: unless-stopped
 

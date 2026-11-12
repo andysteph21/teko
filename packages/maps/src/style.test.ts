@@ -8,7 +8,14 @@ import {
 import { buildMapStyle, TEKO_SOURCES } from "./style";
 import { MAP_COLORS } from "./tokens";
 
-type Layer = { id: string; type: string; source?: string; paint?: Record<string, unknown> };
+type Layer = {
+  id: string;
+  type: string;
+  source?: string;
+  minzoom?: number;
+  paint?: Record<string, unknown>;
+  layout?: Record<string, unknown>;
+};
 const layers = (s: Record<string, unknown>) => s.layers as Layer[];
 const layer = (s: Record<string, unknown>, id: string) => layers(s).find((l) => l.id === id)!;
 
@@ -23,12 +30,18 @@ describe("buildMapStyle", () => {
     expect(layer(style, "teko-validated-road-line")).toMatchObject({
       "source-layer": "teko_roads",
     });
-    expect(layer(style, "teko-validated-landmark-name")).toMatchObject({
-      "source-layer": "landmarks",
-    });
+    expect(style.sprite).toBe("https://tiles.example/sprite/teko");
+    const major = layer(style, "teko-validated-landmark-major");
+    expect(major).toMatchObject({ type: "symbol", "source-layer": "landmarks", minzoom: 11 });
+    expect(JSON.stringify(major.layout?.["icon-image"])).toContain("landmark-");
+    expect(major.layout?.["text-field"]).toEqual(["get", "name"]);
+    expect(major.paint?.["text-color"]).toBe("#3D0F5C");
+    expect(layer(style, "teko-validated-landmark-mid").minzoom).toBe(13.5);
+    expect(layer(style, "teko-validated-landmark-minor").minzoom).toBe(15);
     const eco = buildMapStyle({ ...options, eco: true });
-    expect(layer(eco, "teko-validated-landmark-dot")).toBeDefined();
-    expect(layer(eco, "teko-validated-landmark-name")).toBeUndefined();
+    expect(eco.sprite).toBe("https://tiles.example/sprite/teko");
+    expect(layer(eco, "teko-validated-landmark-major").layout?.["icon-image"]).toBeDefined();
+    expect(layer(eco, "teko-validated-landmark-major").layout?.["text-field"]).toBeUndefined();
   });
 
   it("contient les 4 sources Teko et le fond du langage carte", () => {
@@ -58,7 +71,7 @@ describe("buildMapStyle", () => {
     expect(ids).toContain("eco-roads-major");
     expect(ids).not.toContain("basemap-buildings");
     expect(ids).not.toContain("basemap-landcover");
-    expect(layers(s).some((l) => l.type === "symbol")).toBe(false);
+    expect(layers(s).some((l) => l.layout?.["text-field"] !== undefined)).toBe(false);
     expect(s.glyphs).toBeUndefined();
   });
 
@@ -135,13 +148,24 @@ describe("buildMapStyle", () => {
     expect(layer(s, "teko-hotspots-halo").paint?.["circle-opacity"]).toBeLessThan(0.3);
   });
 
-  it("repères : taille selon la saillance + initiale de catégorie", () => {
+  it("repères proches : pastille Teko par catégorie, taille selon la saillance", () => {
     const s = buildMapStyle({ tilesUrl: "https://t.example/gabon" });
+    const icon = layer(s, "teko-landmarks-icon");
+    expect(JSON.stringify(icon.layout?.["icon-image"])).toContain("category");
+    expect(JSON.stringify(icon.layout?.["icon-size"])).toContain("salience");
+    expect(layer(s, "teko-landmarks-dot")).toBeUndefined();
+    expect(layer(s, "teko-landmarks-letter")).toBeUndefined();
+    expect(JSON.stringify(layer(s, "teko-vehicles-bearing"))).toContain("bearing");
+  });
+
+  it("sans planche de pastilles (éco hors-ligne) : cercle ambre et initiale en repli", () => {
+    const s = buildMapStyle({ glyphsUrl: "https://t.example/font/{fontstack}/{range}" });
+    expect(s.sprite).toBeUndefined();
     expect(JSON.stringify(layer(s, "teko-landmarks-dot").paint?.["circle-radius"])).toContain(
       "salience",
     );
     expect(JSON.stringify(layer(s, "teko-landmarks-letter"))).toContain("lettre");
-    expect(JSON.stringify(layer(s, "teko-vehicles-bearing"))).toContain("bearing");
+    expect(layer(s, "teko-landmarks-icon")).toBeUndefined();
   });
 
   it("les repères Teko priorisent la saillance en cas de collision", () => {
