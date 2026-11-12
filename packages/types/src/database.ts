@@ -673,6 +673,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"ride_client_positions": {
+                  Row: {
+                    "geom": unknown,"recorded_at": string,"ride_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "geom": unknown,"recorded_at"?: string,"ride_id": string
+                  }
+                  Update: {
+                    "geom"?: unknown,"recorded_at"?: string,"ride_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ride_client_positions_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: true
+      referencedRelation: "rides"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"ride_events": {
                   Row: {
                     "actor": string | null,"at": string,"id": number,"meta": NonNullable<Json>,"ride_id": string,"type": string
@@ -1914,6 +1934,9 @@ isOneToOne: false
                            },
 "set_commission":
 { Args: { "p_type": string,"p_value": number }; Returns: Json
+                           },
+"set_ride_client_position":
+{ Args: { "p_point": unknown,"p_ride": string }; Returns: undefined
                            },
 "set_service_mode":
 { Args: { "p_on": boolean }; Returns: undefined

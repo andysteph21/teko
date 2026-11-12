@@ -44,7 +44,9 @@ async function configure(input: {
   // Android impose un départ du service depuis une action/app visible.
   if (AppState.currentState !== "active") return;
   await Location.startLocationUpdatesAsync(DRIVER_LOCATION_TASK, {
-    accuracy: Location.Accuracy.Balanced,
+    // En course, le GPS précis : le mode « équilibré » rend des positions
+    // réseau qui sautent de ~200 m (constat du 11 novembre 2026).
+    accuracy: state.rideId ? Location.Accuracy.High : Location.Accuracy.Balanced,
     distanceInterval: 0,
     timeInterval: state.rideId ? (state.eco ? 10000 : 5000) : 20000,
     deferredUpdatesInterval: 0,

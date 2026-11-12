@@ -102,9 +102,12 @@ export {
 } from "./places";
 export {
   createRealtimePositionsChannel,
+  latestRidePosition,
   type PositionsChannel,
   type RealtimePositionsOptions,
   type RidePositionEvent,
+  rideClientPosition,
+  setRideClientPosition,
   type Unsubscribe,
 } from "./positions";
 export { getRideQuote, quoteRoute, type RideQuote, requestQuotedRide } from "./quotes";
