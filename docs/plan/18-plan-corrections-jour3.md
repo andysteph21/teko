@@ -47,11 +47,34 @@ Reste hors périmètre : le marqueur du repère sélectionné pendant la command
 
 **Guidage vocal.** Valhalla fournit déjà les manœuvres en français. Il reste à les afficher et à les lire à voix haute dans l’app chauffeur. La synthèse vocale demande un module natif, donc une reconstruction complète de l’APK chauffeur. Alternative immédiate : un bouton « Ouvrir dans Google Maps » vers le point de rencontre puis la destination, sans développement de guidage.
 
+## Déploiement du 12 novembre
+
+Fait après accord du porteur, à 23 h 40 heure de Libreville. Une course était encore ouverte (J3-06), sans position reçue depuis plus de dix minutes.
+
+| Étape | Contrôle |
+| --- | --- |
+| Sauvegarde de la base | Écrite dans `/var/backups/teko-alpha` avant toute modification |
+| Migration `20261112090000` | 61 migrations enregistrées |
+| Pastilles | `/sprite/teko.json` et `.png` (et `@2x`) répondent en HTTPS avec les dix images ; Martin recréé, passerelle relancée (quelques secondes d’interruption) |
+| Services | `/health`, `/install`, `/gabon`, `/landmarks`, `/teko_roads` et les polices en 200 ; devis Éco, Moto et Confort obtenus ; tuile de repères de Mont-Bouët inchangée |
+| APK | Construits, vérifiés (signature alpha, origine HTTPS, absence de secrets, sources des correctifs embarquées), publiés ; téléchargement par rôle recontrôlé |
+
+| APK | SHA-256 |
+| --- | --- |
+| Passager | `b02268c1380c38ff4b089ae269ebb5e9edd8581761f3869e73b45aae1b03df1a` |
+| Chauffeur | `08de7d674f93c16780c4ef53dc82037c5de4ebd6b77f04e3b648d6ec51480fff` |
+
+Les fichiers remplacés sont gardés sur le VPS : `.local/alpha-remote/jour3-config-precedente.*` (configuration Martin, Caddyfile, Compose) et `.local/alpha-remote/jour3-apks-precedents.*`.
+
+Non vérifié : aucune installation sur téléphone. Le rendu des pastilles dans la carte, le point du chauffeur en mouvement et le second point du passager restent à confirmer par le testeur.
+
+En CI, le nouveau test de transmission temps réel échouait à froid : après l’abonnement, Realtime met plusieurs secondes à brancher la réplication. Le test envoie désormais une position par seconde jusqu’à la première réception. Dans les apps, la relecture périodique couvre ce même délai.
+
 ## Actions d’exploitation avant la prochaine salve
 
 1. **Clore la course restée « en cours » (J3-06).** Le chauffeur peut la terminer dans son app, ou Ops l’annule depuis la console. Tant qu’elle est ouverte, le téléphone du chauffeur continue d’envoyer sa position.
 2. **Réactiver le chauffeur suspendu (J3-05).** Finance valide un règlement manuel de 250 FCFA dans la console ; la réactivation est automatique. C’est le circuit prévu par [les procédures](11-procedures-alpha.md#dossiers-de-règlement-manuel).
-3. Sur le VPS : appliquer la migration `20261112090000`, déployer les pastilles (configuration Martin, dossier `sprites`, Caddyfile) et vérifier `/sprite/teko.json`. Publier ensuite les deux APK corrigés et demander aux testeurs de les réinstaller.
+3. Demander aux testeurs de réinstaller les deux applications depuis le portail (fait côté serveur le 12 novembre).
 
 ## À prévoir
 

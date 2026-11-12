@@ -46,27 +46,27 @@ it("le passager reçoit la position du chauffeur, un tiers ne reçoit rien", asy
   const forStranger: unknown[] = [];
   const stopPassenger = await listen(passenger, forPassenger);
   const stopStranger = await listen(stranger, forStranger);
-  await new Promise((r) => setTimeout(r, 1500));
-
-  const sent = await driver.client.from("ride_locations").upsert(
-    {
-      ride_id: rideId,
-      driver_id: driver.id,
-      geom: "SRID=4326;POINT(9.4612 0.4051)",
-      sample_id: randomUUID(),
-      recorded_at: new Date().toISOString(),
-    },
-    { onConflict: "sample_id", ignoreDuplicates: true },
-  );
-  expect(sent.error).toBeNull();
-
-  const deadline = Date.now() + 8000;
+  // Après SUBSCRIBED, Realtime met encore un instant à brancher la
+  // réplication (plusieurs secondes à froid, en CI) : le chauffeur envoie une
+  // position par seconde, comme en course, jusqu'à la première réception.
+  const deadline = Date.now() + 25_000;
   while (forPassenger.length === 0 && Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, 200));
+    const sent = await driver.client.from("ride_locations").upsert(
+      {
+        ride_id: rideId,
+        driver_id: driver.id,
+        geom: "SRID=4326;POINT(9.4612 0.4051)",
+        sample_id: randomUUID(),
+        recorded_at: new Date().toISOString(),
+      },
+      { onConflict: "sample_id", ignoreDuplicates: true },
+    );
+    expect(sent.error).toBeNull();
+    await new Promise((r) => setTimeout(r, 1000));
   }
   await stopPassenger();
   await stopStranger();
-  expect(forPassenger).toHaveLength(1);
+  expect(forPassenger.length).toBeGreaterThanOrEqual(1);
   expect(JSON.stringify(forPassenger[0].geom)).toContain("9.4612");
   expect(forStranger).toHaveLength(0);
-}, 20_000);
+}, 40_000);
