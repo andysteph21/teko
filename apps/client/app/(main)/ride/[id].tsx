@@ -96,6 +96,7 @@ export default function RideScreen() {
         options={{ tilesUrl: TILES_URL, eco: mode.mode === "eco" }}
         center={tracking.origin ?? DEFAULT_CENTER}
         zoom={14.5}
+        recenter={tracking.vehicle}
       >
         <RouteLine coordinates={tracking.routeCoords} />
         <OriginPin position={tracking.origin} />
