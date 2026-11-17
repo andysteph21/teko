@@ -203,14 +203,14 @@ isOneToOne: false
                   ]
                 },"devices": {
                   Row: {
-                    "created_at": string,"id": string,"last_seen": string,"platform": string,"push_token": string,"session_id": string | null,"user_id": string
+                    "created_at": string,"id": string,"last_seen": string,"offer_channel": boolean,"platform": string,"push_token": string,"session_id": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"last_seen"?: string,"platform": string,"push_token": string,"session_id"?: string | null,"user_id": string
+                    "created_at"?: string,"id"?: string,"last_seen"?: string,"offer_channel"?: boolean,"platform": string,"push_token": string,"session_id"?: string | null,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"last_seen"?: string,"platform"?: string,"push_token"?: string,"session_id"?: string | null,"user_id"?: string
+                    "created_at"?: string,"id"?: string,"last_seen"?: string,"offer_channel"?: boolean,"platform"?: string,"push_token"?: string,"session_id"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -670,6 +670,26 @@ isOneToOne: false
       columns: ["to_user"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"ride_client_positions": {
+                  Row: {
+                    "geom": unknown,"recorded_at": string,"ride_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "geom": unknown,"recorded_at"?: string,"ride_id": string
+                  }
+                  Update: {
+                    "geom"?: unknown,"recorded_at"?: string,"ride_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ride_client_positions_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: true
+      referencedRelation: "rides"
       referencedColumns: ["id"]
     }
                   ]
@@ -1197,6 +1217,9 @@ isOneToOne: false
 "assert_admin_or_service":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"auto_complete_stale_rides":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "bump_landmark_usage":
 { Args: { "p_landmark": string }; Returns: undefined
                            },
@@ -1246,7 +1269,7 @@ isOneToOne: false
                            },
 "claim_push_deliveries":
 { Args: { "p_notification"?: string }; Returns: {
-              "device_id": string,"expires_at": string,"id": string,"notification_id": string,"payload": Json,"push_token": string,"type": string
+              "device_id": string,"expires_at": string,"id": string,"notification_id": string,"offer_channel": boolean,"payload": Json,"push_token": string,"type": string
             }[]
                            },
 "commission_amount":
@@ -1649,7 +1672,7 @@ isOneToOne: false
 { Args: { "p_driver": string,"p_note": string }; Returns: undefined
                            },
 "register_push_device":
-{ Args: { "p_platform": string,"p_token": string,"p_user": string }; Returns: undefined
+{ Args: { "p_offer_channel"?: boolean,"p_platform": string,"p_token": string,"p_user": string }; Returns: undefined
                            },
 "reject_manual_receipt":
 { Args: { "p_reason": string,"p_receipt": string }; Returns: {
@@ -1885,7 +1908,7 @@ isOneToOne: false
 { Args: { "p_ride": string }; Returns: string
                            },
 "search_landmarks":
-{ Args: { "p_limit"?: number,"p_query": string }; Returns: {
+{ Args: { "p_limit"?: number,"p_near"?: unknown,"p_query": string }; Returns: {
               "aliases": (string)[],
 "category": Database["public"]['Enums']["landmark_category"],
 "created_at": string,
@@ -1914,6 +1937,9 @@ isOneToOne: false
                            },
 "set_commission":
 { Args: { "p_type": string,"p_value": number }; Returns: Json
+                           },
+"set_ride_client_position":
+{ Args: { "p_point": unknown,"p_ride": string }; Returns: undefined
                            },
 "set_service_mode":
 { Args: { "p_on": boolean }; Returns: undefined

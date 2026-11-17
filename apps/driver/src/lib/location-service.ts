@@ -44,6 +44,10 @@ async function configure(input: {
   // Android impose un départ du service depuis une action/app visible.
   if (AppState.currentState !== "active") return;
   await Location.startLocationUpdatesAsync(DRIVER_LOCATION_TASK, {
+    // Précision équilibrée en arrière-plan : c'est le seul réglage qui émet
+    // de façon sûre sur le parc. La haute précision n'a livré aucune position
+    // pendant les courses des 15 et 16 novembre 2026. Les positions précises
+    // viennent de l'écran de course ouvert (use-live-position).
     accuracy: Location.Accuracy.Balanced,
     distanceInterval: 0,
     timeInterval: state.rideId ? (state.eco ? 10000 : 5000) : 20000,

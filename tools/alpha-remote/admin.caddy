@@ -1,0 +1,20 @@
+@privateAdmin path /admin /admin/*
+handle @privateAdmin {
+	header Cache-Control "private, no-store"
+	basic_auth {
+		import /run/teko-admin-passwords
+	}
+	route {
+		@control path /admin/alpha-api/*
+		request_body @control {
+			max_size 2KB
+		}
+		reverse_proxy @control teko-alpha-remote-access:8081 {
+			header_up X-Teko-Operator {http.auth.user.id}
+			header_up -Authorization
+		}
+		reverse_proxy console-admin:3300 {
+			header_up -Authorization
+		}
+	}
+}

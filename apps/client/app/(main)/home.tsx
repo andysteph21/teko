@@ -6,6 +6,7 @@ import { color, spacing, typography } from "@teko/ui";
 import {
   BellIcon,
   BottomPanel,
+  Button,
   DataWidget,
   EcoPill,
   LandmarkPinIcon,
@@ -28,7 +29,8 @@ export default function Home() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const position = useHomePosition();
+  const gps = useHomePosition();
+  const { position } = gps;
   const mode = useResolvedMapMode();
   const usage = useDataUsage();
   const profile = useProfile();
@@ -42,6 +44,7 @@ export default function Home() {
         options={{ tilesUrl: TILES_URL, eco: mode.mode === "eco" }}
         center={position ?? DEFAULT_CENTER}
         zoom={14.2}
+        recenter={position}
       >
         <ClientDot position={position} />
       </TekoMapView>
@@ -55,6 +58,16 @@ export default function Home() {
           state={usage.state}
           onPress={() => router.push("/(main)/data-settings" as Href)}
           testID="data-widget"
+        />
+      </View>
+
+      <View style={styles.gps} pointerEvents="box-none">
+        <Button
+          label="Ma position"
+          variant="secondary"
+          busy={gps.busy}
+          onPress={gps.refresh}
+          testID="gps-recenter"
         />
       </View>
 
@@ -130,6 +143,7 @@ const styles = StyleSheet.create({
     bottom: 282,
     gap: spacing[2],
   },
+  gps: { position: "absolute", right: spacing[4], bottom: 282 },
   panel: { position: "absolute", left: 0, right: 0, bottom: 0 },
   search: {
     height: spacing[12],

@@ -287,6 +287,16 @@ describe("compte", () => {
       p_token: "ExpoPushToken[device-123]",
       p_platform: "ios",
     });
+    await registerDevice(client, "u1", "ExpoPushToken[device-123]", {
+      platform: "android",
+      offerChannel: true,
+    });
+    expect(client.rpc).toHaveBeenLastCalledWith("register_push_device", {
+      p_user: "u1",
+      p_token: "ExpoPushToken[device-123]",
+      p_platform: "android",
+      p_offer_channel: true,
+    });
   });
 
   it("requestAccountDeletion renvoie la date de purge ; getProfile lit sous RLS", async () => {

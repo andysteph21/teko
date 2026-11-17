@@ -3,6 +3,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { Alert } from "react-native";
 
 const mockSearchLandmarks = jest.fn();
 const mockListSavedPlaces = jest.fn();
@@ -73,8 +74,14 @@ async function searchFor(query: string) {
 
 describe("C-08 Recherche", () => {
   it("sans GPS, choisit d'abord le départ sans naviguer ni inventer une position", async () => {
+    const arrival = {
+      ...LANDMARK,
+      id: "lm2",
+      name: "Marché de Mont-Bouët",
+      geom: { type: "Point", coordinates: [9.46, 0.4] },
+    };
     useBookingStore.getState().setOrigin(null);
-    mockSearchLandmarks.mockResolvedValue([LANDMARK]);
+    mockSearchLandmarks.mockResolvedValueOnce([LANDMARK]).mockResolvedValueOnce([arrival]);
     renderSearch();
     expect(screen.getByText("Choisir le départ")).toBeOnTheScreen();
     await searchFor("phar");
@@ -86,9 +93,32 @@ describe("C-08 Recherche", () => {
     });
     expect(useBookingStore.getState().destination).toBeNull();
     expect(mockPush).not.toHaveBeenCalled();
-    await searchFor("phar");
-    fireEvent.press(await screen.findByTestId("search-result-lm1"));
+    await searchFor("mont");
+    fireEvent.press(await screen.findByTestId("search-result-lm2"));
+    expect(useBookingStore.getState().destination?.landmarkId).toBe("lm2");
     expect(mockPush).toHaveBeenCalledWith("/(main)/refine");
+  });
+
+  it("laisse le brouillon ouvert quand le repère d'arrivée coïncide avec le départ", async () => {
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    try {
+      useBookingStore.getState().setOrigin({
+        position: { lon: 9.4536, lat: 0.4032 },
+        label: LANDMARK.name,
+      });
+      mockSearchLandmarks.mockResolvedValue([LANDMARK]);
+      renderSearch();
+      await searchFor("phar");
+      fireEvent.press(await screen.findByTestId("search-result-lm1"));
+      expect(alert).toHaveBeenCalledWith(
+        "Départ et arrivée trop proches",
+        "Choisis une autre destination.",
+      );
+      expect(useBookingStore.getState().destination).toBeNull();
+      expect(mockPush).not.toHaveBeenCalled();
+    } finally {
+      alert.mockRestore();
+    }
   });
 
   it("permet de remplacer le départ GPS par un repère sans changer la destination", async () => {

@@ -10,6 +10,20 @@ export interface PushMessage {
   /** Durée de vie côté FCM (ex. « 12s » pour une offre de course). */
   ttl?: string;
   expiresAt?: number;
+  /** Canal Android ; défaut « teko-alerts ». */
+  channelId?: string;
+}
+
+/** Canal dédié aux propositions de course (sonnerie longue). */
+export const OFFER_CHANNEL = "teko-offers";
+export const DEFAULT_CHANNEL = "teko-alerts";
+
+/** Le canal dédié n'est utilisé que si l'appareil a déclaré le posséder :
+ *  un canal absent ferait disparaître la notification. */
+export function channelFor(type: string, offerChannel: boolean): string {
+  return type === "ride_offer" && offerChannel
+    ? OFFER_CHANNEL
+    : DEFAULT_CHANNEL;
 }
 
 export interface PushResult {
@@ -57,6 +71,11 @@ export function messageForType(
       return {
         title: "Frais d'annulation appliqués",
         body: "Le détail est dans vos notifications.",
+      };
+    case "ride_auto_completed":
+      return {
+        title: "Course terminée automatiquement",
+        body: "Elle était restée ouverte. Vérifiez votre solde du jour.",
       };
     case "no_driver_found":
       return {

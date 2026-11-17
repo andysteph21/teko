@@ -46,13 +46,17 @@ export async function registerDevice(
   client: TekoClient,
   userId: string,
   pushToken: string,
-  platform: "android" | "ios" = "android",
+  device: "android" | "ios" | { platform: "android" | "ios"; offerChannel?: boolean } = "android",
 ): Promise<void> {
+  const { platform, offerChannel } = typeof device === "string" ? { platform: device } : device;
+  const options = { offerChannel };
   unwrap(
     await client.rpc("register_push_device", {
       p_user: userId,
       p_token: pushToken,
       p_platform: platform,
+      // Déclaré seulement par l'app qui possède le canal « teko-offers ».
+      ...(options.offerChannel ? { p_offer_channel: true } : {}),
     }),
   );
 }

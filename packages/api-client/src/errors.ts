@@ -15,6 +15,9 @@ export type TekoApiErrorCode =
   | "role_change_forbidden"
   | "network"
   | "quote_expired"
+  | "quote_points_too_close"
+  | "quote_route_not_found"
+  | "quote_outside_service_area"
   | "unknown";
 
 export class TekoApiError extends Error {

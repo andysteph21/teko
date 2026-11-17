@@ -19,8 +19,14 @@ describe("places & lectures directes", () => {
   it("searchLandmarksByName : RPC search_landmarks ; requête courte → []", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: [{ id: "lm1" }], error: null });
     const client = { rpc } as unknown as TekoClient;
-    await searchLandmarksByName(client, "  pharma ", 5);
+    await searchLandmarksByName(client, "  pharma ", { limit: 5 });
     expect(rpc).toHaveBeenCalledWith("search_landmarks", { p_query: "pharma", p_limit: 5 });
+    await searchLandmarksByName(client, "pharma", { near: { lon: 9.4536, lat: 0.4032 } });
+    expect(rpc).toHaveBeenLastCalledWith("search_landmarks", {
+      p_query: "pharma",
+      p_limit: 8,
+      p_near: "SRID=4326;POINT(9.4536 0.4032)",
+    });
 
     const untouched = { rpc: vi.fn() } as unknown as TekoClient;
     expect(await searchLandmarksByName(untouched, "p")).toEqual([]);

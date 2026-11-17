@@ -87,16 +87,19 @@ function installEcoLetterLayers(m: maplibregl.Map): void {
     m.addImage(`teko-lettre-amber-${l}`, makeLetterImage(l, "#4A2F03"), { pixelRatio: 2 });
     m.addImage(`teko-lettre-brand-${l}`, makeLetterImage(l, "#5A1A80"), { pixelRatio: 2 });
   }
-  m.addLayer({
-    id: "teko-landmarks-letter-eco",
-    type: "symbol",
-    source: TEKO_SOURCES.landmarks,
-    layout: {
-      "icon-image": ["concat", "teko-lettre-amber-", ["get", "lettre"]],
-      "icon-allow-overlap": true,
-      "icon-ignore-placement": true,
-    },
-  });
+  // Avec la planche de pastilles, le repère porte déjà son pictogramme.
+  if (!m.getLayer("teko-landmarks-icon")) {
+    m.addLayer({
+      id: "teko-landmarks-letter-eco",
+      type: "symbol",
+      source: TEKO_SOURCES.landmarks,
+      layout: {
+        "icon-image": ["concat", "teko-lettre-amber-", ["get", "lettre"]],
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+      },
+    });
+  }
   m.addLayer({
     id: "teko-saved-places-dot-eco",
     type: "circle",

@@ -20,7 +20,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         ? { googleServicesFile: process.env.TEKO_GOOGLE_SERVICES_FILE }
         : {}),
     },
-    plugins: [...(config.plugins ?? []), ["expo-notifications", { defaultChannel: "teko-alerts" }]],
+    plugins: [
+      ...(config.plugins ?? []),
+      [
+        "expo-notifications",
+        { defaultChannel: "teko-alerts", sounds: ["./assets/sounds/teko_offre.wav"] },
+      ],
+    ],
   };
   if (process.env.TEKO_APP_VARIANT !== "alpha") return base as ExpoConfig;
   return {

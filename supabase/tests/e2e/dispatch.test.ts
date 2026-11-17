@@ -132,4 +132,40 @@ describe("dispatch par offres", () => {
     expect(replay.error?.message).toMatch(/déjà traitée/i);
     await near.client.rpc("cancel_ride", { p_ride: ride.id, p_status: "cancelled_driver" });
   });
+
+  it("chauffeur seul : une offre expirée lui est reproposée, un refus reste définitif", async () => {
+    await allOffline();
+    const ride = await requestRide(nadia.client, { p_category: "confort" });
+    const solo = await createDriver(["confort"]);
+    await goOnline(solo, 9.4537, 0.4033);
+    await serviceSql("select public.retry_alpha_dispatch()");
+    const first = await pendingOffer(solo, ride.id);
+    const delay = Date.parse(first.expires_at) - Date.now();
+    expect(delay).toBeGreaterThan(20_000);
+    expect(delay).toBeLessThanOrEqual(30_000);
+
+    await serviceSql(
+      `update public.ride_offers set expires_at = now() - interval '1 second' where id = $1`,
+      [first.id],
+    );
+    await serviceSql("select public.expire_stale_offers()");
+    const again = await pendingOffer(solo, ride.id);
+    expect(again.id).toBe(first.id);
+    expect(Date.parse(again.expires_at)).toBeGreaterThan(Date.now());
+    const sent = await serviceSql(
+      `select count(*)::int as n from public.notifications
+        where user_id = $1 and type = 'ride_offer' and (payload->>'ride_id') = $2`,
+      [solo.id, ride.id],
+    );
+    expect(sent.rows[0].n).toBe(2);
+
+    await solo.client.rpc("respond_offer", { p_offer: again.id, p_accept: false });
+    await serviceSql("select public.retry_alpha_dispatch()");
+    const after = await solo.client
+      .from("ride_offers")
+      .select("status")
+      .eq("ride_id", ride.id);
+    expect(after.data).toEqual([{ status: "declined" }]);
+    await nadia.client.rpc("cancel_ride", { p_ride: ride.id });
+  });
 });

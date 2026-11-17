@@ -5,6 +5,7 @@
 import { color } from "@teko/ui";
 import { useTranslation } from "react-i18next";
 import { Alert, Switch, View } from "react-native";
+import { useVoiceStore } from "../../lib/voice";
 import { useDataUsage } from "./data-mode";
 import { MapModeSelector } from "./mode-selector";
 import { Group, Row, RowValue, SectionLabel } from "./rows";
@@ -44,6 +45,36 @@ export function CollabSection({ consent, consentReady, onToggleConsent }: Collab
             Alert.alert(t("account:parametres.repereTitre"), t("account:parametres.repereTexte"))
           }
           testID="settings-landmark"
+        />
+      </Group>
+    </>
+  );
+}
+
+/** Annonces vocales (option C) : interrupteur local, actif par défaut. */
+export function VoiceSection() {
+  const { t } = useTranslation();
+  const enabled = useVoiceStore((s) => s.enabled);
+  const setEnabled = useVoiceStore((s) => s.setEnabled);
+  const missing = useVoiceStore((s) => s.frenchAvailable === false);
+  return (
+    <>
+      <SectionLabel>{t("account:parametres.secVoix")}</SectionLabel>
+      <Group>
+        <Row
+          title={t("account:parametres.voixTitre")}
+          subtitle={t(
+            missing ? "account:parametres.voixManquante" : "account:parametres.voixTexte",
+          )}
+          right={
+            <Switch
+              value={enabled}
+              onValueChange={setEnabled}
+              trackColor={TRACK}
+              thumbColor={color.neutral[0]}
+              testID="voice-switch"
+            />
+          }
         />
       </Group>
     </>

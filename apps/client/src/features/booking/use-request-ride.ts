@@ -7,6 +7,7 @@ import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import { supabase } from "../../lib/supabase";
+import { shareOrderPosition } from "./share-order-position";
 import { type MeetingPick, useBookingStore } from "./store";
 
 export interface RequestConfirmation {
@@ -58,6 +59,7 @@ export function useRequestRide(): RequestRideController {
       });
     },
     onSuccess: (ride, confirmed) => {
+      void shareOrderPosition(ride.id);
       if (confirmed) {
         const store = useBookingStore.getState();
         const { quote, meeting } = confirmed;

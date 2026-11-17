@@ -49,6 +49,15 @@ le montant complet n’a pas été encaissé et validé. La part chauffeur de 70
 ne devient un crédit qu’après cette validation. Aucun encaissement partiel ne
 suffit dans l’alpha.
 
+## Course restée ouverte
+
+Une course démarrée que le chauffeur n’a pas terminée est clôturée par le
+serveur après 3 heures, ou quatre fois la durée estimée si c’est plus long
+(`ride_auto_complete_h`, tâche toutes les 5 minutes). La commission est due
+comme pour une fin normale. Ops repère ces courses par l’événement
+`auto_completed` et vérifie avec le chauffeur que le trajet a bien eu lieu
+avant le règlement.
+
 ## Clôture quotidienne à 04 h, heure de Libreville
 
 Finance examine les relevés et les dossiers en attente après l’exécution du
@@ -131,3 +140,38 @@ clore avant traitement terrain.
 À la fin d’un créneau ou de la campagne, rapprocher les courses et dossiers,
 traiter les incidents ouverts, retirer les accès devenus inutiles selon la
 procédure approuvée et conserver les preuves expurgées nécessaires à l’audit.
+
+## Retours de terrain
+
+Ops tient un registre privé séparé du suivi SOS. Créer une ligne par anomalie
+et compter aussi les parcours réussis. Attribuer à chaque signalement un
+identifiant, un responsable, un statut et la version à retester.
+
+| Champ | À noter |
+| --- | --- |
+| Contexte | Heure de Libreville, rôle, version du build, modèle et version Android, opérateur et type de réseau, application au premier plan ou écran verrouillé. |
+| Étape | Installation, OTP, carte, devis, demande, notification, acceptation, arrivée, PIN, suivi, fin, reçu ou historique. |
+| Symptôme | Dernière étape atteinte, actions dans l’ordre, résultat attendu, résultat observé, message d’erreur exact, fréquence et éventuel contournement. |
+| Mesure | Temps d’installation ou de lancement, délai SMS, délai de notification, délai demande → acceptation et délai de reprise après retour du réseau, selon l’étape testée. |
+| Rapprochement | Identifiant court de la course si disponible. Pour un écart de prix, comparer le devis, le reçu et l’écriture Finance dans la console privée. |
+| Priorité | Sécurité, montant erroné ou course bloquée à traiter immédiatement. Dégradation de performance, navigation ou texte à classer selon la fréquence et l’impact. |
+
+À chaque créneau, noter le nombre de tentatives et de réussites par étape,
+les annulations et les raisons d’abandon. Identifier les écarts sur Airtel
+et Moov ainsi que sur le téléphone d’entrée de gamme. Faire un seul trajet de
+référence à la fois au démarrage et comparer les deux récits avec le tableau
+de bord. Vérifier les scénarios de coupure réseau et d’écran verrouillé à
+l’arrêt, en lieu sûr.
+
+Message à envoyer individuellement après le créneau :
+
+> Quel téléphone, quelle version Android et quel réseau as-tu utilisés ?
+> À quelle heure et à quelle étape as-tu rencontré un problème ? Dis-nous
+> ce que tu as fait, ce que tu attendais et ce qui s’est passé. Si tout a
+> marché, quelle étape a été la plus lente ou la moins claire ? Indique la
+> référence courte du reçu si elle aide à retrouver la course. Une capture
+> est facultative, après masquage des numéros et positions privées.
+
+Le registre ne contient ni code SMS, ni PIN de course, ni coordonnées GPS
+précises, ni pièce KYC. Consulter les justificatifs autorisés uniquement
+dans leurs écrans privés. Une anomalie SOS suit le circuit d’urgence.
