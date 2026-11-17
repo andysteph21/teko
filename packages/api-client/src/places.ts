@@ -27,6 +27,20 @@ export async function searchLandmarksByName(
   ) as TableRow<"landmarks">[];
 }
 
+/** Noms des repères validés par identifiant (annonces vocales chauffeur). */
+export async function landmarkNames(
+  client: TekoClient,
+  ids: string[],
+): Promise<Record<string, string>> {
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (unique.length === 0) return {};
+  const rows = unwrap(await client.from("landmarks").select("id, name").in("id", unique)) as {
+    id: string;
+    name: string;
+  }[];
+  return Object.fromEntries(rows.map((row) => [row.id, row.name]));
+}
+
 /** Lieux enregistrés du compte (Domicile / Travail / favoris). */
 export async function listSavedPlaces(client: TekoClient): Promise<TableRow<"saved_places">[]> {
   return unwrap(await client.from("saved_places").select("*").order("created_at"));

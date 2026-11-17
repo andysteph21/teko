@@ -61,6 +61,11 @@ export const accountFr = {
   parametres: {
     titre: "Paramètres",
     secCarte: "Carte collaborative",
+    secVoix: "Annonces vocales",
+    voixTitre: "Lire les annonces à voix haute",
+    voixTexte: "Nouvelle course, repère du passager, arrivée et destination.",
+    voixManquante:
+      "Aucune voix française sur ce téléphone : installez-la dans Paramètres Android, Synthèse vocale.",
     gpsTitre: "Partager mes traces GPS",
     gpsTexte:
       "Anonymisées et conservées 12 mois, elles aident Teko à découvrir les routes manquantes de la carte.",

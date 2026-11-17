@@ -96,6 +96,7 @@ export {
   subscribeNotifications,
 } from "./notifications";
 export {
+  landmarkNames,
   listMyLandmarkProposals,
   listSavedPlaces,
   searchLandmarksByName,

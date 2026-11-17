@@ -6,6 +6,7 @@
 import { color, spacing } from "@teko/ui";
 import { Button, DataWidget, EcoPill } from "@teko/ui/native";
 import { type Href, useRouter } from "expo-router";
+import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DEFAULT_CENTER, TILES_URL } from "../../src/config";
@@ -28,6 +29,7 @@ import { useDriverHome } from "../../src/features/work/use-driver-home";
 import { useHeartbeat } from "../../src/features/work/use-heartbeat";
 import { useOfferFeed } from "../../src/features/work/use-offer-feed";
 import { useOnlineToggle } from "../../src/features/work/use-online-toggle";
+import { prepareVoice } from "../../src/lib/voice";
 
 export default function DriverHome() {
   const router = useRouter();
@@ -46,6 +48,10 @@ export default function DriverHome() {
   const effectiveOnline = online && !suspended;
   useHeartbeat(effectiveOnline, eco);
   const feed = useOfferFeed(userId, effectiveOnline);
+  // La liste des voix se lit une fois avant la première proposition.
+  useEffect(() => {
+    if (effectiveOnline) void prepareVoice();
+  }, [effectiveOnline]);
 
   return (
     <View style={styles.screen}>
@@ -65,15 +71,19 @@ export default function DriverHome() {
         >
           <VehicleDot position={position} />
         </TekoMapView>
-        <View style={styles.widgetStack} pointerEvents="box-none">
-          {eco ? <EcoPill /> : null}
-          <DataWidget
-            quantityText={usage.quantityText}
-            state={usage.state}
-            onPress={() => router.push("/(main)/settings" as Href)}
-            testID="data-widget"
-          />
-        </View>
+        {/* Masqué pendant une proposition : sur Android il passait devant la
+            fenêtre malgré son élévation (OPPO A15, 17 novembre 2026). */}
+        {feed.offer ? null : (
+          <View style={styles.widgetStack} pointerEvents="box-none">
+            {eco ? <EcoPill /> : null}
+            <DataWidget
+              quantityText={usage.quantityText}
+              state={usage.state}
+              onPress={() => router.push("/(main)/settings" as Href)}
+              testID="data-widget"
+            />
+          </View>
+        )}
         <View style={styles.gps} pointerEvents="box-none">
           <Button
             label="Ma position"

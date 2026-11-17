@@ -13,11 +13,14 @@ import { borderRadius, color, spacing, typography } from "@teko/ui";
 import { Button } from "@teko/ui/native";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, Pressable, StyleSheet, Text, Vibration, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { VALHALLA_URL } from "../../config";
+import { OFFER_VIBRATION } from "../../lib/offer-alert";
+import { announce, silence } from "../../lib/voice";
 import { fetchDevicePosition } from "./use-device-position";
 import { offerRemainingMs, useOfferCountdown } from "./use-offer-countdown";
+import { offerPhrase } from "./voice-phrases";
 
 export interface OfferModalProps {
   offer: OfferDetails;
@@ -125,6 +128,19 @@ export function OfferModal({ offer, busy, onAccept, onDecline, onExpire }: Offer
   const insets = useSafeAreaInsets();
   const { seconds, expired } = useOfferCountdown(offer.expiresAt, busy, onExpire);
   const etaMin = usePickupEta(offer);
+  // Alerte en appli : la vibration reprend tant que la proposition attend
+  // une réponse (chantier alerte de course, 17 novembre 2026).
+  const ringing = !expired && !busy;
+  // Option C : la proposition et le repère du passager sont lus à voix haute.
+  useEffect(() => {
+    announce(offerPhrase(offer));
+    return () => silence();
+  }, [offer]);
+  useEffect(() => {
+    if (!ringing) return;
+    Vibration.vibrate(OFFER_VIBRATION, true);
+    return () => Vibration.cancel();
+  }, [ringing]);
   const km = (offer.distanceEstM / 1000).toFixed(1).replace(".", ",");
   const courseMin = Math.max(1, Math.round(offer.durationEstS / 60));
 
@@ -166,6 +182,8 @@ export function OfferModal({ offer, busy, onAccept, onDecline, onExpire }: Offer
 }
 
 const styles = StyleSheet.create({
+  // Élévation au-dessus du widget de données (8) : sur Android il passait
+  // devant la proposition (retour terrain du 16 novembre 2026).
   overlay: {
     position: "absolute",
     top: 0,
@@ -173,6 +191,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     justifyContent: "flex-end",
+    zIndex: 20,
+    elevation: 20,
   },
   scrim: {
     position: "absolute",

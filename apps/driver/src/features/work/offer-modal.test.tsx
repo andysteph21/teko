@@ -3,7 +3,7 @@
 // fermeture différée, et marge basse qui réserve insets.bottom
 // (edge-to-edge : la rangée d'actions recouvre HomeTabs).
 
-import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 jest.mock("@teko/maps", () => ({ fetchRoute: jest.fn() }));
 jest.mock("./use-device-position", () => ({
@@ -90,5 +90,47 @@ describe("OfferModal", () => {
     mountOffer(12_000);
 
     expect(screen.getByTestId("offer-sheet")).toHaveStyle({ marginBottom: 52 });
+  });
+});
+
+describe("alerte en appli (chantier du 17 novembre 2026)", () => {
+  it("vibre en boucle tant que la proposition attend, puis s'arrête", () => {
+    const { Vibration } = require("react-native");
+    const vibrate = jest.spyOn(Vibration, "vibrate").mockImplementation(() => undefined);
+    const cancel = jest.spyOn(Vibration, "cancel").mockImplementation(() => undefined);
+    const view = render(
+      <OfferModal
+        offer={{ ...OFFER, expiresAt: new Date(Date.now() + 30_000).toISOString() }}
+        busy={false}
+        onAccept={jest.fn()}
+        onDecline={jest.fn()}
+        onExpire={jest.fn()}
+      />,
+    );
+    expect(vibrate).toHaveBeenCalledWith([0, 700, 350, 700, 350, 700, 1200], true);
+    view.unmount();
+    expect(cancel).toHaveBeenCalled();
+    vibrate.mockRestore();
+    cancel.mockRestore();
+  });
+});
+
+describe("annonce vocale de la proposition (option C)", () => {
+  it("lit la proposition une fois, puis se tait au démontage", async () => {
+    const Speech = require("expo-speech");
+    jest.mocked(Speech.speak).mockClear();
+    const view = render(
+      <OfferModal
+        offer={{ ...OFFER, expiresAt: new Date(Date.now() + 30_000).toISOString() }}
+        busy={false}
+        onAccept={jest.fn()}
+        onDecline={jest.fn()}
+        onExpire={jest.fn()}
+      />,
+    );
+    await waitFor(() => expect(Speech.speak).toHaveBeenCalledTimes(1));
+    expect(jest.mocked(Speech.speak).mock.calls[0]?.[0]).toMatch(/^Nouvelle course/);
+    view.unmount();
+    expect(Speech.stop).toHaveBeenCalled();
   });
 });

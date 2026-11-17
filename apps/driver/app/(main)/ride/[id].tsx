@@ -36,6 +36,7 @@ import { type DriverRide, useDriverRide } from "../../../src/features/work/use-d
 import { useLivePosition } from "../../../src/features/work/use-live-position";
 import { usePushPositions } from "../../../src/features/work/use-push-positions";
 import { type RideActions, useRideActions } from "../../../src/features/work/use-ride-actions";
+import { useRideAnnouncements } from "../../../src/features/work/use-ride-announcements";
 import { supabase } from "../../../src/lib/supabase";
 
 /** Solde du jour rafraîchi après clôture (ligne « nouveau solde » de D-14). */
@@ -134,34 +135,43 @@ function ActiveRideView({ state, actions, eco, onRequestPin }: ActiveViewProps) 
   const devicePosition = useDevicePosition();
   useLivePosition(true);
   const clientPosition = useClientPosition(state.ride?.id, state.status);
+  useRideAnnouncements({
+    ride: state.ride,
+    status: state.status,
+    origin: state.origin,
+    destination: state.destination,
+    position: devicePosition,
+  });
   const ride = state.ride;
   const status = state.status;
   if (!ride || !status) return null;
 
   return (
     <View style={styles.screen}>
-      <TekoMapView
-        options={{ tilesUrl: TILES_URL, eco }}
-        center={state.origin ?? DEFAULT_CENTER}
-        zoom={14.5}
-        recenter={devicePosition}
-      >
-        <RouteLine coordinates={state.routeCoords} />
-        <MeetingPin position={isPickup(status) ? state.origin : null} />
-        <ClientPin position={clientPosition} />
-        <DestinationDot position={state.destination} />
-        <VehicleDot position={devicePosition} />
-      </TekoMapView>
-      <ActiveBanner ride={ride} status={status} />
-      <View style={styles.widgetStack} pointerEvents="box-none">
-        {eco ? <EcoPill /> : null}
-        <DataWidget
-          quantityText={usage.quantityText}
-          state={usage.state}
-          onPress={() => router.push("/(main)/settings" as Href)}
-          testID="data-widget"
-        />
+      <View style={styles.mapZone}>
+        <TekoMapView
+          options={{ tilesUrl: TILES_URL, eco }}
+          center={state.origin ?? DEFAULT_CENTER}
+          zoom={14.5}
+          recenter={devicePosition}
+        >
+          <RouteLine coordinates={state.routeCoords} />
+          <MeetingPin position={isPickup(status) ? state.origin : null} />
+          <ClientPin position={clientPosition} />
+          <DestinationDot position={state.destination} />
+          <VehicleDot position={devicePosition} />
+        </TekoMapView>
+        <View style={styles.widgetStack} pointerEvents="box-none">
+          {eco ? <EcoPill /> : null}
+          <DataWidget
+            quantityText={usage.quantityText}
+            state={usage.state}
+            onPress={() => router.push("/(main)/settings" as Href)}
+            testID="data-widget"
+          />
+        </View>
       </View>
+      <ActiveBanner ride={ride} status={status} />
       <ActivePanel state={state} actions={actions} onRequestPin={onRequestPin} />
       <WorkToast />
     </View>
@@ -225,10 +235,13 @@ const styles = StyleSheet.create({
     padding: spacing[5],
   },
   loadError: { fontSize: typography.fontSize.base, color: color.neutral[500] },
+  mapZone: { flex: 1 },
+  // Dans la zone carte : le widget ne recouvre plus le panneau, quelle que
+  // soit sa hauteur (retour terrain du 16 novembre 2026).
   widgetStack: {
     position: "absolute",
     left: spacing[4],
-    bottom: 196,
+    bottom: 14,
     gap: spacing[2],
   },
 });

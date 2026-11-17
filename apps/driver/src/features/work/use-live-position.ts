@@ -1,11 +1,13 @@
 // Position vivante de l'écran de course : le point véhicule suit le GPS tant
-// que l'écran est ouvert. Le service d'arrière-plan envoie les positions au
-// serveur mais ne rafraîchissait pas l'affichage (retour terrain du
-// 11 novembre 2026 : point du chauffeur figé pendant la course).
+// que l'écran est ouvert (retour terrain du 11 novembre 2026 : point figé).
+// Chaque position précise est aussi versée dans la file GPS de la course :
+// le passager suit un tracé fin quand l'écran chauffeur est ouvert, et le
+// service d'arrière-plan (précision équilibrée) prend le relais écran éteint.
 
 import * as Location from "expo-location";
 import { useEffect } from "react";
 import { devicePoint } from "../../config";
+import { processDriverLocation } from "../../lib/location-task";
 import { useWorkStore } from "./store";
 
 export const LIVE_POSITION_MS = 2_000;
@@ -30,6 +32,7 @@ export function useLivePosition(active: boolean): void {
           setDevicePosition(
             devicePoint({ lon: location.coords.longitude, lat: location.coords.latitude }),
           );
+          void processDriverLocation(location).catch(() => undefined);
         },
       );
       if (cancelled) watcher.remove();

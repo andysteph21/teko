@@ -20,6 +20,7 @@ import {
   DataSection,
   ExitSection,
   PrefsSection,
+  VoiceSection,
 } from "../../src/features/account/settings-sections";
 import { useDeleteAccount } from "../../src/features/account/use-delete-account";
 import { useSession } from "../../src/features/auth/use-session";
@@ -87,6 +88,7 @@ export default function Settings() {
           consentReady={gps.ready}
           onToggleConsent={gps.onToggle}
         />
+        <VoiceSection />
         <DataSection />
         <PrefsSection />
         <ExitSection onSignOut={confirmSignOut} onDelete={deletion.onPressDelete} />
