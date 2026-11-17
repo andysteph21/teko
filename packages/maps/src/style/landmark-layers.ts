@@ -22,14 +22,14 @@ interface Tier {
 
 /** Le repère connu de tous apparaît plus tôt et plus gros. */
 const TIERS: Tier[] = [
-  { id: "major", filter: [">=", salience, 7], minzoom: 11, size: 0.95 },
+  { id: "major", filter: [">=", salience, 7], minzoom: 11, size: 1.05 },
   {
     id: "mid",
     filter: ["all", [">=", salience, 5], ["<", salience, 7]],
-    minzoom: 13.5,
-    size: 0.78,
+    minzoom: 12.5,
+    size: 0.9,
   },
-  { id: "minor", filter: ["<", salience, 5], minzoom: 15, size: 0.62 },
+  { id: "minor", filter: ["<", salience, 5], minzoom: 14, size: 0.75 },
 ];
 
 export interface LandmarkLabelContext {
@@ -58,10 +58,15 @@ export function validatedLandmarkLayers(ctx: LandmarkLabelContext): Layer[] {
         ? {
             "text-field": ["get", "name"],
             "text-font": [ctx.font],
-            "text-size": 12,
-            "text-anchor": "top",
-            "text-offset": [0, 1.25 * tier.size + 0.25],
-            "text-max-width": 9,
+            // Mesure OPPO A15 du 17 novembre 2026 : avec un seul placement
+            // (dessous), la moitié des pastilles perdaient leur nom. Quatre
+            // placements possibles, puis le nom est omis s'il ne tient pas.
+            "text-size": 11.5,
+            "text-variable-anchor": ["top", "right", "left", "bottom"],
+            "text-radial-offset": 1.15 * tier.size + 0.2,
+            "text-justify": "auto",
+            "text-max-width": 8,
+            "text-padding": 1,
             "text-optional": true,
           }
         : {}),

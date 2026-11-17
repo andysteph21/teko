@@ -57,7 +57,7 @@ export function ClientPin({ position }: { position: LonLat | null }) {
   );
 }
 
-/** Point de rencontre : goutte repère ambre avec halo doux. */
+/** Point de rencontre : pastille Teko agrandie avec halo ambre doux. */
 export function MeetingPin({ position }: { position: LonLat | null }) {
   if (!position) return null;
   return (
@@ -71,12 +71,12 @@ export function MeetingPin({ position }: { position: LonLat | null }) {
         }}
       />
       <Layer
-        type="circle"
-        paint={{
-          "circle-color": MAP_COLORS.markerLandmark,
-          "circle-radius": 9,
-          "circle-stroke-color": MAP_COLORS.halo,
-          "circle-stroke-width": 2.5,
+        type="symbol"
+        layout={{
+          "icon-image": "landmark-other",
+          "icon-size": 1.2,
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
         }}
       />
     </GeoJSONSource>

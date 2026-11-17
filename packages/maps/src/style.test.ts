@@ -36,8 +36,9 @@ describe("buildMapStyle", () => {
     expect(JSON.stringify(major.layout?.["icon-image"])).toContain("landmark-");
     expect(major.layout?.["text-field"]).toEqual(["get", "name"]);
     expect(major.paint?.["text-color"]).toBe("#3D0F5C");
-    expect(layer(style, "teko-validated-landmark-mid").minzoom).toBe(13.5);
-    expect(layer(style, "teko-validated-landmark-minor").minzoom).toBe(15);
+    expect(major.layout?.["text-variable-anchor"]).toEqual(["top", "right", "left", "bottom"]);
+    expect(layer(style, "teko-validated-landmark-mid").minzoom).toBe(12.5);
+    expect(layer(style, "teko-validated-landmark-minor").minzoom).toBe(14);
     const eco = buildMapStyle({ ...options, eco: true });
     expect(eco.sprite).toBe("https://tiles.example/sprite/teko");
     expect(layer(eco, "teko-validated-landmark-major").layout?.["icon-image"]).toBeDefined();
