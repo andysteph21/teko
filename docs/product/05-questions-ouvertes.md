@@ -307,3 +307,16 @@ Détail dans [le plan du jour 3](../plan/18-plan-corrections-jour3.md).
   (`docs/design/08-carte-langage.md`) est mis à jour ; l’ambre reste la
   couleur réservée aux repères.
 
+## Salve des 15 et 16 novembre — décisions du 17 novembre 2026
+
+Détail dans [le rapport](../plan/19-rapport-test-jour4.md).
+
+- **Clôturé — suspension pour solde en retard :** conservée pendant
+  l’alpha ; elle fait partie de ce que les essais vérifient.
+- **Clôturé — catégorie Moto :** masquée dans l’app passager pendant
+  l’alpha. Le tarif et la catégorie restent en base.
+- **Clôturé — alerte de course :** chantier lancé. Lot 1 : canal Android
+  dédié avec sonnerie et vibration, vibration en appli. Lot 2 à décider.
+- **Ouvert :** option de guidage vocal ; service de livraison à cadrer ;
+  réécriture native à trancher après mesure sur l’OPPO A15.
+
