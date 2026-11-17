@@ -80,8 +80,10 @@ describe("C-10 Catégorie", () => {
     // 14 min arrondies depuis durationS = 840 s.
     expect(screen.getByText(/4 places · 14 min/)).toBeOnTheScreen();
 
-    await user.press(screen.getByTestId("cat-moto"));
-    expect(useBookingStore.getState().category).toBe("moto");
+    // Moto masquée pendant l'alpha (décision du 17 novembre 2026).
+    expect(screen.queryByTestId("cat-moto")).toBeNull();
+    await user.press(screen.getByTestId("cat-confort"));
+    expect(useBookingStore.getState().category).toBe("confort");
 
     // Airtel Money masqué pour l'instant (payment-methods.ts) : seule la
     // pastille Espèces est proposée, déjà sélectionnée.

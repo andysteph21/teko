@@ -10,7 +10,9 @@ import type { VehicleCategory } from "@teko/types";
 import { supabase } from "../../lib/supabase";
 import { useBookingStore } from "./store";
 
-const CATEGORIES: VehicleCategory[] = ["eco", "moto", "confort"];
+// Moto masquée pendant l'alpha (décision du porteur du 17 novembre 2026) :
+// aucun chauffeur du banc ne l'a, et le service pourrait devenir « livraison ».
+export const CATEGORIES: VehicleCategory[] = ["eco", "confort"];
 
 async function fetchQuotes(origin: LonLat, destination: LonLat) {
   try {

@@ -65,17 +65,17 @@ it("une reconnexion ne relance pas les devis ; seul le réessai manuel le fait",
   onlineManager.setOnline(false);
   const hook = renderEstimates();
   await waitFor(() => expect(hook.result.current.isError).toBe(true));
-  expect(mockQuote).toHaveBeenCalledTimes(3);
+  expect(mockQuote).toHaveBeenCalledTimes(2);
   await act(async () => {
     onlineManager.setOnline(true);
     focusManager.setFocused(false);
     focusManager.setFocused(true);
   });
-  expect(mockQuote).toHaveBeenCalledTimes(3);
+  expect(mockQuote).toHaveBeenCalledTimes(2);
   await act(async () => {
     await hook.result.current.refetch();
   });
-  expect(mockQuote).toHaveBeenCalledTimes(6);
+  expect(mockQuote).toHaveBeenCalledTimes(4);
   hook.unmount();
   hook.client.clear();
 });
