@@ -58,6 +58,10 @@ La carte reste fluide une fois les tuiles chargées, y compris avec les 1 697 re
 
 - **Noms des repères** : avec un seul placement possible (sous la pastille), environ la moitié des pastilles s’affichaient sans nom. Le nom peut désormais se placer dessous, à droite, à gauche ou dessus, en police légèrement réduite.
 - **Repère choisi et point de rencontre** : affichés avec la pastille Teko agrandie au lieu d’un rond ambre, côté passager comme côté chauffeur.
+- **Widget de données** : contrôlé sur l’OPPO, il passait encore devant la fenêtre de proposition et, sur l’écran de course, sous la barre système. Il est masqué pendant une proposition et placé sous la bannière pendant une course.
+- **Annonces vocales** : l’OPPO, réglé en anglais, n’a que la voix anglaise ; Android lisait alors le français avec cette voix. Teko exige désormais une voix française et se tait sinon ; les Paramètres indiquent comment l’installer. La lecture effective en français reste à entendre sur un téléphone qui possède cette voix.
+
+Vérifié sur l’OPPO avec le build du 17 novembre : proposition reçue sans widget par-dessus, écran de course avec widget sous la bannière et point de rencontre en pastille, noms de repères nettement plus nombreux à l’accueil (voir les captures du rapport). Contrepartie : quelques pastilles de faible notoriété cèdent la place à un nom voisin et réapparaissent en zoomant.
 
 ## Recommandations
 

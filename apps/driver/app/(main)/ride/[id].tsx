@@ -94,7 +94,15 @@ function isPickup(status: RideStatus): boolean {
   return status === "accepted" || status === "enroute" || status === "arrived";
 }
 
-function ActiveBanner({ ride, status }: { ride: RideRow; status: RideStatus }) {
+function ActiveBanner({
+  ride,
+  status,
+  onHeight,
+}: {
+  ride: RideRow;
+  status: RideStatus;
+  onHeight: (height: number) => void;
+}) {
   const insets = useSafeAreaInsets();
   if (status === "requested") return null;
   const banner = status === "started" ? "started" : status === "arrived" ? "arrived" : "enroute";
@@ -104,6 +112,7 @@ function ActiveBanner({ ride, status }: { ride: RideRow; status: RideStatus }) {
       originHint={ride.origin_hint}
       destHint={ride.dest_hint}
       topInset={insets.top}
+      onHeight={onHeight}
     />
   );
 }
@@ -132,6 +141,7 @@ function ActivePanel({ state, actions, onRequestPin }: Omit<ActiveViewProps, "ec
 function ActiveRideView({ state, actions, eco, onRequestPin }: ActiveViewProps) {
   const router = useRouter();
   const usage = useDataUsage();
+  const [bannerHeight, setBannerHeight] = useState(0);
   const devicePosition = useDevicePosition();
   useLivePosition(true);
   const clientPosition = useClientPosition(state.ride?.id, state.status);
@@ -161,7 +171,10 @@ function ActiveRideView({ state, actions, eco, onRequestPin }: ActiveViewProps) 
           <DestinationDot position={state.destination} />
           <VehicleDot position={devicePosition} />
         </TekoMapView>
-        <View style={styles.widgetStack} pointerEvents="box-none">
+        <View
+          style={[styles.widgetStack, { top: bannerHeight + spacing[3] }]}
+          pointerEvents="box-none"
+        >
           {eco ? <EcoPill /> : null}
           <DataWidget
             quantityText={usage.quantityText}
@@ -171,7 +184,7 @@ function ActiveRideView({ state, actions, eco, onRequestPin }: ActiveViewProps) 
           />
         </View>
       </View>
-      <ActiveBanner ride={ride} status={status} />
+      <ActiveBanner ride={ride} status={status} onHeight={setBannerHeight} />
       <ActivePanel state={state} actions={actions} onRequestPin={onRequestPin} />
       <WorkToast />
     </View>
@@ -236,12 +249,12 @@ const styles = StyleSheet.create({
   },
   loadError: { fontSize: typography.fontSize.base, color: color.neutral[500] },
   mapZone: { flex: 1 },
-  // Dans la zone carte : le widget ne recouvre plus le panneau, quelle que
-  // soit sa hauteur (retour terrain du 16 novembre 2026).
+  // Sous la bannière, en haut de la carte : ni le panneau du bas ni la
+  // barre système ne peuvent le recouvrir, quelle que soit leur hauteur
+  // (retour terrain du 16 novembre 2026, contrôle OPPO A15 du 17).
   widgetStack: {
     position: "absolute",
     left: spacing[4],
-    bottom: 14,
     gap: spacing[2],
   },
 });
