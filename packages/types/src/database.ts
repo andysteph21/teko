@@ -203,14 +203,14 @@ isOneToOne: false
                   ]
                 },"devices": {
                   Row: {
-                    "created_at": string,"id": string,"last_seen": string,"platform": string,"push_token": string,"session_id": string | null,"user_id": string
+                    "created_at": string,"id": string,"last_seen": string,"offer_channel": boolean,"platform": string,"push_token": string,"session_id": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"last_seen"?: string,"platform": string,"push_token": string,"session_id"?: string | null,"user_id": string
+                    "created_at"?: string,"id"?: string,"last_seen"?: string,"offer_channel"?: boolean,"platform": string,"push_token": string,"session_id"?: string | null,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"last_seen"?: string,"platform"?: string,"push_token"?: string,"session_id"?: string | null,"user_id"?: string
+                    "created_at"?: string,"id"?: string,"last_seen"?: string,"offer_channel"?: boolean,"platform"?: string,"push_token"?: string,"session_id"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -1217,6 +1217,9 @@ isOneToOne: false
 "assert_admin_or_service":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"auto_complete_stale_rides":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "bump_landmark_usage":
 { Args: { "p_landmark": string }; Returns: undefined
                            },
@@ -1266,7 +1269,7 @@ isOneToOne: false
                            },
 "claim_push_deliveries":
 { Args: { "p_notification"?: string }; Returns: {
-              "device_id": string,"expires_at": string,"id": string,"notification_id": string,"payload": Json,"push_token": string,"type": string
+              "device_id": string,"expires_at": string,"id": string,"notification_id": string,"offer_channel": boolean,"payload": Json,"push_token": string,"type": string
             }[]
                            },
 "commission_amount":
@@ -1669,7 +1672,7 @@ isOneToOne: false
 { Args: { "p_driver": string,"p_note": string }; Returns: undefined
                            },
 "register_push_device":
-{ Args: { "p_platform": string,"p_token": string,"p_user": string }; Returns: undefined
+{ Args: { "p_offer_channel"?: boolean,"p_platform": string,"p_token": string,"p_user": string }; Returns: undefined
                            },
 "reject_manual_receipt":
 { Args: { "p_reason": string,"p_receipt": string }; Returns: {

@@ -1,4 +1,9 @@
-import type { PushMessage, PushProvider, PushResult } from "./provider.ts";
+import {
+  DEFAULT_CHANNEL,
+  type PushMessage,
+  type PushProvider,
+  type PushResult,
+} from "./provider.ts";
 
 interface ExpoTicket {
   status: string;
@@ -37,7 +42,7 @@ export function expoProvider(
           data: message.data,
           sound: "default",
           priority: "high",
-          channelId: "teko-alerts",
+          channelId: message.channelId ?? DEFAULT_CHANNEL,
           ...(message.expiresAt
             ? { expiration: Math.floor(message.expiresAt / 1000) }
             : {}),

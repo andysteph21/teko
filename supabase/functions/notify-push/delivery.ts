@@ -1,5 +1,9 @@
 import type { admin } from "../_shared/db.ts";
-import { messageForType, type PushProvider } from "../_shared/push/index.ts";
+import {
+  channelFor,
+  messageForType,
+  type PushProvider,
+} from "../_shared/push/index.ts";
 import { safePushPayload } from "../_shared/push/payload.ts";
 import { expoReceipts } from "../_shared/push/receipts.ts";
 
@@ -12,6 +16,7 @@ interface Delivery {
   type: string;
   payload: Record<string, unknown>;
   expires_at: string;
+  offer_channel?: boolean;
 }
 
 async function sendOne(
@@ -39,6 +44,7 @@ async function sendOne(
         payload: JSON.stringify(safePushPayload(row.payload)),
       },
       expiresAt,
+      channelId: channelFor(row.type, row.offer_channel === true),
       ttl: `${Math.max(0, Math.floor((expiresAt - Date.now()) / 1000))}s`,
     });
     if (result.invalidToken) {
