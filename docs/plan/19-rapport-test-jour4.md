@@ -110,3 +110,20 @@ Recommandation : C d’abord, puis B. C répond exactement à la demande des tes
 3. Lot 2 de l’alerte de course : envoi direct par Firebase, à lancer ou non.
 4. Livraison : cadrer le service.
 5. Mesure de performance sur l’OPPO A15 avant toute décision de réécriture native.
+
+## Déploiement du 17 novembre
+
+Fait après accord du porteur, hors course, sauvegarde préalable de la base.
+
+- **VPS** : migration `20261117090000_alpha_alerte_course.sql` (63 migrations), fonction `notify-push` et module push mis à jour, service des fonctions relancé. Contrôles : services et pastilles en HTTPS 200, devis obtenus, livraisons push en 200 après redémarrage. Les fichiers remplacés sont gardés dans `supabase/functions/.avant-jour5`.
+- **APK** : construits en précompilation complète (sonnerie et synthèse vocale natives), vérifiés (signature alpha, origine HTTPS, absence de secrets, sources embarquées dont annonces vocales, alerte et catégories), publiés ; téléchargement par rôle recontrôlé. Les APK du 12 novembre sont gardés sur le VPS.
+
+| APK | SHA-256 |
+| --- | --- |
+| Passager | `4b6d37a476167f41924a64a8041d683a3f117bdeed1ad9c8a40c3d8182b5b2c1` |
+| Chauffeur | `a18126892a78891f1514e7abf95fdfcef185c0f51c71a50303f3c3b084e376f5` |
+
+À vérifier par les testeurs après réinstallation : sonnerie et vibration d'une proposition, lecture vocale en français (le téléphone doit avoir une voix française, voir Paramètres), positions du chauffeur visibles côté passager pendant une course, absence de Moto, noms des repères.
+
+Rappel : les deux chauffeurs suspendus le restent jusqu'à un règlement validé par Finance dans la console (décision du 17 novembre).
+

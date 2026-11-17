@@ -113,6 +113,9 @@ const sourcesVerified =
         "apps/driver/src/features/work/use-offer-resume.ts",
         "apps/driver/src/features/work/use-live-position.ts",
         "apps/driver/src/features/work/use-client-position.ts",
+        "apps/driver/src/features/work/use-ride-announcements.ts",
+        "apps/driver/src/lib/voice.ts",
+        "apps/driver/src/lib/push-registration.ts",
         "apps/driver/src/lib/location-service.ts",
       ]
     : [
@@ -128,6 +131,7 @@ const sourcesVerified =
         "packages/api-client/src/places.ts",
         "apps/client/src/features/ride/use-position-fallback.ts",
         "apps/client/src/features/booking/share-order-position.ts",
+        "apps/client/src/features/booking/use-estimates.ts",
       ];
 sourcesVerified.push(
   `apps/${app}/app/(main)/home.tsx`,
