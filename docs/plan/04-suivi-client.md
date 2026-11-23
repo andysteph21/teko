@@ -5,6 +5,23 @@
 
 **Relance suggérée :** J+7 sur les 6 questions bloquantes si aucune réponse.
 
+## Retours de l’essai terrain du 20 novembre 2026
+
+Message reçu le 21 novembre, avec trois vidéos de l’essai et le document
+« TEKO COVOITURAGE ». Essai Android jugé concluant. Six suggestions reçues,
+**aucune arbitrée ni implémentée** : le
+[plan d’implémentation](12-plan-retours-essai-terrain.md) liste les
+dix-neuf arbitrages (A1 à A19) à soumettre avant tout développement.
+
+| Suggestion | Lot du plan | État |
+|---|---|---|
+| Changer de destination | R3 | ⏳ Arbitrages A6 à A8 |
+| Ajouter des arrêts en cours de trajet | R3 | ⏳ Arbitrages A6 à A8 |
+| Livraison comme option | R5 | ⏳ Arbitrages A16 à A18, avis juridique |
+| Covoiturage au tarif à la place (250 FCFA/km, 500 à 1 850 FCFA, 3 places) | R4 | ⏳ Arbitrages A9 à A15 |
+| Accueil affichant directement les options | R2 | ⏳ Maquette C-07 à valider |
+| Compte validé par e-mail ou Google, numéro simplement enregistré | R1 | ⏳ Arbitrages A1 à A5 ; inverse la décision OTP SMS |
+
 ## Réponses du porteur pour l’alpha du 18 octobre 2026
 
 Ces réponses sont distinctes des 26 réponses client du 25 août. Elles sont
