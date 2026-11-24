@@ -134,7 +134,7 @@ qu’un code lui soit remis à la main.
 | Console : inviter une adresse | ✅ |
 | Portail `/install` : connexion par e-mail | ➡️ Écrit, contrôlé en syntaxe seulement, jamais exécuté |
 | Bouton Google (A2) | ⏳ Attend le client OAuth Android lié à la clé alpha |
-| Frein aux comptes multiples (A5) | ⏳ À faire |
+| Frein aux comptes multiples (A5) | ✅ Migration `20261124090000_alpha_frais_dus_bloquants`, scénarios JWT `frais-dus.test.ts` ; message de refus dans l’app passager |
 | Rattachement des 17 comptes du VPS à un e-mail | ⏳ À faire, avec les adresses des testeurs |
 | Relais SMTP sur le VPS | ⏳ Attend les identifiants du porteur |
 | Maestro sur OPPO, nouveaux APK | ⏳ Après les points ci-dessus |

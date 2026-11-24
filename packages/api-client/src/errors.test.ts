@@ -10,6 +10,7 @@ describe("mapApiError — messages backend → codes stables", () => {
     ["Réservé aux participants de la course", "participants_only"],
     ["Réservé au superadmin", "superadmin_only"],
     ["Suppression impossible : une course est en cours", "ride_in_progress"],
+    ["Frais d'annulation à régler avant de commander", "fees_due"],
     ["Modification du rôle non autorisée", "role_change_forbidden"],
     ["TypeError: Failed to fetch", "network"],
     ["Network request failed", "network"],

@@ -201,6 +201,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"device_accounts": {
+                  Row: {
+                    "first_seen": string,"push_token": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "first_seen"?: string,"push_token": string,"user_id": string
+                  }
+                  Update: {
+                    "first_seen"?: string,"push_token"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "device_accounts_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"devices": {
                   Row: {
                     "created_at": string,"id": string,"last_seen": string,"offer_channel": boolean,"platform": string,"push_token": string,"session_id": string | null,"user_id": string

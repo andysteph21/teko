@@ -34,6 +34,8 @@ export const bookingFr = {
     confirmerPrix: "Confirmer ce prix et commander",
     revenirDepart: "Revenir au départ initial",
     devisExpire: "Ce prix a expiré. Revenez au choix de la course pour confirmer un nouveau devis.",
+    fraisDus:
+      "Des frais d’annulation restent à régler. Contactez l’assistance Teko pour les payer avant de commander.",
     eyebrow: "Point de rencontre suggéré",
     reperValide: "Repère validé",
     pourquoi:

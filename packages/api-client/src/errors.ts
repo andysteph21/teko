@@ -12,6 +12,7 @@ export type TekoApiErrorCode =
   | "pin_incorrect"
   | "pin_blocked"
   | "ride_in_progress"
+  | "fees_due"
   | "role_change_forbidden"
   | "network"
   | "quote_expired"
@@ -41,6 +42,7 @@ const MESSAGE_RULES: [string, TekoApiErrorCode][] = [
   ["offre expirée", "offer_expired"],
   ["pin incorrect", "pin_incorrect"],
   ["course est en cours", "ride_in_progress"],
+  ["frais d'annulation à régler", "fees_due"],
   ["rôle non autorisée", "role_change_forbidden"],
   ["failed to fetch", "network"],
   ["network request failed", "network"],

@@ -388,5 +388,31 @@ prestataire SMS reste à choisir pour l’option SMS.
   le banc distant. Pas de lien magique : le modèle de message ne contient que
   le code.
 - **Restent ouverts :** bouton Google (client OAuth à créer par le porteur),
-  frein aux comptes multiples (A5), rattachement des comptes existants,
-  relais SMTP. Aucun déploiement fait.
+  rattachement des comptes existants, relais SMTP. Aucun déploiement fait.
+
+### Frais d’annulation dus bloquants (A5) — mise en œuvre du 23 novembre 2026
+
+- **Constat.** Avant ce lot, des frais d’annulation dus ne bloquaient rien :
+  la créance attendait son encaissement et le passager pouvait recommander.
+  L’arbitrage A5 suppose le blocage ; il est donc **introduit** ici, et non
+  seulement étendu.
+- **Règle.** Un passager ne peut plus commander tant qu’une créance
+  d’annulation est en attente sur son compte, ou sur un compte **ouvert avant
+  le sien** qui déclare le même numéro ou a utilisé le même appareil.
+  L’encaissement validé par Finance lève le blocage.
+- **Sens unique voulu.** Le lien ne joue que d’un compte ancien vers un
+  compte récent : déclarer le numéro d’autrui ne bloque pas son compte déjà
+  ouvert (risque relevé en A3). Reste possible : un débiteur déclare un numéro
+  avant que son vrai titulaire n’ouvre un compte ; Ops lève alors le blocage
+  en traitant la créance.
+- **Appareil.** Reconnu par son jeton de notification, mémorisé à chaque
+  enregistrement (`device_accounts`). Une réinstallation peut changer ce
+  jeton : frein, non preuve. À durcir après l’alpha.
+- **Réglage.** `cancellation_fee.block_orders` dans la configuration,
+  actif par défaut. Le mettre à `false` rétablit l’ancien comportement.
+- **Effet sur les essais.** Un testeur passager qui annule après acceptation
+  (300 FCFA ou 20 %) ou qui est déclaré absent (1 000 FCFA) est bloqué
+  jusqu’au règlement par le circuit Ops puis Finance, comme un chauffeur
+  suspendu. À la notice données personnelles : l’historique compte-appareil
+  est conservé jusqu’à la suppression du compte.
+
