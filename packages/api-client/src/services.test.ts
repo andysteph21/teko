@@ -13,6 +13,7 @@ import {
 import { TekoApiError } from "./errors";
 import { getRideQuote } from "./quotes";
 import {
+  acceptedRouteChange,
   arriveStop,
   getRouteChangeQuote,
   latestRouteChange,
@@ -23,7 +24,7 @@ import {
   respondRouteChange,
   routeChangeRoute,
 } from "./route-changes";
-import { setSharedRides, sharedTripProgress } from "./shared-rides";
+import { serviceAvailability, setSharedRides, sharedTripProgress } from "./shared-rides";
 
 const rpcClient = (data: unknown) => {
   const rpc = vi.fn().mockResolvedValue({ data, error: null });
@@ -300,5 +301,16 @@ describe("enveloppes simples des lots R3 à R5", () => {
     await expect(
       getRouteChangeQuote(client, { rideId: "r", destination: { position: { lon: 9, lat: 0 } } }),
     ).rejects.toBeInstanceOf(TekoApiError);
+  });
+
+  it("modification acceptée en vigueur et ouverture des services", async () => {
+    const accepted = tableClient([{ id: "c2" }]);
+    expect(await acceptedRouteChange(accepted.client, "ride")).toEqual({ id: "c2" });
+    expect(accepted.calls).toContainEqual(["eq", "status", "accepted"]);
+    expect(await acceptedRouteChange(tableClient([]).client, "ride")).toBeNull();
+    expect(await serviceAvailability(rpcClient({ delivery: true }).client)).toEqual({
+      sharedRide: false,
+      delivery: true,
+    });
   });
 });

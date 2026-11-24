@@ -8,10 +8,15 @@ import type { RideRow, RideStatus } from "@teko/types";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { announce } from "../../lib/voice";
+import { isDelivery } from "./ride-kind";
 import {
   ARRIVED_PHRASE,
   approachPhrase,
+  DELIVERY_ARRIVED_PHRASE,
+  DELIVERY_NEAR_PHRASE,
   DESTINATION_NEAR_PHRASE,
+  deliveryPickupPhrase,
+  deliveryStartedPhrase,
   NEAR_M,
   pickupPhrase,
   startedPhrase,
@@ -47,7 +52,16 @@ function useLandmarkNames(ride: RideRow | null): Names | null {
   return names;
 }
 
+function deliveryPhrase(status: RideStatus, ride: RideRow, names: Names): string | null {
+  if (status === "accepted" || status === "enroute")
+    return deliveryPickupPhrase(names.meeting, ride.origin_hint);
+  if (status === "arrived") return DELIVERY_ARRIVED_PHRASE;
+  if (status === "started") return deliveryStartedPhrase(names.destination, ride.dest_hint);
+  return null;
+}
+
 function statusPhrase(status: RideStatus, ride: RideRow, names: Names): string | null {
+  if (isDelivery(ride)) return deliveryPhrase(status, ride, names);
   if (status === "accepted" || status === "enroute")
     return pickupPhrase(names.meeting, ride.origin_hint);
   if (status === "arrived") return ARRIVED_PHRASE;
@@ -68,7 +82,11 @@ function nearAnnouncement(
   if (!target || distanceM(position, target) > NEAR_M) return null;
   return {
     key: `${ride.id}:near:${pickup ? "pickup" : "dropoff"}`,
-    phrase: pickup ? approachPhrase(names.meeting, ride.origin_hint) : DESTINATION_NEAR_PHRASE,
+    phrase: pickup
+      ? approachPhrase(names.meeting, ride.origin_hint)
+      : isDelivery(ride)
+        ? DELIVERY_NEAR_PHRASE
+        : DESTINATION_NEAR_PHRASE,
   };
 }
 

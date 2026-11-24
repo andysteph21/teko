@@ -61,7 +61,9 @@ describe("livraison", () => {
   it("fermée côté serveur par défaut ; grille propre, voiture ou moto seulement", async () => {
     await setting({ enabled: false });
     expect((await quote()).error?.message).toBe("Service non ouvert");
+    expect((await sender.client.rpc("service_availability")).data.delivery).toBe(false);
     await setting({ enabled: true });
+    expect((await sender.client.rpc("service_availability")).data.delivery).toBe(true);
     const open = await quote();
     const closing = await setting({ enabled: false });
     expect(closing).toBeDefined();

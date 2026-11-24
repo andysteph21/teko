@@ -13,6 +13,7 @@ export function usePickupConfirmation(request: (value: RequestConfirmation) => v
       origin: s.origin,
       destination: s.destination,
       category: s.category,
+      seats: s.seats,
       quotes: s.quotes,
     })),
   );
@@ -26,6 +27,7 @@ export function usePickupConfirmation(request: (value: RequestConfirmation) => v
           category: draft.category,
           origin: meeting?.position ?? draft.origin.position,
           destination: draft.destination.position,
+          ...(draft.category === "covoiturage" ? { seats: draft.seats } : {}),
         }),
       };
     },

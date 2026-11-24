@@ -26,6 +26,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         "expo-notifications",
         { defaultChannel: "teko-alerts", sounds: ["./assets/sounds/teko_offre.wav"] },
       ],
+      // Photo de remise d'une livraison (lot R5) : caméra seule, sans micro.
+      [
+        "expo-image-picker",
+        {
+          cameraPermission: "Teko utilise l’appareil photo pour la photo de remise d’un colis.",
+          microphonePermission: false,
+        },
+      ],
     ],
   };
   if (process.env.TEKO_APP_VARIANT !== "alpha") return base as ExpoConfig;

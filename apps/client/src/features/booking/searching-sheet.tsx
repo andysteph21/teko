@@ -15,6 +15,8 @@ export interface SearchingSheetProps {
   place: string | undefined;
   cancelling: boolean;
   onCancel: () => void;
+  /** Livraison (R5) : on cherche un coursier, le libellé n'est pas la catégorie. */
+  delivery?: boolean;
 }
 
 export function SearchingSheetContent(props: SearchingSheetProps) {
@@ -26,9 +28,13 @@ export function SearchingSheetContent(props: SearchingSheetProps) {
         <View style={[styles.dot, { backgroundColor: color.brand[400] }]} />
         <View style={[styles.dot, { backgroundColor: color.brand[500] }]} />
       </View>
-      <PanelTitle>{t("booking:recherche.titre")}</PanelTitle>
+      <PanelTitle>
+        {t(props.delivery ? "booking:livraison.rechercheTitre" : "booking:recherche.titre")}
+      </PanelTitle>
       <Text style={styles.sub}>
-        {t(`booking:categories.${props.category}`)}
+        {props.delivery
+          ? t("booking:livraison.libelle")
+          : t(`booking:categories.${props.category}`)}
         {props.price != null ? (
           <Text>
             {" · "}

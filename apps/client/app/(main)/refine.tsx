@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TILES_URL } from "../../src/config";
-import { useBookingStore } from "../../src/features/booking/store";
+import { quoteScreenFor, useBookingStore } from "../../src/features/booking/store";
 import { useResolvedMapMode } from "../../src/features/data/data-state";
 import { TekoMapView } from "../../src/features/map/native-map";
 import { DestinationPin } from "../../src/features/places/destination-pin";
@@ -36,7 +36,7 @@ export default function Refine() {
 
   const onContinue = () => {
     setDestinationHint(hint.trim());
-    router.push("/(main)/category" as Href);
+    router.push(quoteScreenFor(useBookingStore.getState().service) as Href);
   };
 
   return (

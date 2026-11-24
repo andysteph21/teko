@@ -159,6 +159,7 @@ export {
   startRide,
 } from "./rides";
 export {
+  acceptedRouteChange,
   arriveStop,
   getRouteChangeQuote,
   latestRouteChange,
@@ -180,8 +181,10 @@ export {
 } from "./safety";
 export { getSessionIdentity, type SessionIdentity } from "./session-identity";
 export {
+  type ServiceAvailability,
   type SharedTripProgress,
   type SharedTripStop,
+  serviceAvailability,
   setSharedRides,
   sharedTripProgress,
 } from "./shared-rides";

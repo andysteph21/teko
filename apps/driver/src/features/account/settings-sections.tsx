@@ -9,6 +9,7 @@ import { useVoiceStore } from "../../lib/voice";
 import { useDataUsage } from "./data-mode";
 import { MapModeSelector } from "./mode-selector";
 import { Group, Row, RowValue, SectionLabel } from "./rows";
+import type { DriverServices } from "./use-driver-services";
 
 const TRACK = { false: color.neutral[200], true: color.role.driver.accent };
 
@@ -45,6 +46,49 @@ export function CollabSection({ consent, consentReady, onToggleConsent }: Collab
             Alert.alert(t("account:parametres.repereTitre"), t("account:parametres.repereTexte"))
           }
           testID="settings-landmark"
+        />
+      </Group>
+    </>
+  );
+}
+
+/** Services reçus : covoiturage (activé par défaut) et livraison (à activer). */
+export function ServicesSection({ services }: { services: DriverServices }) {
+  const { t } = useTranslation();
+  const { shared, delivery, sharedUnavailable } = services;
+  return (
+    <>
+      <SectionLabel>{t("account:parametres.secServices")}</SectionLabel>
+      <Group>
+        <Row
+          title={t("account:parametres.covoitTitre")}
+          subtitle={t(
+            sharedUnavailable ? "account:parametres.covoitMoto" : "account:parametres.covoitTexte",
+          )}
+          right={
+            <Switch
+              value={shared.enabled && !sharedUnavailable}
+              disabled={!shared.ready || sharedUnavailable}
+              onValueChange={shared.onToggle}
+              trackColor={TRACK}
+              thumbColor={color.neutral[0]}
+              testID="shared-switch"
+            />
+          }
+        />
+        <Row
+          title={t("account:parametres.livraisonTitre")}
+          subtitle={t("account:parametres.livraisonTexte")}
+          right={
+            <Switch
+              value={delivery.enabled}
+              disabled={!delivery.ready}
+              onValueChange={delivery.onToggle}
+              trackColor={TRACK}
+              thumbColor={color.neutral[0]}
+              testID="delivery-switch"
+            />
+          }
         />
       </Group>
     </>

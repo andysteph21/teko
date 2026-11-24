@@ -101,6 +101,28 @@ export function DestinationDot({ position }: { position: LonLat | null }) {
   );
 }
 
+/** Arrêts restants de la course (lot R3) : points ambre cerclés blanc. */
+export function StopDots({ positions }: { positions: LonLat[] }) {
+  if (positions.length === 0) return null;
+  const data: FeatureCollection = {
+    type: "FeatureCollection",
+    features: positions.flatMap((p) => pointFc(p).features),
+  };
+  return (
+    <GeoJSONSource id="drv-stops" data={data as never}>
+      <Layer
+        type="circle"
+        paint={{
+          "circle-color": MAP_COLORS.markerLandmark,
+          "circle-radius": 7,
+          "circle-stroke-color": MAP_COLORS.halo,
+          "circle-stroke-width": 2.5,
+        }}
+      />
+    </GeoJSONSource>
+  );
+}
+
 /** Itinéraire retenu : liseré blanc 8,5 sous la ligne violette 5. */
 export function RouteLine({ coordinates }: { coordinates: LonLat[] }) {
   if (coordinates.length < 2) return null;

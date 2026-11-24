@@ -29,13 +29,14 @@ Aucun secret ne s’écrit dans le dépôt : les identifiants cités vont dans l
 | 6 | **Limites de modification de trajet** | 2 arrêts, 3 modifications, 30 secondes de réponse, 3 minutes d’attente gratuite | Console, Paramètres → `route_change` |
 | 7 | **Durée de conservation des coordonnées du destinataire** d’un colis | 30 jours après la fin de la livraison | Console, Paramètres → `delivery` ; à reporter dans la notice données personnelles |
 | 8 | **Prestataire SMS** pour l’option « code par SMS » gardée pour plus tard (A1) | Aucun | Hors périmètre de ces lots |
-| 9 | **Page publique de suivi** (`teko.ga/t/…`) : le lien de partage d’un trajet ou d’une livraison pointe vers une page qui n’existe pas encore | Non créée | Domaine et hébergement à choisir |
+| 9 | **Durée de conservation des photos de remise** | Non fixée : conservées sans limite | Décision à consigner, puis tâche d’effacement à ajouter |
+| 10 | **Page publique de suivi** (`teko.ga/t/…`) : le lien de partage d’un trajet ou d’une livraison pointe vers une page qui n’existe pas encore | Non créée | Domaine et hébergement à choisir |
 
 ## 3. Réglages du VPS, une fois les éléments reçus
 
 Dans cet ordre, hors course active, après une sauvegarde de la base. Le détail des commandes est dans la [notice d’exploitation](12-exploitation-alpha-vps.md#compte-par-e-mail--déploiement-à-faire).
 
-1. **Migrations** `20261123090000` à `20261127090000` (cinq fichiers) : compte par e-mail, frais dus bloquants, modification de trajet, covoiturage, livraison.
+1. **Migrations** `20261123090000` à `20261128090000` (six fichiers) : compte par e-mail, frais dus bloquants, modification de trajet, covoiturage, livraison, lecture de l’ouverture des services.
 2. **Fonction de devis** `price-quote` : cinq fichiers à copier ensemble (`index.ts`, `trip.ts`, `change.ts`, `route.ts`, `metrics.ts`), puis redémarrage du service des fonctions.
 3. **Configuration Auth** : blocs `[auth.email]`, modèle de message `supabase/templates/code.html`, relais SMTP, garde `[auth.hook.before_user_created]`, puis `enable_signup = true`. La garde s’active **avant** l’ouverture de l’inscription, jamais après.
 4. **Google** : bloc `[auth.external.google]` et adresses de retour `teko-client-alpha://auth`, `teko-driver-alpha://auth`. À vérifier sur place : la passerelle Caddy doit laisser passer `/auth/v1/callback`, et l’adresse publique déclarée à Auth doit être `https://alpha.tekomove.com`.
@@ -74,4 +75,8 @@ Dans cet ordre, hors course active, après une sauvegarde de la base. Le détail
 - La connexion par e-mail du portail d’installation est écrite mais n’a jamais tourné.
 - Le covoiturage n’a pas été essayé à trois passagers réels ; la règle de proximité est une estimation à vol d’oiseau sur l’itinéraire devisé, pas un recalcul d’itinéraire.
 - Les arrêts ne peuvent pas être saisis dès la commande : ils s’ajoutent par une modification une fois la course acceptée.
+- Covoiturage côté chauffeur : version minimale, un passager affiché à la fois ; la carte ne montre pas tous les arrêts.
+- La permission caméra de l’app chauffeur (photo de remise) est déclarée mais aucun APK n’a été construit pour le confirmer.
+- Sur l’OPPO A15, le panneau de course passager avec le bloc livraison ou plusieurs arrêts peut dépasser la hauteur de l’écran : à contrôler en premier.
+- Historique, reçu et notation n’ont rien de propre au covoiturage ni à la livraison.
 - La console n’a pas d’écran dédié aux livraisons et à leurs litiges : les colis se lisent en base, les photos dans le stockage.

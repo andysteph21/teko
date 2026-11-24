@@ -21,6 +21,8 @@ const ERROR_KEYS: Partial<Record<TekoApiErrorCode, string>> = {
   network: "erreurs.reseau",
   quote_expired: "booking:rencontre.devisExpire",
   fees_due: "booking:rencontre.fraisDus",
+  seats_full: "booking:covoiturage.complet",
+  service_closed: "booking:covoiturage.ferme",
 };
 
 export interface RequestConfirmation {

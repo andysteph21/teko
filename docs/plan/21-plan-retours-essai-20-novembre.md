@@ -133,7 +133,7 @@ qu’un code lui soit remis à la main.
 | Écrans passager et chauffeur : e-mail, code à 6 chiffres, numéro demandé au profil (passager) et au versement (chauffeur) | ✅ Tests d’écran ; **pas encore vus sur appareil** |
 | Console : inviter une adresse | ✅ |
 | Portail `/install` : connexion par e-mail | ➡️ Écrit, contrôlé en syntaxe seulement, jamais exécuté |
-| Bouton Google (A2) | ⏳ Attend le client OAuth Android lié à la clé alpha |
+| Bouton Google (A2) | ➡️ Écrit dans les deux apps, masqué tant que `EXPO_PUBLIC_GOOGLE_LOGIN` ne vaut pas `1` ; passe par le navigateur du téléphone, sans module natif. Jamais exécuté de bout en bout : attend un client OAuth Google de type « application Web » |
 | Frein aux comptes multiples (A5) | ✅ Migration `20261124090000_alpha_frais_dus_bloquants`, scénarios JWT `frais-dus.test.ts` ; message de refus dans l’app passager |
 | Rattachement des 17 comptes du VPS à un e-mail | ⏳ À faire, avec les adresses des testeurs |
 | Relais SMTP sur le VPS | ⏳ Attend les identifiants du porteur |
@@ -184,6 +184,20 @@ Les deux demandes sont une seule fonction : modifier l’itinéraire d’une cou
   une course terminée, concurrence entre modification et fin de course, limites
   A8, cohérence reçu / grand livre / commission après modification.
 
+**État au 23 novembre 2026 — R3 développé dans le dépôt, non déployé, non vu sur téléphone.**
+
+| Élément | État |
+| --- | --- |
+| Arrêts, devis de modification, réponse du chauffeur en 30 s, limites A8, attente facturée | ✅ Migration `20261125090000_alpha_modification_trajet`, scénarios JWT `modification-trajet.test.ts`, faute injectée détectée |
+| Devis de modification dans `price-quote` | ✅ Tests Deno ; l’appel HTTP réel avec Valhalla n’a pas de scénario dédié |
+| Passager : « Modifier le trajet », arrêts, nouveau prix, attente de la réponse | ✅ Tests d’écran |
+| Chauffeur : fenêtre de demande avec compte à rebours et annonce vocale, arrêts, attente | ✅ Tests d’écran |
+| Arrêts saisis dès la commande | ❌ Non fait : un arrêt s’ajoute par une modification, une fois la course acceptée |
+| Nom du repère d’un arrêt | ❌ L’app affiche la précision saisie, sinon « Arrêt n » |
+| Maestro sur OPPO | ⏳ |
+
+Écart avec le plan : la modification de trajet est fermée aux covoiturages et aux livraisons.
+
 ### R4 — Covoiturage à la place (3 à 4 semaines)
 
 Règles reprises du document joint : paiement à la place, 3 places au plus,
@@ -218,6 +232,22 @@ prises en charge uniquement par l’application.
   entre passagers, annulation d’un passager sans effet sur les autres, une
   commission par place. Essai terrain à trois passagers avant ouverture.
 
+**État au 23 novembre 2026 — R4 développé dans le dépôt, fermé par défaut (`shared_ride.enabled`), non déployé, non vu sur téléphone.**
+
+| Élément | État |
+| --- | --- |
+| Tarif à la place (500 FCFA jusqu’à 2 km, 250 FCFA/km, plafond 1 850), 1 à 3 places | ✅ Migration `20261126090000_alpha_covoiturage`, `seed.sql` aligné, scénarios `covoiturage.test.ts` |
+| Trois places au plus, même sous acceptations concurrentes | ✅ Faute injectée détectée |
+| Proximité A11 | ➡️ Estimation à vol d’oiseau sur les itinéraires devisés (400 m, 5 minutes à 25 km/h), pas un recalcul d’itinéraire |
+| Une course, un PIN, une commission par passager ; annulation isolée ; position partagée | ✅ |
+| Confidentialité : ordre des arrêts seulement | ✅ `shared_trip_progress` ; ordre **indicatif**, non calculé sur la route |
+| Passager : carte Covoiturage, places, prix par place, ordre des arrêts | ✅ Tests d’écran ; absent des raccourcis de l’accueil |
+| Chauffeur : option, offre avec places, liste des passagers du trajet | ➡️ Version minimale : un passager à l’écran à la fois, sélection par la liste ; la carte ne montre pas tous les arrêts |
+| Charte chauffeur (A14) | ➡️ Rappel « aucune prise en charge hors application » affiché ; texte de charte à fournir |
+| Essai à trois passagers réels | ⏳ Condition d’ouverture |
+
+Écart avec le plan : pas de table d’étapes ordonnées par trajet ; le trajet partagé regroupe des courses individuelles et l’ordre est laissé au chauffeur.
+
 ### R5 — Livraison (environ 2 semaines, après avis juridique)
 
 - **Modèle :** type de service sur la course (`ride` / `delivery`) plutôt
@@ -236,6 +266,19 @@ prises en charge uniquement par l’application.
 - **Tests :** code de remise limité en essais comme le PIN, coordonnées du
   destinataire visibles du seul coursier affecté et effacées avec la rétention
   existante, lien de suivi expirant.
+
+**État au 23 novembre 2026 — R5 développé dans le dépôt, fermé par défaut (`delivery.enabled`), non déployé, non vu sur téléphone.**
+
+| Élément | État |
+| --- | --- |
+| Type de service, colis, grille propre voiture et moto | ✅ Migration `20261127090000_alpha_livraison` ; **grille provisoire à confirmer** |
+| Fermeture côté serveur jusqu’à l’avis juridique (A18) | ✅ Devis et commande refusés tant que le réglage est fermé |
+| Code à 4 chiffres et photo à la remise (A17), cinq essais | ✅ Scénarios `livraison.test.ts`, faute injectée détectée |
+| Coordonnées du destinataire : visibilité et effacement à 30 jours | ✅ |
+| Passager : « Envoyer un colis », formulaire, code à partager | ✅ Tests d’écran ; sans étape de point de rencontre |
+| Chauffeur : option, offre, fiche colis, photo puis code | ✅ Tests d’écran ; permission caméra déclarée, non vérifiée sur un build |
+| Lien de suivi pour le destinataire | ➡️ Réutilise le partage de trajet ; la page publique n’existe pas encore |
+| Console : suivi et litiges | ❌ Non fait |
 
 ## 5. Règles communes à tous les lots
 

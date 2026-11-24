@@ -12,6 +12,7 @@ describe("mapApiError — messages backend → codes stables", () => {
     ["Suppression impossible : une course est en cours", "ride_in_progress"],
     ["Frais d'annulation à régler avant de commander", "fees_due"],
     ["Service non ouvert", "service_closed"],
+    ["Un arrêt est en cours", "stop_open"],
     ["Modification déjà traitée", "route_change_handled"],
     ["Trajet non modifiable à ce stade", "route_not_editable"],
     ["Plus assez de places dans ce covoiturage", "seats_full"],

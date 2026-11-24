@@ -2304,6 +2304,9 @@ isOneToOne: false
 "send_settlement_reminders":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"service_availability":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "set_commission":
 { Args: { "p_type": string,"p_value": number }; Returns: Json
                            },

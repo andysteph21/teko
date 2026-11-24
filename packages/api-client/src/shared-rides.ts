@@ -37,3 +37,18 @@ export async function sharedTripProgress(
 export async function setSharedRides(client: TekoClient, enabled: boolean): Promise<boolean> {
   return unwrap(await client.rpc("set_shared_rides", { p_enabled: enabled }));
 }
+
+export interface ServiceAvailability {
+  sharedRide: boolean;
+  delivery: boolean;
+}
+
+/** Services ouverts par l'exploitation. Indicatif pour l'affichage : le
+ *  serveur refuse de toute façon un devis d'un service fermé. */
+export async function serviceAvailability(client: TekoClient): Promise<ServiceAvailability> {
+  const raw = unwrap(await client.rpc("service_availability")) as unknown as {
+    shared_ride?: boolean;
+    delivery?: boolean;
+  };
+  return { sharedRide: raw.shared_ride === true, delivery: raw.delivery === true };
+}

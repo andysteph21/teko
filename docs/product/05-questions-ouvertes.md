@@ -416,3 +416,26 @@ prestataire SMS reste à choisir pour l’option SMS.
   suspendu. À la notice données personnelles : l’historique compte-appareil
   est conservé jusqu’à la suppression du compte.
 
+### Lots R3 à R5 — décisions d’ingénierie du 23 novembre 2026
+
+- **Services fermés par défaut.** Le covoiturage et la livraison sont
+  développés mais refusés par le serveur tant que `shared_ride.enabled` et
+  `delivery.enabled` ne sont pas activés en console (A18, A19). Les apps
+  lisent cet état et masquent l’option.
+- **Modification de trajet réservée aux courses classiques** : ni
+  covoiturage, ni livraison.
+- **Arrêts ajoutés après l’acceptation seulement**, par une modification que
+  le chauffeur accepte ; pas de devis à étapes dès la commande.
+- **Covoiturage sans plan d’étapes calculé** : chaque passager garde sa
+  course, l’ordre des arrêts est indicatif et laissé au chauffeur ; la
+  proximité est estimée à vol d’oiseau. À revoir avant l’ouverture.
+- **Grille de livraison provisoire**, posée sans consigne : voiture
+  500 FCFA + 200 FCFA/km (minimum 1 000), moto 300 FCFA + 150 FCFA/km
+  (minimum 700). **À confirmer par le porteur.**
+- **Preuve de remise** : la photo est déposée dans un stockage privé, lisible
+  de l’expéditeur, du coursier et des opérations ; aucune durée de
+  conservation n’est encore fixée pour la photo elle-même.
+- **Connexion Google par le navigateur du téléphone**, avec retour par code à
+  usage unique : aucun module natif ajouté, client OAuth de type « application
+  Web » et non lié à la clé de signature.
+

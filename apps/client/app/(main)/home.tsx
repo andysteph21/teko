@@ -22,6 +22,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DEFAULT_CENTER, TILES_URL } from "../../src/config";
 import { useProfile } from "../../src/features/auth/use-profile";
+import { DeliveryOption } from "../../src/features/booking/delivery-option";
 import { ServiceOptions } from "../../src/features/booking/service-options";
 import { useHomeShortcuts } from "../../src/features/booking/use-home-shortcuts";
 import { useDataUsage, useResolvedMapMode } from "../../src/features/data/data-state";
@@ -40,7 +41,7 @@ export default function Home() {
   const usage = useDataUsage();
   const profile = useProfile();
   const recents = useRecentDestinations();
-  const { category, setCategory, openRecent } = useHomeShortcuts();
+  const { category, setCategory, openRecent, openSearch } = useHomeShortcuts();
   // Hauteur réelle de la feuille : le widget et « Ma position » restent
   // juste au-dessus, quel que soit le nombre d'options et de récents.
   const [panelHeight, setPanelHeight] = useState(282);
@@ -92,13 +93,14 @@ export default function Home() {
           <ServiceOptions selected={category} onSelect={setCategory} />
           <Pressable
             style={styles.search}
-            onPress={() => router.push("/(main)/search" as Href)}
+            onPress={openSearch}
             accessibilityRole="button"
             testID="home-search"
           >
             <LandmarkPinIcon />
             <Text style={styles.searchText}>{t("booking:home.chercherRepere")}</Text>
           </Pressable>
+          <DeliveryOption />
           {recents.slice(0, 2).map((r) => (
             <LandmarkRow
               key={r.id}

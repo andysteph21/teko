@@ -20,9 +20,11 @@ import {
   DataSection,
   ExitSection,
   PrefsSection,
+  ServicesSection,
   VoiceSection,
 } from "../../src/features/account/settings-sections";
 import { useDeleteAccount } from "../../src/features/account/use-delete-account";
+import { useDriverServices } from "../../src/features/account/use-driver-services";
 import { useSession } from "../../src/features/auth/use-session";
 import { supabase } from "../../src/lib/supabase";
 
@@ -62,6 +64,7 @@ export default function Settings() {
   const router = useRouter();
   const { t } = useTranslation();
   const gps = useGpsConsent();
+  const services = useDriverServices();
   const deletion = useDeleteAccount();
 
   const confirmSignOut = () => {
@@ -88,6 +91,7 @@ export default function Settings() {
           consentReady={gps.ready}
           onToggleConsent={gps.onToggle}
         />
+        <ServicesSection services={services} />
         <VoiceSection />
         <DataSection />
         <PrefsSection />

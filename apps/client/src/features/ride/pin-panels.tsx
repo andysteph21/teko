@@ -6,6 +6,7 @@
 
 import { color, spacing, typography } from "@teko/ui";
 import { BottomPanel, DriverCard } from "@teko/ui/native";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -27,10 +28,12 @@ export interface PinPanelProps {
   pin: string | null;
   etaMin: number | null;
   onCancel: () => void;
+  /** Compléments du service (arrêts, covoiturage, livraison), avant l'annulation. */
+  children?: ReactNode;
 }
 
 /** C-13 — fiche chauffeur, ETA, PIN 34 px, annulation gratuite. */
-export function ApproachPanel({ driverName, pin, etaMin, onCancel }: PinPanelProps) {
+export function ApproachPanel({ driverName, pin, etaMin, onCancel, children }: PinPanelProps) {
   const { t } = useTranslation();
   const insetStyle = usePanelInsetStyle();
   const title = driverName
@@ -59,6 +62,7 @@ export function ApproachPanel({ driverName, pin, etaMin, onCancel }: PinPanelPro
         </Text>
         <Text style={styles.pinHelp}>{t("ride:suivi.pinAide")}</Text>
       </View>
+      {children}
       <Pressable
         onPress={onCancel}
         style={styles.cancel}
@@ -73,7 +77,8 @@ export function ApproachPanel({ driverName, pin, etaMin, onCancel }: PinPanelPro
 }
 
 /** C-13b — bandeau « arrivé », PIN énorme (56 px), frais d'annulation possibles. */
-export function ArrivedPanel({ driverName, pin, onCancel }: Omit<PinPanelProps, "etaMin">) {
+export function ArrivedPanel(props: Omit<PinPanelProps, "etaMin">) {
+  const { driverName, pin, onCancel, children } = props;
   const { t } = useTranslation();
   const insetStyle = usePanelInsetStyle();
   const title = driverName
@@ -98,6 +103,7 @@ export function ArrivedPanel({ driverName, pin, onCancel }: Omit<PinPanelProps, 
         </Text>
         <Text style={styles.pinHelp}>{help}</Text>
       </View>
+      {children}
       <Pressable
         onPress={onCancel}
         style={styles.cancel}

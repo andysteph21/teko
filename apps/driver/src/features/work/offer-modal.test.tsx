@@ -134,3 +134,44 @@ describe("annonce vocale de la proposition (option C)", () => {
     expect(Speech.stop).toHaveBeenCalled();
   });
 });
+
+describe("nature de la proposition (lots R4 et R5)", () => {
+  const mountKind = (patch: Partial<OfferDetails>) =>
+    render(
+      <OfferModal
+        offer={{ ...OFFER, expiresAt: new Date(Date.now() + 30_000).toISOString(), ...patch }}
+        busy={false}
+        onAccept={jest.fn()}
+        onDecline={jest.fn()}
+        onExpire={jest.fn()}
+      />,
+    );
+
+  it("course classique : aucune étiquette de service", () => {
+    mountKind({ seats: 1, sharedSeatsTaken: null, serviceType: "ride", parcelSize: null });
+    expect(screen.queryByTestId("offer-service")).toBeNull();
+    expect(screen.getByText("Accepter la course")).toBeOnTheScreen();
+  });
+
+  it("covoiturage : places demandées, sans places prises hors trajet en cours", () => {
+    mountKind({ category: "covoiturage", seats: 2, sharedSeatsTaken: 0, serviceType: "ride" });
+    const service = screen.getByTestId("offer-service");
+    expect(service).toHaveTextContent(/Covoiturage/);
+    expect(service).toHaveTextContent(/2 places demandées/);
+    expect(service).not.toHaveTextContent(/déjà prise/);
+  });
+
+  it("covoiturage pendant un trajet : places déjà prises", () => {
+    mountKind({ category: "covoiturage", seats: 1, sharedSeatsTaken: 1, serviceType: "ride" });
+    expect(screen.getByTestId("offer-service")).toHaveTextContent(/1 place déjà prise sur 3/);
+  });
+
+  it("livraison : libellé, taille du colis et bouton dédiés", () => {
+    mountKind({ category: "moto", serviceType: "delivery", parcelSize: "large", seats: 1 });
+    expect(screen.getByText("Nouvelle livraison · Moto")).toBeOnTheScreen();
+    const service = screen.getByTestId("offer-service");
+    expect(service).toHaveTextContent(/Livraison/);
+    expect(service).toHaveTextContent(/Colis grand/);
+    expect(screen.getByText("Accepter la livraison")).toBeOnTheScreen();
+  });
+});

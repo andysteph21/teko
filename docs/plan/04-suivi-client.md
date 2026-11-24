@@ -15,10 +15,10 @@ dix-neuf arbitrages (A1 à A19) à soumettre avant tout développement.
 
 | Suggestion | Lot du plan | État |
 |---|---|---|
-| Changer de destination | R3 | ✅ Arbitrés le 23 novembre, à développer |
-| Ajouter des arrêts en cours de trajet | R3 | ✅ Arbitrés le 23 novembre, à développer |
-| Livraison comme option | R5 | ✅ Arbitrés le 23 novembre ; ouverture bloquée jusqu’à l’avis juridique |
-| Covoiturage au tarif à la place (250 FCFA/km, 500 à 1 850 FCFA, 3 places) | R4 | ✅ Arbitrés le 23 novembre, à développer |
+| Changer de destination | R3 | ➡️ Développé dans le dépôt le 23 novembre, non déployé |
+| Ajouter des arrêts en cours de trajet | R3 | ➡️ Développé dans le dépôt le 23 novembre (2 arrêts, ajoutés après acceptation), non déployé |
+| Livraison comme option | R5 | ➡️ Développée dans le dépôt le 23 novembre, fermée côté serveur jusqu’à l’avis juridique ; grille tarifaire à confirmer |
+| Covoiturage au tarif à la place (250 FCFA/km, 500 à 1 850 FCFA, 3 places) | R4 | ➡️ Développé dans le dépôt le 23 novembre, fermé par défaut ; essai à trois passagers avant ouverture |
 | Accueil affichant directement les options | R2 | ➡️ Implémenté dans le dépôt le 23 novembre ; maquette C-07 à mettre à jour, non publié |
 | Compte validé par e-mail ou Google, numéro simplement enregistré | R1 | ➡️ Code par e-mail implémenté dans le dépôt le 23 novembre, non déployé ; Google, anti-comptes multiples et rattachement des comptes existants à faire |
 
@@ -31,15 +31,11 @@ s’écartent de la recommandation : SMS conservé comme option future (A1),
 covoiturage d’office pour toutes les voitures (A13), code et photo à la
 remise d’un colis (A17), livraison en voiture et en moto.
 
-**Attendu du porteur pour déployer le compte par e-mail :**
-
-1. Les identifiants d’un relais SMTP (hôte, port, identifiant, mot de passe,
-   adresse d’expédition), transmis hors dépôt.
-2. Un client OAuth Android Google lié à la clé de signature alpha, pour le
-   bouton Google.
-3. L’adresse e-mail de chaque testeur déjà inscrit, pour rattacher son compte
-   actuel sans perdre courses ni soldes.
-4. L’accord explicite pour déployer sur le VPS et publier les APK.
+**Attendu du porteur :** la liste complète de ce qu’il doit fournir, décider
+et faire régler est dans [Ce qu’il reste à configurer](23-configuration-a-faire.md).
+En bref : relais SMTP, client OAuth Google, adresses e-mail des testeurs,
+grille de livraison, avis juridique, dates d’ouverture du covoiturage et de la
+livraison, accord pour déployer.
 
 ## Réponses du porteur pour l’alpha du 18 octobre 2026
 

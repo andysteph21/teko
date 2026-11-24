@@ -27,6 +27,12 @@ export const accountFr = {
     helper: "Un code à 6 chiffres vous sera envoyé par e-mail.",
     cta: "Recevoir le code",
     avecNumero: "Se connecter avec mon numéro",
+    google: "Continuer avec Google",
+    ou: "ou avec un code reçu par e-mail",
+    googleIndisponible: "Connexion Google indisponible. Utilisez le code par e-mail.",
+    googleRefus:
+      "Connexion Google refusée. Votre adresse doit être invitée ; essayez le code par e-mail.",
+    googleRetour: "Revenir à la connexion",
     erreurFormat: "Adresse e-mail invalide.",
     erreurEnvoi:
       "Code non envoyé. Vérifiez l'adresse ; l'essai est réservé aux personnes invitées.",

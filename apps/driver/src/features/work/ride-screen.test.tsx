@@ -40,6 +40,11 @@ jest.mock("@teko/api-client", () => ({
   driverBalance: (...args: unknown[]) => mockDriverBalance(...args),
   listPaymentsForRide: (...args: unknown[]) => mockListPaymentsForRide(...args),
   getPayment: (...args: unknown[]) => mockGetPayment(...args),
+  // Lots R3 à R5 : rien en attente pour une course classique sans arrêt.
+  acceptedRouteChange: jest.fn(async () => null),
+  latestRouteChange: jest.fn(async () => null),
+  listRideStops: jest.fn(async () => []),
+  listMyRides: jest.fn(async () => []),
   createRealtimePositionsChannel: () => mockChannel,
   TekoApiError: class TekoApiError extends Error {
     code: string;

@@ -12,6 +12,8 @@ const LOCAL_DEMO_ANON_KEY =
 export const supabase: TekoClient = createTekoClient({
   url: process.env.EXPO_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321",
   anonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? LOCAL_DEMO_ANON_KEY,
+  // Retour de la connexion Google par code à usage unique.
+  pkce: process.env.EXPO_PUBLIC_GOOGLE_LOGIN === "1",
   storage: {
     getItem: (key) => SecureStore.getItemAsync(key),
     setItem: (key, value) => SecureStore.setItemAsync(key, value),

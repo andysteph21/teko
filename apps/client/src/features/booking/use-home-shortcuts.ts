@@ -11,6 +11,8 @@ export interface HomeShortcuts {
   category: VehicleCategory;
   setCategory: (category: VehicleCategory) => void;
   openRecent: (recent: RecentDestination) => void;
+  /** Recherche d'une destination pour une course (jamais une livraison). */
+  openSearch: () => void;
 }
 
 export function useHomeShortcuts(): HomeShortcuts {
@@ -19,8 +21,15 @@ export function useHomeShortcuts(): HomeShortcuts {
   const setCategory = useBookingStore((s) => s.setCategory);
   const origin = useBookingStore((s) => s.origin);
   const setDestination = useBookingStore((s) => s.setDestination);
+  const setService = useBookingStore((s) => s.setService);
+
+  const openSearch = () => {
+    setService("ride");
+    router.push("/(main)/search" as Href);
+  };
 
   const openRecent = (recent: RecentDestination) => {
+    setService("ride");
     if (!origin || !recent.position) {
       router.push("/(main)/search" as Href);
       return;
@@ -34,5 +43,5 @@ export function useHomeShortcuts(): HomeShortcuts {
     router.push("/(main)/category" as Href);
   };
 
-  return { category, setCategory, openRecent };
+  return { category, setCategory, openRecent, openSearch };
 }

@@ -65,14 +65,19 @@ export function useEstimates() {
       const quotes = await fetchQuotes(origin.position, destination.position);
       const byCategory = Object.fromEntries(quotes);
       const category = useBookingStore.getState().category;
-      const selected = byCategory[category];
+      // Covoiturage : devis à part (use-shared-estimate), même itinéraire.
+      const selected = byCategory[category] ?? byCategory.eco;
       if (!selected) throw new Error("Catégorie indisponible pendant l’alpha");
       const route = quoteRoute(selected);
       const estimates = Object.fromEntries(quotes.map(([key, q]) => [key, Number(q.price)]));
       const current = useBookingStore.getState();
       if (current.origin === origin && current.destination === destination) {
-        setQuotes(byCategory);
-        setRouteAndEstimates(route, estimates);
+        const shared = current.quotes.covoiturage;
+        setQuotes({ ...(shared ? { covoiturage: shared } : {}), ...byCategory });
+        setRouteAndEstimates(route, {
+          ...(shared ? { covoiturage: Number(shared.price) } : {}),
+          ...estimates,
+        });
       }
       return { route, estimates };
     },

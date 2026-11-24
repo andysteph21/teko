@@ -37,6 +37,11 @@ jest.mock("./use-estimates", () => ({
   useEstimates: () => mockEstimatesQuery(),
 }));
 
+const mockSharedEstimate = jest.fn();
+jest.mock("./use-shared-estimate", () => ({
+  useSharedEstimate: () => mockSharedEstimate(),
+}));
+
 import Category from "../../../app/(main)/category";
 import { useBookingStore } from "./store";
 
@@ -63,6 +68,52 @@ beforeEach(() => {
   useBookingStore.getState().reset();
   useBookingStore.setState(DRAFT);
   mockEstimatesQuery.mockReturnValue({ isPending: false, error: null, refetch: jest.fn() });
+  mockSharedEstimate.mockReturnValue({ available: false, updating: false });
+});
+
+describe("C-10 Covoiturage (R4)", () => {
+  const SHARED_QUOTE = {
+    id: "q-shared",
+    category: "covoiturage",
+    seats: 2,
+    price: 1550,
+    route_shape: "_p~iF~ps|U_ulLnnqC_mqNvxq`@",
+    distance_m: 4200,
+    duration_s: 840,
+  };
+
+  it("service fermé : aucune carte Covoiturage, aucune erreur", () => {
+    render(<Category />);
+    expect(screen.queryByTestId("cat-covoiturage")).toBeNull();
+    expect(screen.getByTestId("cat-eco")).toBeOnTheScreen();
+  });
+
+  it("service ouvert : prix total, prix par place, places et avertissement", async () => {
+    mockSharedEstimate.mockReturnValue({ available: true, updating: false });
+    useBookingStore.setState({
+      seats: 2,
+      estimates: { ...DRAFT.estimates, covoiturage: 1550 },
+      quotes: { covoiturage: SHARED_QUOTE as never },
+    });
+    const user = userEvent.setup();
+    render(<Category />);
+
+    expect(screen.getByText("Covoiturage")).toBeOnTheScreen();
+    expect(screen.getByText(/775.*par place/)).toBeOnTheScreen();
+    expect(screen.queryByTestId("shared-details")).toBeNull();
+
+    await user.press(screen.getByTestId("cat-covoiturage"));
+    expect(useBookingStore.getState().category).toBe("covoiturage");
+    expect(screen.getByText(/d’autres passagers peuvent monter en route/)).toBeOnTheScreen();
+    expect(screen.getByTestId("order-cta")).toHaveTextContent(/Commander Covoiturage · 1.550/);
+    expect(screen.getByTestId("order-cta")).toBeEnabled();
+
+    // Trois places demandées : la commande attend le devis de trois places.
+    await user.press(screen.getByTestId("shared-seats-3"));
+    expect(useBookingStore.getState().seats).toBe(3);
+    expect(screen.getByTestId("order-cta")).toBeDisabled();
+    expect(screen.queryByTestId("shared-seats-4")).toBeNull();
+  });
 });
 
 describe("C-10 Catégorie", () => {

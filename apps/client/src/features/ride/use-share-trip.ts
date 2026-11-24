@@ -26,20 +26,27 @@ export function useShareTrip(rideId: string | undefined) {
   const { t } = useTranslation();
   const [sharing, setSharing] = useState(false);
 
-  const share = useCallback(async () => {
-    if (!rideId) return;
-    setSharing(true);
-    try {
-      const trip = await createTripShare(supabase, rideId);
-      await Share.share({
-        message: t("ride:suivi.partageMessage", { lien: shareLink(trip.token) }),
-      });
-    } catch (e) {
-      Alert.alert(shareErrorLabel(e, t));
-    } finally {
-      setSharing(false);
-    }
-  }, [rideId, t]);
+  /** Avec un code de remise (livraison), le message porte le lien ET le code. */
+  const share = useCallback(
+    async (deliveryCode?: string) => {
+      if (!rideId) return;
+      setSharing(true);
+      try {
+        const trip = await createTripShare(supabase, rideId);
+        const lien = shareLink(trip.token);
+        await Share.share({
+          message: deliveryCode
+            ? t("ride:livraison.partageMessage", { lien, code: deliveryCode })
+            : t("ride:suivi.partageMessage", { lien }),
+        });
+      } catch (e) {
+        Alert.alert(shareErrorLabel(e, t));
+      } finally {
+        setSharing(false);
+      }
+    },
+    [rideId, t],
+  );
 
   return { sharing, share };
 }

@@ -17,9 +17,12 @@ export interface PinPanelProps {
   onSubmit: (pin: string) => void;
   onClearError: () => void;
   onBack: () => void;
+  /** Livraison : le code est celui de l'expéditeur, qui paie à ce moment. */
+  delivery?: boolean;
 }
 
-export function PinPanel({ busy, error, fails, onSubmit, onClearError, onBack }: PinPanelProps) {
+export function PinPanel(props: PinPanelProps) {
+  const { busy, error, fails, onSubmit, onClearError, onBack, delivery = false } = props;
   const { t } = useTranslation();
   const [code, setCode] = useState("");
 
@@ -47,8 +50,10 @@ export function PinPanel({ busy, error, fails, onSubmit, onClearError, onBack }:
           />
         </Svg>
       </View>
-      <Text style={styles.title}>{t("work:pin.titre")}</Text>
-      <Text style={styles.sub}>{t("work:pin.sousTitre")}</Text>
+      <Text style={styles.title}>{t(delivery ? "work:livraison.pinTitre" : "work:pin.titre")}</Text>
+      <Text style={styles.sub}>
+        {t(delivery ? "work:livraison.pinSousTitre" : "work:pin.sousTitre")}
+      </Text>
       <OtpInput
         value={code}
         onChange={handleChange}
@@ -64,7 +69,7 @@ export function PinPanel({ busy, error, fails, onSubmit, onClearError, onBack }:
           {error}
         </Text>
       ) : (
-        <Text style={styles.hint}>{t("work:pin.aide")}</Text>
+        <Text style={styles.hint}>{t(delivery ? "work:livraison.pinAide" : "work:pin.aide")}</Text>
       )}
       {fails >= 3 ? (
         <View style={styles.help} testID="pin-help">

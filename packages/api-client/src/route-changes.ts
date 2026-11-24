@@ -105,6 +105,24 @@ export async function latestRouteChange(
   return rows[0] ?? null;
 }
 
+/** Dernière modification ACCEPTÉE : c'est son tracé qui est en vigueur, même
+ *  si une demande plus récente a été refusée ou a expiré. */
+export async function acceptedRouteChange(
+  client: TekoClient,
+  rideId: string,
+): Promise<RouteChange | null> {
+  const rows = unwrap(
+    await client
+      .from("ride_route_changes")
+      .select("*")
+      .eq("ride_id", rideId)
+      .eq("status", "accepted")
+      .order("responded_at", { ascending: false })
+      .limit(1),
+  );
+  return rows[0] ?? null;
+}
+
 function toStop(row: RideStopRow): RideStop {
   return {
     id: row.id,

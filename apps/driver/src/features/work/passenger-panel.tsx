@@ -5,7 +5,7 @@
 
 import { borderRadius, color, spacing, typography } from "@teko/ui";
 import { BottomPanel, Button } from "@teko/ui/native";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,6 +23,10 @@ export interface PassengerPanelProps {
   onArrive: () => void;
   onRequestPin: () => void;
   onNoShow: () => void;
+  /** Contenu en tête de feuille (passagers du covoiturage, fiche colis). */
+  header?: ReactNode;
+  /** Livraison : la personne attendue est l'expéditeur du colis. */
+  delivery?: boolean;
 }
 
 function mmss(totalS: number): string {
@@ -46,7 +50,7 @@ function useNoShowCountdown(arrivedAt: string | null): number {
   return remaining;
 }
 
-function PassengerRow({ originHint }: { originHint: string | null }) {
+function PassengerRow({ originHint, delivery }: { originHint: string | null; delivery: boolean }) {
   const { t } = useTranslation();
   return (
     <View style={styles.pax}>
@@ -62,7 +66,9 @@ function PassengerRow({ originHint }: { originHint: string | null }) {
         </Svg>
       </View>
       <View style={styles.paxBody}>
-        <Text style={styles.paxName}>{t("work:course.votrePassager")}</Text>
+        <Text style={styles.paxName}>
+          {t(delivery ? "work:livraison.expediteur" : "work:course.votrePassager")}
+        </Text>
         <Text style={styles.paxSub}>
           {originHint ? `« ${originHint} »` : t("work:course.vousAttend")}
         </Text>
@@ -90,13 +96,42 @@ function WaitBox({ remaining }: { remaining: number }) {
   );
 }
 
+/** « Passager absent » : armé une fois le délai d'attente écoulé. */
+function NoShowButton(props: {
+  remaining: number;
+  disabled: boolean;
+  delivery: boolean;
+  onPress: () => void;
+}) {
+  const { t } = useTranslation();
+  const ready = props.remaining <= 0;
+  const keys = props.delivery
+    ? { ready: "work:livraison.absent", wait: "work:livraison.absentDans" }
+    : { ready: "work:course.passagerAbsent", wait: "work:course.passagerAbsentDans" };
+  return (
+    <Pressable
+      style={[styles.noShow, !ready && styles.noShowDisabled]}
+      disabled={!ready || props.disabled}
+      onPress={props.onPress}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !ready || props.disabled }}
+      testID="ride-noshow"
+    >
+      <Text style={[styles.noShowText, ready && styles.noShowTextReady]}>
+        {ready ? t(keys.ready) : t(keys.wait, { duree: mmss(props.remaining) })}
+      </Text>
+    </Pressable>
+  );
+}
+
 export function PassengerPanel(props: PassengerPanelProps) {
   const { status, originHint, arrivedAt, busy, onArrive, onRequestPin, onNoShow } = props;
+  const delivery = props.delivery ?? false;
+  const keys = delivery ? "work:livraison" : "work:course";
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const remaining = useNoShowCountdown(arrivedAt);
   const waiting = status === "arrived";
-  const noShowReady = waiting && remaining <= 0;
 
   return (
     // Inset bas obligatoire : ancré à bottom:0 en edge-to-edge, la dernière
@@ -106,31 +141,24 @@ export function PassengerPanel(props: PassengerPanelProps) {
       style={{ ...styles.panel, paddingBottom: insets.bottom + spacing[5] }}
       testID="ride-panel"
     >
-      <PassengerRow originHint={originHint} />
+      {props.header}
+      <PassengerRow originHint={originHint} delivery={delivery} />
       {waiting ? (
         <>
           <WaitBox remaining={remaining} />
           <Button
-            label={t("work:course.demanderCode")}
+            label={t(`${keys}.demanderCode`)}
             accent="driver"
             busy={busy}
             onPress={onRequestPin}
             testID="ride-request-pin"
           />
-          <Pressable
-            style={[styles.noShow, !noShowReady && styles.noShowDisabled]}
-            disabled={!noShowReady || busy}
+          <NoShowButton
+            remaining={remaining}
+            disabled={busy}
+            delivery={delivery}
             onPress={onNoShow}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: !noShowReady || busy }}
-            testID="ride-noshow"
-          >
-            <Text style={[styles.noShowText, noShowReady && styles.noShowTextReady]}>
-              {noShowReady
-                ? t("work:course.passagerAbsent")
-                : t("work:course.passagerAbsentDans", { duree: mmss(remaining) })}
-            </Text>
-          </Pressable>
+          />
         </>
       ) : (
         <Button

@@ -8,18 +8,18 @@
 
 import type { OfferDetails } from "@teko/api-client";
 import { formatXaf } from "@teko/core";
-import { fetchRoute } from "@teko/maps";
 import { borderRadius, color, spacing, typography } from "@teko/ui";
 import { Button } from "@teko/ui/native";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Animated, Easing, Pressable, StyleSheet, Text, Vibration, View } from "react-native";
+import { Pressable, StyleSheet, Text, Vibration, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { VALHALLA_URL } from "../../config";
 import { OFFER_VIBRATION } from "../../lib/offer-alert";
 import { announce, silence } from "../../lib/voice";
-import { fetchDevicePosition } from "./use-device-position";
-import { offerRemainingMs, useOfferCountdown } from "./use-offer-countdown";
+import { CountBar } from "./count-bar";
+import { isDeliveryOffer, OfferService } from "./offer-service";
+import { useOfferCountdown } from "./use-offer-countdown";
+import { usePickupEta } from "./use-pickup-eta";
 import { offerPhrase } from "./voice-phrases";
 
 export interface OfferModalProps {
@@ -28,44 +28,6 @@ export interface OfferModalProps {
   onAccept: () => void;
   onDecline: () => void;
   onExpire: () => void;
-}
-
-/** ETA de prise en charge (position → point de rencontre), meilleure volonté. */
-function usePickupEta(offer: OfferDetails): number | null {
-  const [etaMin, setEtaMin] = useState<number | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      const from = await fetchDevicePosition();
-      if (!from) return;
-      const route = await fetchRoute(VALHALLA_URL, from, offer.origin).catch(() => null);
-      if (route && !cancelled) setEtaMin(Math.max(1, Math.round(route.durationS / 60)));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [offer]);
-  return etaMin;
-}
-
-function CountBar({ expiresAt }: { expiresAt: string }) {
-  const progress = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    const animation = Animated.timing(progress, {
-      toValue: 0,
-      duration: offerRemainingMs(expiresAt),
-      easing: Easing.linear,
-      useNativeDriver: false,
-    });
-    animation.start();
-    return () => animation.stop();
-  }, [expiresAt, progress]);
-  const width = progress.interpolate({ inputRange: [0, 1], outputRange: ["0%", "100%"] });
-  return (
-    <View style={styles.track}>
-      <Animated.View style={[styles.fill, { width }]} />
-    </View>
-  );
 }
 
 function OfferStats({ offer }: { offer: OfferDetails }) {
@@ -94,6 +56,7 @@ function OfferStats({ offer }: { offer: OfferDetails }) {
 function OfferActions(props: {
   busy: boolean;
   expired: boolean;
+  delivery: boolean;
   onAccept: () => void;
   onDecline: () => void;
 }) {
@@ -111,7 +74,7 @@ function OfferActions(props: {
       </Pressable>
       <View style={styles.acceptWrap}>
         <Button
-          label={t("work:offre.accepter")}
+          label={t(props.delivery ? "work:offre.accepterLivraison" : "work:offre.accepter")}
           accent="driver"
           busy={props.busy}
           disabled={props.expired}
@@ -141,6 +104,7 @@ export function OfferModal({ offer, busy, onAccept, onDecline, onExpire }: Offer
     Vibration.vibrate(OFFER_VIBRATION, true);
     return () => Vibration.cancel();
   }, [ringing]);
+  const delivery = isDeliveryOffer(offer);
   const km = (offer.distanceEstM / 1000).toFixed(1).replace(".", ",");
   const courseMin = Math.max(1, Math.round(offer.durationEstS / 60));
 
@@ -151,12 +115,15 @@ export function OfferModal({ offer, busy, onAccept, onDecline, onExpire }: Offer
         <CountBar expiresAt={offer.expiresAt} />
         <View style={styles.head}>
           <Text style={styles.title}>
-            {t("work:offre.titre", { categorie: t(`work:categories.${offer.category}`) })}
+            {t(delivery ? "work:offre.titreLivraison" : "work:offre.titre", {
+              categorie: t(`work:categories.${offer.category}`),
+            })}
           </Text>
           <Text style={styles.timer} testID="offer-timer">
             {t("work:offre.secondes", { s: seconds })}
           </Text>
         </View>
+        <OfferService offer={offer} />
         <View style={styles.meet}>
           <View style={styles.meetDot} />
           <View style={styles.meetBody}>
@@ -175,7 +142,13 @@ export function OfferModal({ offer, busy, onAccept, onDecline, onExpire }: Offer
         </View>
         <OfferStats offer={offer} />
         <Text style={styles.distance}>{t("work:offre.distanceDuree", { km, min: courseMin })}</Text>
-        <OfferActions busy={busy} expired={expired} onAccept={onAccept} onDecline={onDecline} />
+        <OfferActions
+          busy={busy}
+          expired={expired}
+          delivery={delivery}
+          onAccept={onAccept}
+          onDecline={onDecline}
+        />
       </View>
     </View>
   );
@@ -210,13 +183,6 @@ const styles = StyleSheet.create({
     paddingBottom: 18,
     overflow: "hidden",
   },
-  track: {
-    height: 6,
-    backgroundColor: color.neutral[100],
-    marginHorizontal: -18,
-    marginBottom: 14,
-  },
-  fill: { height: 6, backgroundColor: color.role.driver.accent },
   head: { flexDirection: "row", alignItems: "center", marginBottom: spacing[3] },
   title: { flex: 1, fontSize: typography.fontSize.md, fontWeight: "700", color: color.brand[900] },
   timer: {

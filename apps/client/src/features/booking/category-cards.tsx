@@ -7,6 +7,7 @@ import { color, spacing } from "@teko/ui";
 import { CarIcon, CategoryCard } from "@teko/ui/native";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
+import { SharedRideOption } from "./shared-ride-card";
 
 const priceText = (value?: number) => (value != null ? formatXaf(value, "FCFA") : "—");
 
@@ -28,7 +29,8 @@ export interface CategoryListProps {
   onSelect: (category: VehicleCategory) => void;
 }
 
-export function CategoryList({ estimates, selected, minutes, onSelect }: CategoryListProps) {
+export function CategoryList(props: CategoryListProps) {
+  const { estimates, selected, minutes, onSelect } = props;
   const { t } = useTranslation();
   return (
     <View style={styles.cards}>
@@ -50,6 +52,7 @@ export function CategoryList({ estimates, selected, minutes, onSelect }: Categor
         onPress={() => onSelect("confort")}
         testID="cat-confort"
       />
+      <SharedRideOption />
     </View>
   );
 }

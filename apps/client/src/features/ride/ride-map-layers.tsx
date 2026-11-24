@@ -65,6 +65,28 @@ export function OriginPin({ position }: { position: LonLat | null }) {
   );
 }
 
+/** Arrêts en route (R3) : petits cercles ambre cerclés blanc. */
+export function StopMarkers({ positions }: { positions: LonLat[] }) {
+  if (positions.length === 0) return null;
+  const data: FeatureCollection = {
+    type: "FeatureCollection",
+    features: positions.flatMap((p) => pointFc(p).features),
+  };
+  return (
+    <GeoJSONSource id="rn-ride-stops" data={data as never}>
+      <Layer
+        type="circle"
+        paint={{
+          "circle-color": MAP_COLORS.markerLandmark,
+          "circle-radius": 6,
+          "circle-stroke-color": MAP_COLORS.halo,
+          "circle-stroke-width": 2,
+        }}
+      />
+    </GeoJSONSource>
+  );
+}
+
 /** Arrivée : « on va là » — cercle brand-900 cerclé blanc. */
 export function DestinationFlag({ position }: { position: LonLat | null }) {
   if (!position) return null;

@@ -18,12 +18,16 @@ jest.mock("@react-native-community/netinfo", () => ({
 
 const mockGetMyDriver = jest.fn();
 const mockSetGpsConsent = jest.fn();
+const mockSetSharedRides = jest.fn();
+const mockSetDeliveryEnabled = jest.fn();
 const mockDriverBalance = jest.fn();
 const mockRequestDeletion = jest.fn();
 const mockSignOut = jest.fn();
 jest.mock("@teko/api-client", () => ({
   getMyDriver: (...args: unknown[]) => mockGetMyDriver(...args),
   setGpsConsent: (...args: unknown[]) => mockSetGpsConsent(...args),
+  setSharedRides: (...args: unknown[]) => mockSetSharedRides(...args),
+  setDeliveryEnabled: (...args: unknown[]) => mockSetDeliveryEnabled(...args),
   driverBalance: (...args: unknown[]) => mockDriverBalance(...args),
   requestAccountDeletion: (...args: unknown[]) => mockRequestDeletion(...args),
   signOut: (...args: unknown[]) => mockSignOut(...args),
@@ -66,7 +70,15 @@ beforeAll(async () => {
 beforeEach(() => {
   jest.clearAllMocks();
   useMapModeStore.setState({ preference: "auto" });
-  mockGetMyDriver.mockResolvedValue({ id: "u1", gps_consent: true, categories: ["eco"] });
+  mockGetMyDriver.mockResolvedValue({
+    id: "u1",
+    gps_consent: true,
+    categories: ["eco"],
+    shared_enabled: true,
+    delivery_enabled: false,
+  });
+  mockSetSharedRides.mockResolvedValue(false);
+  mockSetDeliveryEnabled.mockResolvedValue(true);
   mockSetGpsConsent.mockResolvedValue(undefined);
   mockDriverBalance.mockResolvedValue(0);
   mockRequestDeletion.mockResolvedValue("2026-09-24T00:00:00Z");
@@ -138,5 +150,64 @@ describe("D-19 Paramètres", () => {
     await waitFor(() => expect(mockRequestDeletion).toHaveBeenCalled());
     await waitFor(() => expect(mockSignOut).toHaveBeenCalled());
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/"));
+  });
+});
+
+describe("D-19 Services (lots R4 et R5)", () => {
+  it("covoiturage reçu par défaut, livraison à activer : valeurs de la fiche puis bascules", async () => {
+    render(<Settings />, { wrapper: Providers });
+    const shared = await screen.findByTestId("shared-switch");
+    const delivery = screen.getByTestId("delivery-switch");
+    await waitFor(() => expect(shared.props.value).toBe(true));
+    expect(delivery.props.value).toBe(false);
+
+    await act(async () => {
+      fireEvent(shared, "valueChange", false);
+    });
+    await waitFor(() => expect(mockSetSharedRides).toHaveBeenCalledWith(expect.anything(), false));
+    await waitFor(() => expect(screen.getByTestId("shared-switch").props.value).toBe(false));
+
+    await act(async () => {
+      fireEvent(screen.getByTestId("delivery-switch"), "valueChange", true);
+    });
+    await waitFor(() =>
+      expect(mockSetDeliveryEnabled).toHaveBeenCalledWith(expect.anything(), true),
+    );
+    await waitFor(() => expect(screen.getByTestId("delivery-switch").props.value).toBe(true));
+  });
+
+  it("refus du serveur : la bascule revient et le motif est dit (service fermé)", async () => {
+    const { TekoApiError } = jest.requireMock("@teko/api-client");
+    mockSetDeliveryEnabled.mockRejectedValue(new TekoApiError("service_closed"));
+    const alertSpy = jest.spyOn(Alert, "alert");
+    render(<Settings />, { wrapper: Providers });
+    const delivery = await screen.findByTestId("delivery-switch");
+    await waitFor(() => expect(delivery.props.disabled).toBe(false));
+
+    await act(async () => {
+      fireEvent(delivery, "valueChange", true);
+    });
+
+    await waitFor(() =>
+      expect(alertSpy).toHaveBeenCalledWith(
+        "Recevoir des livraisons",
+        "Ce service n'est pas encore ouvert.",
+      ),
+    );
+    expect(screen.getByTestId("delivery-switch").props.value).toBe(false);
+  });
+
+  it("moto seule : covoiturage indisponible, interrupteur inactif", async () => {
+    mockGetMyDriver.mockResolvedValue({
+      id: "u1",
+      gps_consent: true,
+      categories: ["moto"],
+      shared_enabled: true,
+      delivery_enabled: false,
+    });
+    render(<Settings />, { wrapper: Providers });
+    expect(await screen.findByText("Réservé aux voitures.")).toBeOnTheScreen();
+    expect(screen.getByTestId("shared-switch").props.value).toBe(false);
+    expect(screen.getByTestId("shared-switch").props.disabled).toBe(true);
   });
 });

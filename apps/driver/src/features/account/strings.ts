@@ -73,6 +73,13 @@ export const accountFr = {
     repereSous: "Depuis la carte pendant vos attentes",
     repereTexte:
       "Proposez un repère directement depuis la carte de l'accueil, pendant vos attentes.",
+    secServices: "Services",
+    covoitTitre: "Recevoir des covoiturages",
+    covoitTexte: "Jusqu'à 3 places, chaque passager paie sa place.",
+    covoitMoto: "Réservé aux voitures.",
+    livraisonTitre: "Recevoir des livraisons",
+    livraisonTexte: "Colis remis contre photo et code du destinataire.",
+    serviceFerme: "Ce service n'est pas encore ouvert.",
     secDonnees: "Données",
     modeTitre: "Mode éco",
     modeSous: "Carte simplifiée, position toutes les 5 s",

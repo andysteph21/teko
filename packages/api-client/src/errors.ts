@@ -26,6 +26,7 @@ export type TekoApiErrorCode =
   | "route_change_handled"
   | "seats_full"
   | "delivery_proof_required"
+  | "stop_open"
   | "unknown";
 
 export class TekoApiError extends Error {
@@ -51,6 +52,7 @@ const MESSAGE_RULES: [string, TekoApiErrorCode][] = [
   ["course est en cours", "ride_in_progress"],
   ["frais d'annulation à régler", "fees_due"],
   ["service non ouvert", "service_closed"],
+  ["un arrêt est en cours", "stop_open"],
   ["modification déjà traitée", "route_change_handled"],
   ["trajet non modifiable", "route_not_editable"],
   ["plus assez de places", "seats_full"],

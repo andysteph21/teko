@@ -3,7 +3,7 @@ import type { useRouter } from "expo-router";
 
 type Router = ReturnType<typeof useRouter>;
 
-import { onPushOffer } from "./push-events";
+import { onPushOffer, onPushRouteChange } from "./push-events";
 import { routePush } from "./push-routing";
 import { supabase } from "./supabase";
 
@@ -80,4 +80,25 @@ it("rejette une notification illisible et un écran démonté", async () => {
   jest.mocked(getNotification).mockRejectedValue(new Error("Network"));
   await routePush(data, options);
   expect(push).not.toHaveBeenCalled();
+});
+it("une demande de modification de trajet réveille l'écran de course sans rien accepter", async () => {
+  const receive = jest.fn();
+  const stop = onPushRouteChange(receive);
+  jest.mocked(getNotification).mockResolvedValue({
+    id,
+    type: "route_change_request",
+    payload: { ride_id: id, change_id: id, expires_at: new Date(Date.now() + 30000).toISOString() },
+  } as never);
+  await routePush(data, { ...options, tapped: false });
+  expect(receive).toHaveBeenCalledWith(id);
+  expect(push).not.toHaveBeenCalled();
+  receive.mockClear();
+  // Écran démonté : aucun réveil. Autre type de notification : aucun réveil.
+  await routePush(data, { ...options, tapped: false, active: () => false });
+  jest
+    .mocked(getNotification)
+    .mockResolvedValue({ id, type: "ride_accepted", payload: { ride_id: id } } as never);
+  await routePush(data, { ...options, tapped: false });
+  expect(receive).not.toHaveBeenCalled();
+  stop();
 });

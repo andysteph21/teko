@@ -1,4 +1,4 @@
-import { isReadyToRequest, useBookingStore } from "./store";
+import { isReadyToRequest, quoteScreenFor, useBookingStore } from "./store";
 
 const ORIGIN = { position: { lon: 9.45, lat: 0.4 }, label: "Ma position" };
 const DEST = { position: { lon: 9.47, lat: 0.39 }, label: "Pharmacie du Gros-Bouquet" };
@@ -44,5 +44,23 @@ describe("booking store (brouillon C-07→C-12)", () => {
     s.reset();
     expect(useBookingStore.getState().category).toBe("eco");
     expect(useBookingStore.getState().paymentMethod).toBe("cash");
+  });
+});
+
+describe("brouillon — services R4/R5", () => {
+  it("borne les places du covoiturage entre 1 et 3", () => {
+    const s = useBookingStore.getState();
+    s.setSeats(7);
+    expect(useBookingStore.getState().seats).toBe(3);
+    s.setSeats(0);
+    expect(useBookingStore.getState().seats).toBe(1);
+  });
+
+  it("aiguille la suite du parcours selon le service et repart en course au reset", () => {
+    expect(quoteScreenFor("ride")).toBe("/(main)/category");
+    expect(quoteScreenFor("delivery")).toBe("/(main)/delivery");
+    useBookingStore.getState().setService("delivery");
+    useBookingStore.getState().reset();
+    expect(useBookingStore.getState().service).toBe("ride");
   });
 });
