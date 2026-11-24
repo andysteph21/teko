@@ -2,6 +2,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { serviceMutants } from "./mutations-services.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 const container = "supabase_db_teko-alpha-audit";
@@ -146,14 +147,7 @@ const mutants = [
       "select pg_get_functiondef('private.user_alpha_invited(uuid,text)'::regprocedure);",
     ),
   },
-  {
-    name: "frais-dus-contournes",
-    file: "frais-dus.test.ts",
-    test: "bloquent la commande",
-    inject:
-      "create or replace function private.fees_due(p_user uuid) returns boolean language sql stable security definer set search_path=public as $$ select false $$;",
-    restore: sql("select pg_get_functiondef('private.fees_due(uuid)'::regprocedure);"),
-  },
+  ...serviceMutants(sql),
   {
     name: "gps-retention-visible",
     file: "gps-retention.test.ts",

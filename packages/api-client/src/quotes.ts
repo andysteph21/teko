@@ -1,9 +1,16 @@
 import { decodePolyline6, type LonLat, type RouteResult } from "@teko/maps";
 import type { RideRow, TableRow, VehicleCategory } from "@teko/types";
 import type { TekoClient } from "./client";
-import { TekoApiError, unwrap } from "./errors";
+import { TekoApiError, type TekoApiErrorCode, unwrap } from "./errors";
 
 export type RideQuote = TableRow<"ride_quotes">;
+
+const QUOTE_REFUSALS: Record<string, TekoApiErrorCode> = {
+  POINTS_TOO_CLOSE: "quote_points_too_close",
+  ROUTE_NOT_FOUND: "quote_route_not_found",
+  OUTSIDE_SERVICE_AREA: "quote_outside_service_area",
+  SERVICE_CLOSED: "service_closed",
+};
 
 export async function getRideQuote(
   client: TekoClient,
@@ -11,20 +18,17 @@ export async function getRideQuote(
     category: VehicleCategory;
     origin: LonLat;
     destination: LonLat;
+    /** Covoiturage : 1 à 3 places, le prix est multiplié par le serveur. */
+    seats?: number;
+    /** Livraison : grille propre, refusée tant que le service est fermé. */
+    service?: "ride" | "delivery";
   },
 ): Promise<RideQuote> {
   const result = await client.functions.invoke<RideQuote>("price-quote", { body: input });
   const response = result.response;
   if (result.error && response?.status === 422) {
     const body = await response.json().catch(() => null);
-    const code =
-      body?.code === "POINTS_TOO_CLOSE"
-        ? "quote_points_too_close"
-        : body?.code === "ROUTE_NOT_FOUND"
-          ? "quote_route_not_found"
-          : body?.code === "OUTSIDE_SERVICE_AREA"
-            ? "quote_outside_service_area"
-            : null;
+    const code = QUOTE_REFUSALS[body?.code];
     if (code) throw new TekoApiError(code, body.code, { requestId: body.request_id });
   }
   return unwrap(result);

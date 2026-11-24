@@ -41,6 +41,12 @@ export interface OfferDetails {
   commission: number;
   netDriver: number;
   paymentMethod: PaymentMethod;
+  /** Places demandées (covoiturage) ; 1 pour une course classique. */
+  seats: number;
+  /** Places déjà prises dans le véhicule ; null hors covoiturage en cours. */
+  sharedSeatsTaken: number | null;
+  serviceType: "ride" | "delivery";
+  parcelSize: "small" | "medium" | "large" | null;
 }
 
 interface OfferDetailsPayload {
@@ -58,6 +64,10 @@ interface OfferDetailsPayload {
   commission: number | string;
   net_driver: number | string;
   payment_method: PaymentMethod;
+  seats?: number;
+  shared_seats_taken?: number | null;
+  service_type?: "ride" | "delivery";
+  parcel_size?: "small" | "medium" | "large" | null;
 }
 
 export async function offerDetails(client: TekoClient, offerId: string): Promise<OfferDetails> {
@@ -79,6 +89,10 @@ export async function offerDetails(client: TekoClient, offerId: string): Promise
     commission: Number(raw.commission),
     netDriver: Number(raw.net_driver),
     paymentMethod: raw.payment_method,
+    seats: Number(raw.seats ?? 1),
+    sharedSeatsTaken: raw.shared_seats_taken == null ? null : Number(raw.shared_seats_taken),
+    serviceType: raw.service_type ?? "ride",
+    parcelSize: raw.parcel_size ?? null,
   };
 }
 

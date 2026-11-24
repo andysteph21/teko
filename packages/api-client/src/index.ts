@@ -57,6 +57,20 @@ export {
   type TekoClient,
 } from "./client";
 export {
+  completeDelivery,
+  DELIVERY_PROOF_BUCKET,
+  type DeliveryOutcome,
+  deliveryCode,
+  deliveryProofPath,
+  getRideParcel,
+  type ParcelInput,
+  type ParcelSize,
+  type RideParcel,
+  requestDelivery,
+  setDeliveryEnabled,
+  uploadDeliveryProof,
+} from "./deliveries";
+export {
   driverHeartbeat,
   driverOffline,
   listPendingOffers,
@@ -143,6 +157,19 @@ export {
   startRide,
 } from "./rides";
 export {
+  arriveStop,
+  getRouteChangeQuote,
+  latestRouteChange,
+  leaveStop,
+  listRideStops,
+  type RideStop,
+  type RouteChange,
+  type RoutePlace,
+  requestRouteChange,
+  respondRouteChange,
+  routeChangeRoute,
+} from "./route-changes";
+export {
   createTripShare,
   getSharedTrip,
   type ReportIncidentInput,
@@ -150,4 +177,10 @@ export {
   type SharedTripView,
 } from "./safety";
 export { getSessionIdentity, type SessionIdentity } from "./session-identity";
+export {
+  type SharedTripProgress,
+  type SharedTripStop,
+  setSharedRides,
+  sharedTripProgress,
+} from "./shared-rides";
 export { reopenVehicleReview, updateReviewedVehicle } from "./vehicle-review";

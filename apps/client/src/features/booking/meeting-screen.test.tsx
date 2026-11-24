@@ -86,6 +86,8 @@ const DRAFT = {
       created_at: "2026-10-18T00:00:00Z",
       expires_at: "2026-10-18T00:05:00Z",
       ride_id: null,
+      seats: 1,
+      service_type: "ride",
     },
   },
 };

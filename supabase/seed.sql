@@ -19,14 +19,24 @@ select 'Libreville',
 where not exists (select 1 from public.zones where name = 'Libreville');
 
 -- Barème d'exemple par catégorie (XAF) — règles globales (zone_id null)
-insert into public.pricing_rules (category, zone_id, base_fare, per_km, per_min, min_fare)
+insert into public.pricing_rules (category, zone_id, base_fare, per_km, per_min, min_fare, max_fare)
 select * from (values
-  ('eco'::public.vehicle_category,         null::uuid, 500::numeric, 250::numeric, 25::numeric, 1000::numeric),
-  ('moto'::public.vehicle_category,        null::uuid, 300::numeric, 150::numeric, 15::numeric, 600::numeric),
-  ('confort'::public.vehicle_category,     null::uuid, 1000::numeric, 400::numeric, 40::numeric, 2000::numeric),
-  ('covoiturage'::public.vehicle_category, null::uuid, 400::numeric, 150::numeric, 15::numeric, 800::numeric)
-) as v(category, zone_id, base_fare, per_km, per_min, min_fare)
+  ('eco'::public.vehicle_category,         null::uuid, 500::numeric, 250::numeric, 25::numeric, 1000::numeric, null::numeric),
+  ('moto'::public.vehicle_category,        null::uuid, 300::numeric, 150::numeric, 15::numeric, 600::numeric, null::numeric),
+  ('confort'::public.vehicle_category,     null::uuid, 1000::numeric, 400::numeric, 40::numeric, 2000::numeric, null::numeric),
+  -- Covoiturage à la place (document du porteur, 23 novembre 2026) : 250 FCFA/km,
+  -- 500 FCFA jusqu'à 2 km, plafond 1 850 FCFA. Aligné sur la migration du lot R4.
+  ('covoiturage'::public.vehicle_category, null::uuid, 0::numeric, 250::numeric, 0::numeric, 500::numeric, 1850::numeric)
+) as v(category, zone_id, base_fare, per_km, per_min, min_fare, max_fare)
 where not exists (select 1 from public.pricing_rules);
+
+-- Grille provisoire de livraison (lot R5), alignée sur la migration ; à confirmer par le porteur.
+insert into public.pricing_rules (category, zone_id, base_fare, per_km, per_min, min_fare, service_type)
+select * from (values
+  ('eco'::public.vehicle_category,  null::uuid, 500::numeric, 200::numeric, 0::numeric, 1000::numeric, 'delivery'),
+  ('moto'::public.vehicle_category, null::uuid, 300::numeric, 150::numeric, 0::numeric, 700::numeric, 'delivery')
+) as v(category, zone_id, base_fare, per_km, per_min, min_fare, service_type)
+where not exists (select 1 from public.pricing_rules where service_type = 'delivery');
 
 -- Quelques points de repère validés (Libreville) pour l'adressage/guidage
 insert into public.landmarks (name, aliases, category, geom, status, salience)
