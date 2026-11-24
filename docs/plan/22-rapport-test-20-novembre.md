@@ -2,7 +2,7 @@
 
 Rédigé le 23 novembre 2026. Sources : le retour écrit du porteur (« tout s’est bien passé », satisfaction sur la fluidité et le GPS), trois vidéos tournées en voiture, le document « TEKO COVOITURAGE », et les données du VPS relevées en lecture seule. Aucun numéro, code ni position précise n’est reproduit ici.
 
-Ce rapport répond au premier point du lot R0 du [plan des retours du 20 novembre](21-plan-retours-essai-20-novembre.md), rédigé le même jour sans accès au VPS. Ce plan se trouve sur la branche `claude/kind-newton-pi69c6`, pas encore fusionnée dans la branche d’essai.
+Ce rapport répond au premier point du lot R0 du [plan des retours du 20 novembre](21-plan-retours-essai-20-novembre.md), rédigé le même jour sans accès au VPS. Ce plan a été fusionné dans la branche d’essai le 23 novembre.
 
 ## Résultat
 
@@ -65,8 +65,7 @@ Le document « TEKO COVOITURAGE » fixe le tarif (250 FCFA par kilomètre et par
 ## À faire avant la prochaine salve
 
 1. Régler les trois chauffeurs suspendus dans la console (Ops prépare, Finance valide). Sans cela aucune course n’est possible.
-2. Fusionner la branche du plan dans la branche d’essai, pour que le plan et ce rapport soient au même endroit.
-3. Obtenir les réponses aux arbitrages A1 à A19.
+2. Obtenir les réponses aux arbitrages A1 à A19.
 
 ## Limites
 
