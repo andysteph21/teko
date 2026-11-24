@@ -51,14 +51,14 @@ isOneToOne: false
                   ]
                 },"alpha_invites": {
                   Row: {
-                    "created_at": string,"id": string,"invited_by": string | null,"is_active": boolean,"phone": string,"role": string,"updated_at": string
+                    "created_at": string,"email": string | null,"id": string,"invited_by": string | null,"is_active": boolean,"phone": string | null,"role": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"invited_by"?: string | null,"is_active"?: boolean,"phone": string,"role": string,"updated_at"?: string
+                    "created_at"?: string,"email"?: string | null,"id"?: string,"invited_by"?: string | null,"is_active"?: boolean,"phone"?: string | null,"role": string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"invited_by"?: string | null,"is_active"?: boolean,"phone"?: string,"role"?: string,"updated_at"?: string
+                    "created_at"?: string,"email"?: string | null,"id"?: string,"invited_by"?: string | null,"is_active"?: boolean,"phone"?: string | null,"role"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1186,6 +1186,9 @@ isOneToOne: false
 "activate_scheduled_rides":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"alpha_before_user_created":
+{ Args: { "event": Json }; Returns: Json
+                           },
 "approve_manual_receipt":
 { Args: { "p_receipt": string }; Returns: {
               "amount": number,
@@ -1444,10 +1447,28 @@ isOneToOne: false
 "invite_alpha":
 { Args: { "p_active"?: boolean,"p_phone": string,"p_role": string }; Returns: {
               "created_at": string,
+"email": string | null,
 "id": string,
 "invited_by": string | null,
 "is_active": boolean,
-"phone": string,
+"phone": string | null,
+"role": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "alpha_invites"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"invite_alpha_email":
+{ Args: { "p_active"?: boolean,"p_email": string,"p_role": string }; Returns: {
+              "created_at": string,
+"email": string | null,
+"id": string,
+"invited_by": string | null,
+"is_active": boolean,
+"phone": string | null,
 "role": string,
 "updated_at": string
             }
@@ -1993,6 +2014,9 @@ isOneToOne: false
                            },
 "unregister_session_devices":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"update_contact_phone":
+{ Args: { "p_phone": string }; Returns: string
                            },
 "update_reviewed_vehicle":
 { Args: { "p_category": Database["public"]['Enums']["vehicle_category"],"p_plate": string,"p_reason": string,"p_vehicle": string }; Returns: {
