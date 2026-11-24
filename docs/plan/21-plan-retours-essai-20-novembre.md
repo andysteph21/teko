@@ -1,6 +1,6 @@
 # Plan d’implémentation — retours de l’essai terrain du 20 novembre 2026
 
-**Date :** 23 novembre 2026 · **État :** proposition à arbitrer. Aucune ligne de
+**Date :** 23 novembre 2026 · **État :** accord du porteur le 23 novembre pour implémenter les six suggestions ; lot R2 fait dans le dépôt le même jour, recommandations A1 à A19 appliquées par défaut et à confirmer lot par lot. Texte d’origine : Aucune ligne de
 ce plan n’est une décision : chaque arbitrage listé au §3 est soumis au porteur
 avant application, puis reporté dans le [suivi](04-suivi-client.md) et le
 [registre produit](../product/05-questions-ouvertes.md).

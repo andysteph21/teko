@@ -19,8 +19,14 @@ dix-neuf arbitrages (A1 à A19) à soumettre avant tout développement.
 | Ajouter des arrêts en cours de trajet | R3 | ⏳ Arbitrages A6 à A8 |
 | Livraison comme option | R5 | ⏳ Arbitrages A16 à A18, avis juridique |
 | Covoiturage au tarif à la place (250 FCFA/km, 500 à 1 850 FCFA, 3 places) | R4 | ⏳ Arbitrages A9 à A15 |
-| Accueil affichant directement les options | R2 | ⏳ Maquette C-07 à valider |
+| Accueil affichant directement les options | R2 | ➡️ Implémenté dans le dépôt le 23 novembre ; maquette C-07 à mettre à jour, non publié |
 | Compte validé par e-mail ou Google, numéro simplement enregistré | R1 | ⏳ Arbitrages A1 à A5 ; inverse la décision OTP SMS |
+
+**Réponse du porteur du 23 novembre 2026 :** accord pour implémenter les six
+suggestions. La sonnerie des propositions et les annonces vocales ont « très
+bien fonctionné » pendant l’essai. La réponse ne tranche pas un par un les
+arbitrages A1 à A19 : les recommandations du plan sont appliquées par défaut,
+lot par lot, et restent à confirmer avant la publication de chaque lot.
 
 ## Réponses du porteur pour l’alpha du 18 octobre 2026
 

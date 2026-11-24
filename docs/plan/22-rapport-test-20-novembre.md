@@ -30,7 +30,7 @@ Premier essai en conditions réelles : trois courses enchaînées en voiture, to
 | Délai de réponse du chauffeur | 11 secondes en moyenne, contre 24 à 29 secondes lors de la salve précédente. Deux des trois téléphones chauffeur ont déclaré le canal de sonnerie dédié. |
 | Proposition reproposée, zone Gabon, Confort | Aucune expiration, aucun refus de zone ; un devis de 170 km a été calculé. |
 
-Les vidéos ne permettent pas d’entendre la sonnerie ni les annonces vocales. Leur fonctionnement n’est donc pas établi par cet essai.
+Les vidéos ne permettent pas d’entendre la sonnerie ni les annonces vocales. Le porteur a confirmé le 23 novembre que les deux ont très bien fonctionné pendant l’essai.
 
 ## Anomalies
 
@@ -64,7 +64,7 @@ Le document « TEKO COVOITURAGE » fixe le tarif (250 FCFA par kilomètre et par
 
 ## À faire avant la prochaine salve
 
-1. Régler les trois chauffeurs suspendus dans la console (Ops prépare, Finance valide). Sans cela aucune course n’est possible.
+1. Chauffeurs suspendus : réglés le 23 novembre à la demande du porteur, par le circuit prévu (trois dossiers simulés préparés par Ops et validés par Finance). Les trois comptes sont réactivés, soldes à zéro.
 2. Obtenir les réponses aux arbitrages A1 à A19.
 
 ## Limites

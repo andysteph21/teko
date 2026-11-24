@@ -320,3 +320,22 @@ Détail dans [le rapport](../plan/19-rapport-test-jour4.md).
 - **Ouvert :** option de guidage vocal ; service de livraison à cadrer ;
   réécriture native à trancher après mesure sur l’OPPO A15.
 
+## Essai du 20 novembre — réponse du porteur du 23 novembre 2026
+
+Détail dans [le plan des retours](../plan/21-plan-retours-essai-20-novembre.md)
+et [le rapport de test](../plan/22-rapport-test-20-novembre.md).
+
+- **Clôturé — périmètre :** le porteur demande d’implémenter les six
+  suggestions de l’essai (compte par e-mail ou Google, accueil avec options,
+  changement de destination et arrêts, covoiturage à la place, livraison).
+  Le covoiturage et la livraison, exclus du MVP, y entrent.
+- **Appliqué par défaut, à confirmer par le porteur — arbitrages A1 à A19 :**
+  la réponse ne les tranche pas un par un. Les recommandations du plan
+  s’appliquent lot par lot et sont à confirmer avant chaque publication.
+- **Clôturé — accueil (lot R2) :** options de service affichées dès
+  l’accueil ; une destination récente préremplit la commande et ouvre le
+  devis. Écart assumé avec la maquette C-07, à mettre à jour.
+- **Ouvert :** identifiants Google et service d’envoi d’e-mails, à fournir
+  par le porteur avant le lot R1 ; avis juridique avant toute livraison
+  réelle (A18).
+
