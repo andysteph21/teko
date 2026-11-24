@@ -1,0 +1,112 @@
+# Banc privé pour l’essai distant
+
+Le scénario minimal de ce banc contient quatre comptes fictifs, une invitation par rôle mobile et des pièces KYC de test. Les APK distants utilisent le GPS réel et affichent « ESSAI PRIVÉ · GPS RÉEL · PAIEMENT SIMULÉ ». Les participants peuvent effectuer le trajet en voiture. Aucun SMS facturé ni paiement réel n’est activé. Ne pas utiliser de vrais justificatifs ni de numéros personnels pendant cet essai.
+
+Voir le [guide d’exploitation du VPS de Libreville](../../docs/plan/12-exploitation-alpha-vps.md) pour l’accès, la distribution des APK, le diagnostic des devis et le protocole sur place.
+
+## Préparer et vérifier sur le poste
+
+Depuis la racine, une fois les dépendances des tests Supabase installées :
+
+```sh
+node tools/alpha-remote/prepare.mjs
+docker network create \
+  --opt com.docker.network.bridge.host_binding_ipv4=127.0.0.1 \
+  teko-alpha-remote-private
+supabase start --workdir .local/alpha-remote --network-id teko-alpha-remote-private \
+  --exclude studio,postgres-meta,logflare,vector,supavisor,edge-runtime \
+  >.local/alpha-remote/start.log 2>&1
+node tools/alpha-remote/seed.mjs
+```
+
+`prepare.mjs` refuse de remplacer une configuration existante. Le dossier `.local/alpha-remote` est privé et hors Git ; il contient notamment les codes, les clés et les journaux. Les ports API (58421) et SQL (58422) doivent apparaître sur `127.0.0.1` avec `docker port` avant de poursuivre.
+
+Martin et Valhalla locaux doivent répondre sur 3333 et 8002. Dans un autre terminal, démarrer les fonctions :
+
+```sh
+supabase functions serve --workdir .local/alpha-remote --network-id teko-alpha-remote-private \
+  --env-file .local/alpha-remote/functions.env >.local/alpha-remote/functions.log 2>&1
+```
+
+Lancer le contrôle des invitations sur le réseau interne, puis la passerelle en boucle locale :
+
+```sh
+mkdir -p -m 700 .local/alpha-remote/apks
+docker run -d --name teko-alpha-remote-access --network teko-alpha-remote-private \
+  --user "$(id -u):$(id -g)" --read-only --security-opt no-new-privileges --cap-drop ALL \
+  --mount type=bind,source="$PWD/tools/alpha-remote/access.mjs",target=/app/access.mjs,readonly \
+  --mount type=bind,source="$PWD/.local/alpha-remote/phones.json",target=/config/phones.json,readonly \
+  --mount type=bind,source="$PWD/.local/alpha-remote/anon-key",target=/config/anon-key,readonly \
+  --mount type=bind,source="$PWD/.local/alpha-remote/apks",target=/apks,readonly \
+  node:24-bookworm-slim node /app/access.mjs
+docker run -d --name teko-alpha-remote-preview --network teko-alpha-remote-private \
+  --add-host=host.docker.internal:host-gateway -p 127.0.0.1:58480:8080 \
+  --mount type=bind,source="$PWD/tools/alpha-remote/Caddyfile",target=/etc/caddy/Caddyfile,readonly \
+  caddy:2.11.9-alpine
+node tools/alpha-remote/smoke.mjs
+```
+
+## Répéter sur le VPS avant de publier
+
+Préparer Ubuntu 24.04 x86-64 avec Docker Compose, Node 24 et Supabase CLI 2.120.0. Utiliser un compte de déploiement avec accès Docker et activer la persistance de ses services utilisateur (`loginctl enable-linger`). Transférer les sources, les tuiles et le graphe existants. Transférer séparément, par SSH, les seuls fichiers privés nécessaires : le `config.toml` du banc distant, `accounts.json` et `functions.env`. Conserver la même clé publique que celle des APK ; la base est créée à neuf sur le VPS. Ne transférer ni la base du poste, ni les clés de signature, ni la clé SSH privée.
+
+Sur le VPS alpha Ubuntu 26.04 x86-64, le lanceur Supabase se bloque dès `supabase --version`. Le compagnon `supabase-go` de l’archive officielle 2.110.0 `supabase_linux_amd64.tar.gz` fonctionne sur ce VPS, y compris `start` et `functions serve`. Vérifier le SHA-256 de l’archive (`876f439e85d296bf095d906ca91cadeb5509d753b4d98ee823e5752d578ff92b`), puis installer ce compagnon sous le nom `supabase`. Vérifier que le hachage du fichier `anon-key` issu de la préparation correspond à celui utilisé pour assembler les APK.
+
+Lancer `bash tools/alpha-remote/stage-vps.sh` sur le serveur. Contrôler avec `TEKO_REMOTE_ALPHA_ORIGIN=http://127.0.0.1:58481 node tools/alpha-remote/smoke.mjs`, vérifier la route, les tuiles et le maintien des services après redémarrage. Tester aussi une connexion au téléchargement avec chaque rôle. Aucune interface SQL ou d’administration Supabase ne doit être joignable de l’extérieur.
+
+Après ces contrôles et la disponibilité du DNS, ajouter `alpha.tekomove.com` comme enregistrement A du VPS. Dans `vps-compose.env`, passer `ALPHA_SITE` à `alpha.tekomove.com` et publier seulement HTTP/HTTPS (`ALPHA_HTTP_BIND=0.0.0.0:80`, `ALPHA_HTTPS_BIND=0.0.0.0:443`). Relancer Compose avec ce fichier ; Caddy gère le certificat. Contrôler depuis un autre réseau le certificat et les refus d’accès avant d’envoyer le lien `/install` aux invités. Ne pas ouvrir les ports de la base, de Martin ni de Valhalla.
+
+## Console privée de l’alpha
+
+Sur le VPS, `node tools/alpha-remote/seed.mjs --admin-pool` prépare 12 comptes par rôle mobile sans invitation active. Les chauffeurs reçoivent des preuves KYC fictives. Cette commande complète le fichier OTP d’Auth ; recharger le service Auth avec cette configuration en dehors d’une course et conserver ses volumes. Les codes existants et la clé publique doivent rester identiques. Garder les fichiers `alpha-admin.json`, `accounts.json` et la configuration Auth hors Git et du contexte de build.
+
+Compiler avec `pnpm --filter @teko/app-admin build` et `NEXT_PUBLIC_TEKO_ALPHA_ADMIN=true`. Définir `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_TILES_URL` et `NEXT_PUBLIC_VALHALLA_URL` avec l’origine HTTPS du banc et ses chemins `/gabon` et `/routing`. Utiliser la clé publique du banc pour `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+Copier le contenu de `apps/admin/.next/alpha-vps/standalone` sur le VPS dans `.local/alpha-remote/admin-runtime`. Copier aussi `apps/admin/.next/alpha-vps/static` sous `apps/admin/.next/alpha-vps/` à l’intérieur de ce dossier. Compose monte ce build en lecture seule dans un conteneur Node sans port hôte. Créer le fichier privé `.local/alpha-remote/admin-passwords` avec une ligne bcrypt au format Caddy pour chacun des identifiants `ops` et `finance`. Ajouter `-f tools/alpha-remote/compose.admin.yml` après `compose.vps.yml` dans les commandes Compose. Les comptes admin passent par le formulaire privé sous `/admin`.
+
+Dans **Utilisateurs → Invitations à l’alpha fermée**, Ops sélectionne un rôle et crée une invitation avec un compte de réserve. Le bouton **Afficher le code** retrouve les identifiants d’une invitation active issue de cette réserve. Retirer une invitation bloque une nouvelle connexion mobile, le téléchargement et la participation à une nouvelle course. Réactiver restitue le même compte au même testeur. Un compte retiré ne retourne pas dans la réserve. Le tableau de bord actualise les courses récentes toutes les 30 secondes.
+
+Ce flux de réserve exige `NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS=true` et s’applique uniquement au banc fictif.
+
+## Campagne fictive de quinze participants
+
+Sur un banc fermé, `node tools/alpha-remote/seed.mjs --campaign` prépare cinq passagers et dix chauffeurs. Les chauffeurs ont sept pièces fictives validées et un véhicule Éco. Recharger la table des codes fixes dans Auth avant d’ouvrir le portail. Compiler la console avec `NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS=true` et `NEXT_PUBLIC_TEKO_SYNTHETIC_CAMPAIGN=true` pour afficher les codes des invitations de cette campagne.
+
+Assembler et vérifier les deux APK signés avec `--remote`. Si le projet natif alpha HTTPS vient d’être généré et qu’aucune configuration native n’a changé, `--reuse-native` permet de reconstruire le bundle JavaScript et d’assembler à nouveau. Vérifier le téléchargement par rôle après ouverture.
+
+Tant que le portail est fermé, `node tools/alpha-remote/smoke-campaign-cash.mjs` déroule une course simulée, vérifie la commission, le justificatif et la double validation Finance. Le scénario laisse la course de contrôle visible dans la console et remet le solde du chauffeur à zéro.
+
+## Passage à l’alpha terrain
+
+Compiler la console privée sans `NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS`. Dans **Utilisateurs → Invitations à l’alpha fermée**, Ops saisit le vrai numéro au format international et choisit **Passager** ou **Chauffeur**. Cette étape prépare l’autorisation en base. Le compte mobile se crée à la première connexion vérifiée.
+
+Laisser `mobileClosed: true` dans `alpha-admin.json` jusqu’aux contrôles d’ouverture. Préparer Auth avec l’inscription téléphonique et la confirmation OTP, le hook Postgres `public.alpha_before_phone_signup` et le hook HTTP signé `send-field-sms`. Le service Auth et la fonction doivent partager le secret `SEND_FIELD_SMS_HOOK_SECRET`. La fonction doit recevoir `ESMS_SMS_API_KEY` et `ESMS_SMS_SENDER` côté serveur. Vérifier la portée de la clé, l’expéditeur, la joignabilité du hook depuis Auth et les réponses avant d’ouvrir le portail. Le hook vérifie de nouveau l’invitation avant tout envoi. Aucun numéro ni code OTP ne doit être inscrit dans les journaux de support.
+
+Assembler les APK avec `--field` et la même origine HTTPS et clé publique que le déploiement terrain. Vérifier chaque APK avec `verify-alpha-apk.mjs <rôle> --field`, puis éprouver l’inscription réelle, la réception Airtel et Moov et le parcours sur appareils. Une fois les conditions du [plan alpha](../../docs/plan/08-plan-alpha.md#critères-bloquants-confirmés-avant-les-premières-courses-réelles) réunies, activer `fieldSignup: true`, retirer `mobileClosed` et recréer la passerelle d’accès. Conserver le [registre de retours terrain](../../docs/plan/11-procedures-alpha.md#retours-de-terrain).
+
+## Préparer les APK pour l’adresse retenue
+
+Le domaine ne configure pas l’accès à lui seul. Préparer une passerelle HTTPS avec accès réservé aux invités, puis vérifier Auth, devis, tuiles, téléchargements et Realtime depuis un autre réseau avant de distribuer les APK. La passerelle de prévisualisation ci-dessus reste en boucle locale.
+
+Lorsque l’origine HTTPS est prête, sauvegarder d’abord les APK USB existants hors des dossiers d’assemblage. Avec `TEKO_REMOTE_ALPHA_ORIGIN` fixé à l’adresse HTTPS retenue, lancer séquentiellement :
+
+```sh
+node tools/audit/build-alpha.mjs client --remote
+node tools/audit/build-alpha.mjs driver --remote
+```
+
+Vérifier chaque signature, identité et configuration avant la distribution privée :
+
+```sh
+node tools/audit/verify-alpha-apk.mjs client --remote
+node tools/audit/verify-alpha-apk.mjs driver --remote
+```
+
+## Premier passage à Libreville
+
+1. Une paire de testeurs ouvre `/install` sur deux Android, idéalement dont un bas de gamme, et installe l’APK correspondant à son rôle. Remettre les codes d’essai individuellement et expliquer l’usage du GPS réel pendant le créneau.
+2. Sur réseau mobile, charger la carte et commander un trajet d’essai entre deux repères distincts. Effectuer le trajet en voiture et vérifier le devis, la réception de l’offre, l’acceptation, le PIN et le reçu cash simulé. Aucun encaissement.
+3. Sur un appareil à l’arrêt, verrouiller l’écran chauffeur, couper brièvement le réseau puis le rétablir. Mesurer la reprise GPS sans rouvrir l’app. Refaire le parcours sur l’autre opérateur si les deux SIM Airtel et Moov sont disponibles.
+4. Pour chaque écart, relever l’heure, le modèle Android, l’opérateur, le rôle et la version du build. Ne joindre ni code, ni pièce personnelle, ni capture affichant une position privée.
+
+Pour fermer l’essai, retirer l’accès distant et arrêter la passerelle d’essai. `supabase stop --project-id teko-alpha-remote` ne cible que ce projet et conserve ses volumes.

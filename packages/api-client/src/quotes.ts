@@ -1,7 +1,7 @@
 import { decodePolyline6, type LonLat, type RouteResult } from "@teko/maps";
 import type { RideRow, TableRow, VehicleCategory } from "@teko/types";
 import type { TekoClient } from "./client";
-import { unwrap } from "./errors";
+import { TekoApiError, unwrap } from "./errors";
 
 export type RideQuote = TableRow<"ride_quotes">;
 
@@ -13,7 +13,21 @@ export async function getRideQuote(
     destination: LonLat;
   },
 ): Promise<RideQuote> {
-  return unwrap(await client.functions.invoke<RideQuote>("price-quote", { body: input }));
+  const result = await client.functions.invoke<RideQuote>("price-quote", { body: input });
+  const response = result.response;
+  if (result.error && response?.status === 422) {
+    const body = await response.json().catch(() => null);
+    const code =
+      body?.code === "POINTS_TOO_CLOSE"
+        ? "quote_points_too_close"
+        : body?.code === "ROUTE_NOT_FOUND"
+          ? "quote_route_not_found"
+          : body?.code === "OUTSIDE_SERVICE_AREA"
+            ? "quote_outside_service_area"
+            : null;
+    if (code) throw new TekoApiError(code, body.code, { requestId: body.request_id });
+  }
+  return unwrap(result);
 }
 
 export function quoteRoute(quote: RideQuote): RouteResult {

@@ -4,7 +4,7 @@
 import { formatXaf } from "@teko/core";
 import type { VehicleCategory } from "@teko/types";
 import { color, spacing } from "@teko/ui";
-import { CarIcon, CategoryCard, MotoIcon } from "@teko/ui/native";
+import { CarIcon, CategoryCard } from "@teko/ui/native";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
@@ -13,7 +13,7 @@ const priceText = (value?: number) => (value != null ? formatXaf(value, "FCFA") 
 export function SkeletonRows() {
   return (
     <View style={styles.cards} testID="estimates-skeleton">
-      {["eco", "moto", "confort"].map((k) => (
+      {["eco", "confort"].map((k) => (
         <View key={k} style={styles.skeleton} />
       ))}
     </View>
@@ -40,15 +40,6 @@ export function CategoryList({ estimates, selected, minutes, onSelect }: Categor
         selected={selected === "eco"}
         onPress={() => onSelect("eco")}
         testID="cat-eco"
-      />
-      <CategoryCard
-        title={t("booking:categories.moto")}
-        meta={t("booking:categorie.metaMoto")}
-        priceText={priceText(estimates.moto)}
-        icon={<MotoIcon />}
-        selected={selected === "moto"}
-        onPress={() => onSelect("moto")}
-        testID="cat-moto"
       />
       <CategoryCard
         title={t("booking:categories.confort")}

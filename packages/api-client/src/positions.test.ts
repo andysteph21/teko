@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import type { TekoClient } from "./client";
-import { createRealtimePositionsChannel, type RidePositionEvent } from "./positions";
+import {
+  createRealtimePositionsChannel,
+  latestRidePosition,
+  type RidePositionEvent,
+  rideClientPosition,
+  setRideClientPosition,
+} from "./positions";
 
 interface ChannelMock {
   on: ReturnType<typeof vi.fn>;
@@ -104,5 +110,66 @@ describe("createRealtimePositionsChannel (ADR-13)", () => {
     await expect(
       positions.pushRidePosition("ride-1", { lon: 9.45, lat: 0.4 }),
     ).rejects.toMatchObject({ code: "not_authorized" });
+  });
+});
+
+describe("latestRidePosition", () => {
+  function reader(rows: unknown[]) {
+    const chain: Record<string, unknown> = {};
+    for (const m of ["select", "eq", "order"]) chain[m] = vi.fn(() => chain);
+    chain.limit = vi.fn().mockResolvedValue({ data: rows, error: null });
+    return { client: { from: vi.fn(() => chain) } as unknown as TekoClient, chain };
+  }
+
+  it("lit la dernière position de la course et parse la géométrie", async () => {
+    const { client, chain } = reader([
+      {
+        ride_id: "ride-1",
+        geom: { type: "Point", coordinates: [9.4612, 0.4051] },
+        recorded_at: "2026-11-11T16:42:00Z",
+      },
+    ]);
+    expect(await latestRidePosition(client, "ride-1")).toEqual({
+      rideId: "ride-1",
+      recordedAt: "2026-11-11T16:42:00Z",
+      lon: 9.4612,
+      lat: 0.4051,
+    });
+    expect(chain.eq).toHaveBeenCalledWith("ride_id", "ride-1");
+    expect(chain.order).toHaveBeenCalledWith("recorded_at", { ascending: false });
+  });
+
+  it("aucune position enregistrée → null", async () => {
+    expect(await latestRidePosition(reader([]).client, "ride-1")).toBeNull();
+  });
+});
+
+describe("position du passager à la commande", () => {
+  it("setRideClientPosition : RPC avec le point en EWKT", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: null });
+    await setRideClientPosition({ rpc } as unknown as TekoClient, "ride-1", {
+      lon: 9.4612,
+      lat: 0.4051,
+    });
+    expect(rpc).toHaveBeenCalledWith("set_ride_client_position", {
+      p_ride: "ride-1",
+      p_point: "SRID=4326;POINT(9.4612 0.4051)",
+    });
+  });
+
+  it("rideClientPosition : point du passager, ou null s'il est absent", async () => {
+    const reader = (rows: unknown[]) => {
+      const chain: Record<string, unknown> = {};
+      for (const m of ["select", "eq"]) chain[m] = vi.fn(() => chain);
+      chain.limit = vi.fn().mockResolvedValue({ data: rows, error: null });
+      return { from: vi.fn(() => chain) } as unknown as TekoClient;
+    };
+    expect(
+      await rideClientPosition(
+        reader([{ geom: { type: "Point", coordinates: [9.46, 0.41] } }]),
+        "ride-1",
+      ),
+    ).toEqual({ lon: 9.46, lat: 0.41 });
+    expect(await rideClientPosition(reader([]), "ride-1")).toBeNull();
   });
 });

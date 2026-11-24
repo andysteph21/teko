@@ -5,12 +5,26 @@
 import { signInWithPhoneOtp, TekoApiError, verifyPhoneOtp } from "@teko/api-client";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
+import { alphaRequest, privateAlpha } from "../../lib/private-alpha";
 import { supabase } from "../../lib/supabase";
 
 const DEV_DEFAULT_NATIONAL = process.env.NODE_ENV === "development" ? "07000003" : "";
 
 function isValidGabonNational(value: string): boolean {
   return /^\d{8,9}$/.test(value.replace(/\s+/g, ""));
+}
+
+async function verifyAdminCode(phone: string, code: string) {
+  if (!privateAlpha) {
+    await verifyPhoneOtp(supabase, phone, code);
+    return;
+  }
+  const session = await alphaRequest<{ access_token: string; refresh_token: string }>("login", {
+    phone,
+    code,
+  });
+  const { error } = await supabase.auth.setSession(session);
+  if (error) throw error;
 }
 
 export function LoginCard() {
@@ -28,10 +42,10 @@ export function LoginCard() {
     setBusy(true);
     try {
       if (step === "phone") {
-        await signInWithPhoneOtp(supabase, msisdn);
+        if (!privateAlpha) await signInWithPhoneOtp(supabase, msisdn);
         setStep("otp");
       } else {
-        await verifyPhoneOtp(supabase, msisdn, code.trim());
+        await verifyAdminCode(msisdn, code.trim());
         router.replace("/dashboard");
       }
     } catch (caught) {
@@ -54,7 +68,9 @@ export function LoginCard() {
     >
       <h2 className="mb-1 text-[22px] font-bold text-brand-900">Connexion</h2>
       <p className="mb-6 text-[13.5px] text-neutral-500">
-        Accès réservé à l'équipe Teko. Vérification par code SMS.
+        {privateAlpha
+          ? "Accès réservé à l’équipe Teko. Utilisez le code du banc, sans SMS."
+          : "Accès réservé à l'équipe Teko. Vérification par code SMS."}
       </p>
       {step === "phone" ? (
         <>
@@ -98,7 +114,7 @@ export function LoginCard() {
         disabled={!valid || busy}
         className="h-12 w-full rounded-[20px] bg-gradient-to-br from-brand-700 to-client-accent text-base font-semibold text-neutral-0 shadow-lg shadow-brand-700/35 disabled:opacity-50"
       >
-        {step === "phone" ? "Recevoir le code" : "Se connecter"}
+        {step === "phone" ? (privateAlpha ? "Continuer" : "Recevoir le code") : "Se connecter"}
       </button>
       <p className="mt-4 text-xs leading-relaxed text-neutral-500">
         Chaque connexion et chaque action sensible sont inscrites au journal d'audit. Les rôles et

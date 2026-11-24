@@ -17,11 +17,18 @@ pmtiles:
 fonts:
   - /fonts
 
+# Pastilles des repères Teko (servies sur /sprite/teko.json et .png, @2x compris)
+sprites:
+  paths:
+    - /sprites/teko
+
 # Chaîne de connexion : substituée depuis l'environnement du conteneur
 # (référence non guillemetée, requise par l'interpolation de Martin).
 postgres:
   connection_string: ${DATABASE_URL}
   auto_publish: false
+  # Les repères validés peuvent dépasser l’emprise connue au démarrage.
+  auto_bounds: skip
   tables:
     landmarks:
       schema: public

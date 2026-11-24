@@ -1,0 +1,27 @@
+services:
+  gateway:
+    volumes:
+      - ./admin.caddy:/etc/caddy/alpha.d/admin.caddy:ro
+      - ../../.local/alpha-remote/admin-passwords:/run/teko-admin-passwords:ro
+
+  teko-alpha-remote-access:
+    volumes:
+      - ../../.local/alpha-remote/alpha-admin.json:/config/alpha-admin.json:ro
+
+  console-admin:
+    image: node@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03
+    user: ${ALPHA_UID:?UID du déployeur requis}:${ALPHA_GID:?GID du déployeur requis}
+    working_dir: /app
+    command: [node, apps/admin/server.js]
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: "3300"
+      NEXT_TELEMETRY_DISABLED: "1"
+    volumes:
+      - ../../.local/alpha-remote/admin-runtime:/app:ro
+    read_only: true
+    init: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped

@@ -20,6 +20,7 @@ import { CompletePanel } from "../../../src/features/work/complete-panel";
 import { CoursePanel } from "../../../src/features/work/course-panel";
 import { useDataUsage, useResolvedMapMode } from "../../../src/features/work/data-state";
 import {
+  ClientPin,
   DestinationDot,
   MeetingPin,
   RouteLine,
@@ -29,10 +30,13 @@ import { PassengerPanel } from "../../../src/features/work/passenger-panel";
 import { PinPanel } from "../../../src/features/work/pin-panel";
 import { RideBanner } from "../../../src/features/work/ride-banner";
 import { WorkToast } from "../../../src/features/work/toast";
+import { useClientPosition } from "../../../src/features/work/use-client-position";
 import { useDevicePosition } from "../../../src/features/work/use-device-position";
 import { type DriverRide, useDriverRide } from "../../../src/features/work/use-driver-ride";
+import { useLivePosition } from "../../../src/features/work/use-live-position";
 import { usePushPositions } from "../../../src/features/work/use-push-positions";
 import { type RideActions, useRideActions } from "../../../src/features/work/use-ride-actions";
+import { useRideAnnouncements } from "../../../src/features/work/use-ride-announcements";
 import { supabase } from "../../../src/lib/supabase";
 
 /** Solde du jour rafraîchi après clôture (ligne « nouveau solde » de D-14). */
@@ -90,7 +94,15 @@ function isPickup(status: RideStatus): boolean {
   return status === "accepted" || status === "enroute" || status === "arrived";
 }
 
-function ActiveBanner({ ride, status }: { ride: RideRow; status: RideStatus }) {
+function ActiveBanner({
+  ride,
+  status,
+  onHeight,
+}: {
+  ride: RideRow;
+  status: RideStatus;
+  onHeight: (height: number) => void;
+}) {
   const insets = useSafeAreaInsets();
   if (status === "requested") return null;
   const banner = status === "started" ? "started" : status === "arrived" ? "arrived" : "enroute";
@@ -100,6 +112,7 @@ function ActiveBanner({ ride, status }: { ride: RideRow; status: RideStatus }) {
       originHint={ride.origin_hint}
       destHint={ride.dest_hint}
       topInset={insets.top}
+      onHeight={onHeight}
     />
   );
 }
@@ -128,33 +141,50 @@ function ActivePanel({ state, actions, onRequestPin }: Omit<ActiveViewProps, "ec
 function ActiveRideView({ state, actions, eco, onRequestPin }: ActiveViewProps) {
   const router = useRouter();
   const usage = useDataUsage();
+  const [bannerHeight, setBannerHeight] = useState(0);
   const devicePosition = useDevicePosition();
+  useLivePosition(true);
+  const clientPosition = useClientPosition(state.ride?.id, state.status);
+  useRideAnnouncements({
+    ride: state.ride,
+    status: state.status,
+    origin: state.origin,
+    destination: state.destination,
+    position: devicePosition,
+  });
   const ride = state.ride;
   const status = state.status;
   if (!ride || !status) return null;
 
   return (
     <View style={styles.screen}>
-      <TekoMapView
-        options={{ tilesUrl: TILES_URL, eco }}
-        center={state.origin ?? DEFAULT_CENTER}
-        zoom={14.5}
-      >
-        <RouteLine coordinates={state.routeCoords} />
-        <MeetingPin position={isPickup(status) ? state.origin : null} />
-        <DestinationDot position={state.destination} />
-        <VehicleDot position={devicePosition} />
-      </TekoMapView>
-      <ActiveBanner ride={ride} status={status} />
-      <View style={styles.widgetStack} pointerEvents="box-none">
-        {eco ? <EcoPill /> : null}
-        <DataWidget
-          quantityText={usage.quantityText}
-          state={usage.state}
-          onPress={() => router.push("/(main)/settings" as Href)}
-          testID="data-widget"
-        />
+      <View style={styles.mapZone}>
+        <TekoMapView
+          options={{ tilesUrl: TILES_URL, eco }}
+          center={state.origin ?? DEFAULT_CENTER}
+          zoom={14.5}
+          recenter={devicePosition}
+        >
+          <RouteLine coordinates={state.routeCoords} />
+          <MeetingPin position={isPickup(status) ? state.origin : null} />
+          <ClientPin position={clientPosition} />
+          <DestinationDot position={state.destination} />
+          <VehicleDot position={devicePosition} />
+        </TekoMapView>
+        <View
+          style={[styles.widgetStack, { top: bannerHeight + spacing[3] }]}
+          pointerEvents="box-none"
+        >
+          {eco ? <EcoPill /> : null}
+          <DataWidget
+            quantityText={usage.quantityText}
+            state={usage.state}
+            onPress={() => router.push("/(main)/settings" as Href)}
+            testID="data-widget"
+          />
+        </View>
       </View>
+      <ActiveBanner ride={ride} status={status} onHeight={setBannerHeight} />
       <ActivePanel state={state} actions={actions} onRequestPin={onRequestPin} />
       <WorkToast />
     </View>
@@ -218,10 +248,13 @@ const styles = StyleSheet.create({
     padding: spacing[5],
   },
   loadError: { fontSize: typography.fontSize.base, color: color.neutral[500] },
+  mapZone: { flex: 1 },
+  // Sous la bannière, en haut de la carte : ni le panneau du bas ni la
+  // barre système ne peuvent le recouvrir, quelle que soit leur hauteur
+  // (retour terrain du 16 novembre 2026, contrôle OPPO A15 du 17).
   widgetStack: {
     position: "absolute",
     left: spacing[4],
-    bottom: 196,
     gap: spacing[2],
   },
 });

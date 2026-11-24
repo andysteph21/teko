@@ -62,8 +62,8 @@ try {
     result.numRuntimeErrorTestSuites === 0 &&
     failures.length === 1 &&
     failures[0].title.includes("reconnexion") &&
-    output.includes("Expected number of calls: 3") &&
-    output.includes("Received number of calls: 6");
+    output.includes("Expected number of calls: 2") &&
+    output.includes("Received number of calls: 4");
   const sourceUnchanged = digest(source) === digest(readFileSync(sourcePath, "utf8"));
   writeFileSync(
     resolve(evidence, "result.json"),

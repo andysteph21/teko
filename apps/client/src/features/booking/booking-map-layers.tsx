@@ -48,13 +48,15 @@ export function LandmarkMarker({ position }: { position: LonLat | null }) {
           "circle-radius": 26,
         }}
       />
+      {/* Pastille Teko agrandie (planche /sprite/teko) : même langage que les
+          repères de la carte, au-dessus des étiquettes. */}
       <Layer
-        type="circle"
-        paint={{
-          "circle-color": MAP_COLORS.markerLandmark,
-          "circle-radius": 9,
-          "circle-stroke-color": MAP_COLORS.halo,
-          "circle-stroke-width": 2.5,
+        type="symbol"
+        layout={{
+          "icon-image": "landmark-other",
+          "icon-size": 1.2,
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
         }}
       />
     </GeoJSONSource>

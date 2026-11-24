@@ -15,6 +15,20 @@ it("le devis demande au serveur le trajet et la catégorie, sans prix ni métriq
   expect(invoke).toHaveBeenCalledWith("price-quote", { body: input });
 });
 
+it("distingue des points trop proches d'une panne du service et conserve la référence", async () => {
+  const invoke = vi.fn().mockResolvedValue({
+    error: new Error("Edge Function returned a non-2xx status code"),
+    response: Response.json({ code: "POINTS_TOO_CLOSE", request_id: "ref" }, { status: 422 }),
+  });
+  await expect(
+    getRideQuote({ functions: { invoke } } as unknown as TekoClient, {
+      category: "moto",
+      origin: { lon: 9.45, lat: 0.4 },
+      destination: { lon: 9.45, lat: 0.4 },
+    }),
+  ).rejects.toMatchObject({ code: "quote_points_too_close", cause: { requestId: "ref" } });
+});
+
 it("une commande ne transmet que l'identifiant du devis et les indications de rendez-vous", async () => {
   const rpc = vi.fn().mockResolvedValue({ data: { id: "ride" }, error: null });
   const client = { rpc } as unknown as TekoClient;
