@@ -1,6 +1,6 @@
 // Prépare une base neuve pour les essais privés. Ne copie aucune donnée du banc USB.
 import { randomBytes, randomInt } from "node:crypto";
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "../..");
@@ -25,6 +25,29 @@ const accounts = roles.map((role, index) => ({
   phone: `24100000900${index + 1}`,
   code: newCode(),
 }));
+// Le relais SMTP est fourni par le porteur dans un fichier privé, hors dépôt.
+// Sans lui, aucun code ne part : les comptes par e-mail restent fermés.
+function smtpBlock() {
+  const file = resolve(root, ".local/alpha-services/smtp.json");
+  if (!existsSync(file)) return "";
+  const smtp = JSON.parse(readFileSync(file, "utf8"));
+  for (const key of ["host", "port", "user", "pass", "sender"]) {
+    if (/["\\\n]/.test(String(smtp[key] ?? "")) || !smtp[key]) {
+      throw new Error(`Relais SMTP : champ ${key} manquant ou invalide`);
+    }
+  }
+  return `
+[auth.email.smtp]
+enabled = true
+host = "${smtp.host}"
+port = ${Number(smtp.port)}
+user = "${smtp.user}"
+pass = "${smtp.pass}"
+admin_email = "${smtp.sender}"
+sender_name = "Teko"
+`;
+}
+
 const config = `[api]
 port = 58421
 
@@ -44,11 +67,32 @@ enabled = false
 
 [auth]
 enabled = true
-enable_signup = false
+# Ouvert depuis le compte par e-mail : la garde before_user_created ci-dessous
+# refuse toute adresse ou tout numéro sans invitation active.
+enable_signup = true
 site_url = "${api}"
 jwt_secret = "${nonce()}"
 publishable_key = "sb_publishable_${nonce()}"
 secret_key = "sb_secret_${nonce()}"
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+otp_length = 6
+otp_expiry = 600
+max_frequency = "60s"
+
+[auth.email.template.magic_link]
+subject = "Votre code Teko"
+content_path = "./supabase/templates/code.html"
+
+[auth.email.template.confirmation]
+subject = "Votre code Teko"
+content_path = "./supabase/templates/code.html"
+${smtpBlock()}
+[auth.hook.before_user_created]
+enabled = true
+uri = "pg-functions://postgres/public/alpha_before_user_created"
 
 [auth.sms]
 enable_signup = true
@@ -76,7 +120,7 @@ writeFileSync(resolve(workdir, "accounts.json"), `${JSON.stringify(accounts, nul
   flag: "wx",
   mode: 0o600,
 });
-for (const name of ["migrations", "functions", "seed.sql"]) {
+for (const name of ["migrations", "functions", "templates", "seed.sql"]) {
   cpSync(resolve(source, name), resolve(target, name), { recursive: true });
 }
 const expo = readFileSync(

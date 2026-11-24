@@ -20,7 +20,7 @@ dix-neuf arbitrages (A1 à A19) à soumettre avant tout développement.
 | Livraison comme option | R5 | ✅ Arbitrés le 23 novembre ; ouverture bloquée jusqu’à l’avis juridique |
 | Covoiturage au tarif à la place (250 FCFA/km, 500 à 1 850 FCFA, 3 places) | R4 | ✅ Arbitrés le 23 novembre, à développer |
 | Accueil affichant directement les options | R2 | ➡️ Implémenté dans le dépôt le 23 novembre ; maquette C-07 à mettre à jour, non publié |
-| Compte validé par e-mail ou Google, numéro simplement enregistré | R1 | ✅ Arbitrés le 23 novembre ; e-mail mis en avant, SMS gardé en option future |
+| Compte validé par e-mail ou Google, numéro simplement enregistré | R1 | ➡️ Code par e-mail implémenté dans le dépôt le 23 novembre, non déployé ; Google, anti-comptes multiples et rattachement des comptes existants à faire |
 
 **Réponse du porteur du 23 novembre 2026 :** accord pour implémenter les six
 suggestions. La sonnerie des propositions et les annonces vocales ont « très
@@ -30,6 +30,16 @@ un par un le même jour ; ils sont consignés dans le
 s’écartent de la recommandation : SMS conservé comme option future (A1),
 covoiturage d’office pour toutes les voitures (A13), code et photo à la
 remise d’un colis (A17), livraison en voiture et en moto.
+
+**Attendu du porteur pour déployer le compte par e-mail :**
+
+1. Les identifiants d’un relais SMTP (hôte, port, identifiant, mot de passe,
+   adresse d’expédition), transmis hors dépôt.
+2. Un client OAuth Android Google lié à la clé de signature alpha, pour le
+   bouton Google.
+3. L’adresse e-mail de chaque testeur déjà inscrit, pour rattacher son compte
+   actuel sans perdre courses ni soldes.
+4. L’accord explicite pour déployer sur le VPS et publier les APK.
 
 ## Réponses du porteur pour l’alpha du 18 octobre 2026
 

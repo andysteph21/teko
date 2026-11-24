@@ -41,6 +41,12 @@ export async function restoreAccountIfDeletionPending(
   return true;
 }
 
+/** Numéro de contact déclaré : normalisé en chiffres seuls par le serveur,
+ *  changement tracé. Le numéro n'est pas une identité (décision A3). */
+export async function updateContactPhone(client: TekoClient, phone: string): Promise<string> {
+  return unwrap(await client.rpc("update_contact_phone", { p_phone: phone })) as string;
+}
+
 /** Le serveur rattache le jeton Expo à une seule session propriétaire. */
 export async function registerDevice(
   client: TekoClient,

@@ -7,6 +7,7 @@ export {
   restoreAccountIfDeletionPending,
   touchLastSeen,
   type UpdateProfileInput,
+  updateContactPhone,
   updateProfile,
 } from "./account";
 export {
@@ -39,8 +40,16 @@ export {
   validateLandmarkProposal,
   validateRoadProposal,
 } from "./admin";
-export { listAlphaInvites, setAlphaInvite } from "./alpha-invites";
-export { type Session, signInWithPhoneOtp, signOut, verifyPhoneOtp } from "./auth";
+export { listAlphaInvites, setAlphaInvite, setAlphaInviteEmail } from "./alpha-invites";
+export {
+  normalizeEmail,
+  type Session,
+  signInWithEmailOtp,
+  signInWithPhoneOtp,
+  signOut,
+  verifyEmailOtp,
+  verifyPhoneOtp,
+} from "./auth";
 export {
   type CreateTekoClientOptions,
   createTekoClient,

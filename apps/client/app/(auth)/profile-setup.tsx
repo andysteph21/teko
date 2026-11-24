@@ -1,24 +1,34 @@
-// C-05 Profil — prénom requis, nom et e-mail optionnels. L'e-mail (badge
-// MVP) est le filet de récupération si le numéro est perdu (parcours E).
+// C-05 Profil — prénom et numéro de téléphone requis, nom optionnel. Le
+// numéro est un contact déclaré (décision A3 du 23 novembre 2026) : il peut
+// changer sans perdre le compte, qui suit l'adresse e-mail.
 
-import { updateProfile } from "@teko/api-client";
+import { updateContactPhone, updateProfile } from "@teko/api-client";
 import { color, spacing, typography } from "@teko/ui";
-import { Button, MvpBadge, TextField } from "@teko/ui/native";
+import { Button, TextField } from "@teko/ui/native";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { isValidGabonNational } from "../../src/features/auth/otp-channel";
 import { supabase } from "../../src/lib/supabase";
 
 export default function ProfileSetup() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { t } = useTranslation();
+
+  // Compte ouvert par numéro (banc, option SMS) : le numéro est déjà connu.
+  useEffect(() => {
+    void supabase.auth.getUser().then(({ data }) => {
+      const known = data.user?.phone?.replace(/\D/g, "") ?? "";
+      if (known.startsWith("241")) setPhone((current) => current || known.slice(3));
+    });
+  }, []);
 
   const save = async () => {
     setBusy(true);
@@ -28,10 +38,8 @@ export default function ProfileSetup() {
       const userId = data.user?.id;
       if (!userId) throw new Error("session absente");
       const fullName = [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
-      await updateProfile(supabase, userId, {
-        fullName,
-        ...(email.trim() ? { email: email.trim() } : {}),
-      });
+      await updateProfile(supabase, userId, { fullName });
+      await updateContactPhone(supabase, `+241${phone.replace(/\s/g, "")}`);
       router.replace("/(auth)/location");
     } catch {
       setError(t("erreurs.generique"));
@@ -62,29 +70,25 @@ export default function ProfileSetup() {
           onChangeText={setLastName}
           autoComplete="family-name"
         />
-        <View>
-          <View style={styles.emailLabel}>
-            <Text style={styles.emailLabelText}>
-              {t("account:profil.email")} {t("account:profil.nomOptionnel")}
-            </Text>
-            <MvpBadge />
-          </View>
-          <TextField
-            placeholder={t("account:profil.emailPlaceholder")}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            helper={t("account:profil.emailHelper")}
-          />
-        </View>
+        <TextField
+          label={t("account:profil.telephone")}
+          prefix="🇬🇦 +241"
+          placeholder={t("account:phone.placeholder")}
+          keyboardType="phone-pad"
+          autoComplete="tel"
+          value={phone}
+          onChangeText={setPhone}
+          helper={t("account:profil.telephoneHelper")}
+          testID="profile-phone"
+        />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button
           label={t("account:profil.cta")}
           onPress={() => void save()}
           busy={busy}
-          disabled={firstName.trim().length === 0}
+          disabled={
+            firstName.trim().length === 0 || !isValidGabonNational(phone.replace(/\s/g, ""))
+          }
           testID="profile-continue"
         />
       </View>
@@ -113,11 +117,5 @@ const styles = StyleSheet.create({
   },
   avatarText: { color: color.brand[800], fontSize: typography.fontSize["2xl"], fontWeight: "700" },
   form: { marginTop: spacing[5], gap: spacing[4] },
-  emailLabel: { flexDirection: "row", alignItems: "center", gap: spacing[2], marginBottom: 6 },
-  emailLabelText: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: "600",
-    color: color.neutral[700],
-  },
   error: { color: color.semantic.error.default, fontSize: typography.fontSize.sm },
 });

@@ -2,7 +2,7 @@
 // les gains (défaut = numéro du compte, modifiable). Moov grisé « bientôt ».
 // Terminer → D-08 vérification (replace : on ne revient pas dans l'assistant).
 
-import { setPayoutMsisdn, TekoApiError } from "@teko/api-client";
+import { setPayoutMsisdn, TekoApiError, updateContactPhone } from "@teko/api-client";
 import { color, spacing, typography } from "@teko/ui";
 import { Button, TextField } from "@teko/ui/native";
 import { type Href, useRouter } from "expo-router";
@@ -48,6 +48,8 @@ export default function Payout() {
     setError(null);
     try {
       await setPayoutMsisdn(supabase, userId, `+241${cleaned}`);
+      // Compte ouvert par e-mail : ce numéro devient aussi le contact déclaré.
+      if (!session?.user.phone) await updateContactPhone(supabase, `+241${cleaned}`);
       router.replace("/(auth)/verification" as Href);
     } catch (e) {
       setError(

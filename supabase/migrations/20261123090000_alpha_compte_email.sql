@@ -154,6 +154,11 @@ begin
     and ((address <> '' and i.email = address) or (digits <> '' and i.phone = digits))) then
     return '{}'::jsonb;
   end if;
+  -- Un administrateur invité ouvre aussi son compte par son numéro.
+  if digits <> '' and exists(select 1 from public.admin_invites a
+    where a.phone = digits and a.accepted_at is null and a.expires_at > now()) then
+    return '{}'::jsonb;
+  end if;
   return jsonb_build_object('error', jsonb_build_object(
     'http_code', 403, 'message', 'Invitation alpha requise'));
 end;
@@ -161,5 +166,5 @@ $$;
 revoke all on function public.alpha_before_user_created(jsonb) from public, anon, authenticated, service_role;
 grant execute on function public.alpha_before_user_created(jsonb) to supabase_auth_admin;
 grant usage on schema public to supabase_auth_admin;
-grant select on public.alpha_invites to supabase_auth_admin;
+grant select on public.alpha_invites, public.admin_invites to supabase_auth_admin;
 notify pgrst, 'reload schema';

@@ -16,3 +16,7 @@ export const USB_GPS_FIXTURE =
 export function devicePoint(point: { lon: number; lat: number }) {
   return USB_GPS_FIXTURE ? DEFAULT_CENTER : point;
 }
+
+/** Connexion par numéro : gardée pour les comptes existants du banc et pour
+ *  l'option SMS future (décision A1 du 23 novembre 2026). `0` la masque. */
+export const PHONE_LOGIN_ENABLED = process.env.EXPO_PUBLIC_PHONE_LOGIN !== "0";

@@ -16,8 +16,15 @@ const fieldAuthPaths = new Set([
   "/auth/v1/otp",
   "/auth/v1/verify",
   "/install/otp",
+  "/install/email-otp",
   "/install/session",
 ]);
+// Connexion par e-mail (décision du 23 novembre 2026). À n'ouvrir qu'une
+// fois la garde Auth « alpha_before_user_created » déclarée sur le banc :
+// c'est elle qui refuse la création d'un compte non invité.
+const emailSignup = admin?.emailSignup === true;
+// Caractères sûrs seulement : l'adresse est réaffichée dans le formulaire.
+const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
 const attempts = new Map();
 const sessions = new Map();
 const windowMs = 10 * 60_000;
@@ -55,7 +62,43 @@ function reserve(identity, operation, limit = 8) {
   return true;
 }
 
+/** Code par e-mail : la passerelle ne révèle jamais si une adresse est
+ *  invitée ; après vérification, le rôle vient de l'invitation active. */
+async function emailAuth(operation, input) {
+  const email = input.email.trim().toLowerCase();
+  if (!emailSignup || email.length > 254 || !emailPattern.test(email)) {
+    return { status: 400, data: { msg: "Adresse non autorisée." } };
+  }
+  const payload = { email };
+  if (operation === "verify") {
+    if (typeof input.token !== "string" || !/^\d{6}$/.test(input.token)) {
+      return { status: 400, data: { msg: "Code invalide." } };
+    }
+    Object.assign(payload, { type: "email", token: input.token });
+  } else Object.assign(payload, { create_user: true });
+  if (!reserve(email, operation)) {
+    return { status: 429, data: { msg: "Trop d’essais. Réessaie dans dix minutes." } };
+  }
+  const response = await fetch(`${upstream}/auth/v1/${operation}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(8000),
+  });
+  const data = await response.json();
+  if (operation === "otp") return { status: 200, data: {} };
+  if (!data.access_token) return { status: response.status, data };
+  const roles = Object.hasOwn(files, input.role) ? [input.role] : Object.keys(files);
+  const invitations = await Promise.all(roles.map((name) => isInvited(data.access_token, name)));
+  const role = roles[invitations.indexOf(true)];
+  if (!role) return { status: 403, data: { msg: "Invitation requise pour ce rôle." } };
+  return { status: response.status, data, role };
+}
+
 async function auth(operation, input, operator) {
+  if (!operator && typeof input.email === "string" && input.phone === undefined) {
+    return emailAuth(operation, input);
+  }
   const phone = typeof input.phone === "string" ? input.phone.replace(/^\+/, "") : "";
   let role = operator ?? accounts.get(phone);
   const field = !operator && admin?.fieldSignup === true;
@@ -123,7 +166,7 @@ function sessionFrom(req) {
   return session && session.until > Date.now() ? session : null;
 }
 
-function page(res, session, fieldPhone) {
+function page(res, session, fieldPhone, fieldEmail) {
   const field = admin?.fieldSignup === true;
   const otpForm =
     field && !fieldPhone
@@ -132,10 +175,20 @@ function page(res, session, fieldPhone) {
   const identity = field
     ? `<input name="phone" type="hidden" value="${fieldPhone ?? ""}"><label>Application <select name="role"><option value="client">Passager</option><option value="driver">Chauffeur</option></select></label>`
     : '<label>Numéro d’essai <input name="phone" type="tel" required maxlength="14"></label>';
+  const roleSelect =
+    '<label>Application <select name="role"><option value="client">Passager</option><option value="driver">Chauffeur</option></select></label>';
+  const emailForm = !emailSignup
+    ? ""
+    : fieldEmail
+      ? `<form method="post" action="/install/session"><input name="email" type="hidden" value="${fieldEmail}">${roleSelect}<label>Code reçu par e-mail <input name="code" inputmode="numeric" pattern="[0-9]{6}" required></label><button>Accéder à l’APK</button></form>`
+      : '<form method="post" action="/install/email-otp"><label>Adresse e-mail invitée <input name="email" type="email" required maxlength="254"></label><button>Recevoir le code par e-mail</button></form>';
   const message = session
     ? `<p><a href="/install/${files[session.role]}">Télécharger l’application Android</a></p>`
-    : (otpForm ??
-      `<form method="post" action="/install/session">
+    : fieldEmail
+      ? emailForm
+      : emailForm +
+        (otpForm ??
+          `<form method="post" action="/install/session">
 ${identity}
 <label>${field ? "Code reçu par SMS" : "Code d’essai"} <input name="code" inputmode="numeric" pattern="[0-9]{6}" required></label>
 <button>Accéder à l’APK</button></form>`);
@@ -156,9 +209,11 @@ async function installLogin(req, res) {
     return reply(res, 403, { msg: "Les inscriptions terrain ne sont pas ouvertes." });
   const form = new URLSearchParams(await body(req));
   const role = form.get("role");
-  if (admin?.fieldSignup && !Object.hasOwn(files, role))
+  if ((admin?.fieldSignup || form.get("email")) && !Object.hasOwn(files, role))
     return reply(res, 400, { msg: "Rôle requis." });
-  const result = await auth("verify", { phone: form.get("phone"), token: form.get("code"), role });
+  const email = form.get("email");
+  const identity = email ? { email } : { phone: form.get("phone") };
+  const result = await auth("verify", { ...identity, token: form.get("code"), role });
   const token = result.data.access_token;
   if (!token) {
     return reply(
@@ -192,6 +247,17 @@ async function installOtp(req, res) {
   if (result.status !== 200)
     return reply(res, result.status, { msg: "Demande de code indisponible." });
   return page(res, null, phone);
+}
+
+async function installEmailOtp(req, res) {
+  if (admin?.mobileClosed || !emailSignup) return reply(res, 403, { msg: "Inscriptions fermées." });
+  const email = new URLSearchParams(await body(req)).get("email")?.trim().toLowerCase() ?? "";
+  if (email.length > 254 || !emailPattern.test(email))
+    return reply(res, 400, { msg: "Adresse invalide." });
+  const result = await auth("otp", { email });
+  if (result.status !== 200)
+    return reply(res, result.status, { msg: "Demande de code indisponible." });
+  return page(res, null, undefined, email);
 }
 
 async function download(req, res, pathname) {
@@ -339,7 +405,11 @@ async function adminRequest(req, res, pathname) {
 async function handle(req, res) {
   const pathname = new URL(req.url, "http://localhost").pathname;
   if (pathname.startsWith("/admin/alpha-api/")) return adminRequest(req, res, pathname);
-  if (admin?.fieldSignup && req.method === "POST" && fieldAuthPaths.has(pathname)) {
+  if (
+    (admin?.fieldSignup || emailSignup) &&
+    req.method === "POST" &&
+    fieldAuthPaths.has(pathname)
+  ) {
     const address = req.headers["x-teko-client-ip"];
     if (typeof address !== "string" || !reserve(address, "terrain", 30)) {
       return reply(res, 429, { msg: "Trop d’essais. Réessayez dans dix minutes." });
@@ -353,6 +423,7 @@ async function handle(req, res) {
   }
   if (req.method === "POST" && pathname === "/install/session") return installLogin(req, res);
   if (req.method === "POST" && pathname === "/install/otp") return installOtp(req, res);
+  if (req.method === "POST" && pathname === "/install/email-otp") return installEmailOtp(req, res);
   if (req.method === "GET" && pathname === "/install") {
     if (admin?.mobileClosed) {
       return reply(

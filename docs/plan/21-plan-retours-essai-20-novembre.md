@@ -124,6 +124,27 @@ qu’un code lui soit remis à la main.
   chauffeur devra être vérifié autrement quand Airtel sera réactivé ; mise à
   jour du budget (500 SMS en moins) et de la notice données personnelles.
 
+**État au 23 novembre 2026 — code par e-mail fait dans le dépôt, non déployé.**
+
+| Élément | État |
+| --- | --- |
+| Invitation par e-mail vérifié, numéro de contact déclaré (`update_contact_phone`), garde du dispatch rétablie | ✅ Migration `20261123090000_alpha_compte_email`, scénarios JWT `compte-email.test.ts` |
+| Garde de création de compte (`alpha_before_user_created`) : adresse ou numéro invité, ou numéro d’un administrateur invité | ✅ Vérifiée sur une instance jetable : adresse non invitée refusée en 403, adresse invitée reçoit le code, code faux refusé |
+| Écrans passager et chauffeur : e-mail, code à 6 chiffres, numéro demandé au profil (passager) et au versement (chauffeur) | ✅ Tests d’écran ; **pas encore vus sur appareil** |
+| Console : inviter une adresse | ✅ |
+| Portail `/install` : connexion par e-mail | ➡️ Écrit, contrôlé en syntaxe seulement, jamais exécuté |
+| Bouton Google (A2) | ⏳ Attend le client OAuth Android lié à la clé alpha |
+| Frein aux comptes multiples (A5) | ⏳ À faire |
+| Rattachement des 17 comptes du VPS à un e-mail | ⏳ À faire, avec les adresses des testeurs |
+| Relais SMTP sur le VPS | ⏳ Attend les identifiants du porteur |
+| Maestro sur OPPO, nouveaux APK | ⏳ Après les points ci-dessus |
+
+La connexion par SMS reste dans le code derrière le drapeau
+`EXPO_PUBLIC_PHONE_LOGIN` (décision A1) ; l’e-mail est le parcours par défaut.
+L’écran `recovery.tsx` est conservé tant que le SMS reste une option.
+Les étapes de déploiement sont dans la
+[notice d’exploitation](12-exploitation-alpha-vps.md#compte-par-e-mail--déploiement-à-faire).
+
 ### R2 — Accueil avec options directes (3 à 4 jours)
 
 - Feuille d’accueil : une rangée d’options avec leur pictogramme (Éco, Confort,

@@ -371,3 +371,22 @@ Conséquences à traiter dans les lots : la catégorie Moto, masquée le
 de remise ajoute un stockage et une durée de conservation à définir ; le
 prestataire SMS reste à choisir pour l’option SMS.
 
+
+
+### Mise en œuvre du compte par e-mail — décisions d’ingénierie du 23 novembre 2026
+
+- **Inscription ouverte mais gardée.** L’invitation par e-mail suppose que
+  l’invité crée lui-même son compte : l’inscription Auth est donc ouverte sur
+  le banc distant, et une garde serveur exécutée avant toute création
+  (`alpha_before_user_created`) refuse l’adresse ou le numéro sans invitation
+  active. Un administrateur invité passe par son numéro. Les RPC continuent
+  de vérifier l’invitation : la garde est une seconde barrière, pas la seule.
+- **Garde désactivée en développement local**, où les numéros de test
+  s’inscrivent librement ; elle est active dans la configuration du banc
+  distant.
+- **Code à 6 chiffres valable 10 minutes**, un envoi par minute au plus sur
+  le banc distant. Pas de lien magique : le modèle de message ne contient que
+  le code.
+- **Restent ouverts :** bouton Google (client OAuth à créer par le porteur),
+  frein aux comptes multiples (A5), rattachement des comptes existants,
+  relais SMTP. Aucun déploiement fait.

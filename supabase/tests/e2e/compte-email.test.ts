@@ -92,6 +92,24 @@ describe("invitation par e-mail vérifié", () => {
     ]);
     expect(accepted.rows[0].r).toEqual({});
   });
+
+  it("la garde laisse passer le numéro d'un administrateur invité, tant que l'invitation vaut", async () => {
+    const inviter = await createUser({ emailOnly: true });
+    const phone = `2410${Math.floor(1e7 + Math.random() * 9e7)}`;
+    const gate = () =>
+      serviceSql("select public.alpha_before_user_created($1::jsonb) as r", [
+        JSON.stringify({ user: { phone } }),
+      ]);
+    expect((await gate()).rows[0].r.error.http_code).toBe(403);
+    await serviceSql(
+      "insert into public.admin_invites(phone,admin_role,invited_by) values($1,'ops',$2)",
+      [phone, inviter.id],
+    );
+    expect((await gate()).rows[0].r).toEqual({});
+    await serviceSql("update public.admin_invites set expires_at = now() where phone = $1", [phone]);
+    expect((await gate()).rows[0].r.error.http_code).toBe(403);
+    await serviceSql("delete from public.admin_invites where phone = $1", [phone]);
+  });
 });
 
 describe("numéro de contact déclaré", () => {

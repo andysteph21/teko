@@ -10,13 +10,10 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { isValidGabonNational } from "../../src/features/auth/otp-channel";
 import { supabase } from "../../src/lib/supabase";
 
-/** Numéro national gabonais : 8 chiffres (06/07/60/62/65/66/74/77…). Les
- *  numéros de test locaux (070000001…) en font 9 — tolérés en dev. */
-export function isValidGabonNational(digits: string): boolean {
-  return /^\d{8,9}$/.test(digits);
-}
+export { isValidGabonNational };
 
 const DEV_DEFAULT = __DEV__ ? "07000001" : "";
 

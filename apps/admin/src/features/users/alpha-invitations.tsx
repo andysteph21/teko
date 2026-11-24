@@ -1,11 +1,12 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { listAlphaInvites, setAlphaInvite } from "@teko/api-client";
+import { listAlphaInvites, setAlphaInvite, setAlphaInviteEmail } from "@teko/api-client";
 import { type FormEvent, useState } from "react";
 import { alphaRequest, privateAlpha } from "../../lib/private-alpha";
 import { supabase } from "../../lib/supabase";
 import { useAdminProfile } from "../shell/use-admin-profile";
 import { useSession } from "../shell/use-session";
+import { AlphaEmailInvite } from "./alpha-email-invite";
 
 const syntheticAccounts = privateAlpha && process.env.NEXT_PUBLIC_TEKO_SYNTHETIC_TESTERS === "true";
 const fixedCampaign =
@@ -44,6 +45,13 @@ function InvitationCredentials({
 }
 
 type Invitation = Awaited<ReturnType<typeof listAlphaInvites>>[number];
+/** Une invitation porte un numéro vérifié ou un e-mail vérifié. */
+type InviteChange = {
+  phone?: string;
+  email?: string;
+  role: "client" | "driver";
+  active: boolean;
+};
 
 function InvitedAccounts({
   rows,
@@ -55,33 +63,35 @@ function InvitedAccounts({
   rows: Invitation[] | undefined;
   updating: boolean;
   provisioning: boolean;
-  toggle: (input: { phone: string; role: "client" | "driver"; active: boolean }) => void;
+  toggle: (input: InviteChange) => void;
   reveal: (input: Pick<TestInvitation, "phone" | "role">) => void;
 }) {
   return (
     <ul className="mt-3 divide-y divide-neutral-100">
       {rows?.map((row) => {
-        const account = { phone: row.phone, role: row.role as TestInvitation["role"] };
+        const role = row.role as TestInvitation["role"];
+        const identity = row.email ? { email: row.email } : { phone: row.phone ?? "" };
+        const testPhone = row.phone ?? "";
         return (
           <li key={row.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
             <span>
-              +{row.phone} · {row.role === "driver" ? "Chauffeur" : "Passager"} ·{" "}
+              {row.email ?? `+${row.phone}`} · {row.role === "driver" ? "Chauffeur" : "Passager"} ·{" "}
               {row.is_active ? "Invité" : "Retiré"}
             </span>
             <button
               type="button"
               disabled={updating}
               className="underline"
-              onClick={() => toggle({ ...account, active: !row.is_active })}
+              onClick={() => toggle({ ...identity, role, active: !row.is_active })}
             >
               {row.is_active ? "Retirer l’invitation" : "Réactiver l’invitation"}
             </button>
-            {syntheticAccounts && row.is_active && /^2410000091\d{2}$/.test(row.phone) && (
+            {syntheticAccounts && row.is_active && /^2410000091\d{2}$/.test(testPhone) && (
               <button
                 type="button"
                 disabled={provisioning}
                 className="underline"
-                onClick={() => reveal(account)}
+                onClick={() => reveal({ phone: testPhone, role })}
               >
                 Afficher le code
               </button>
@@ -109,8 +119,29 @@ function useTestInvitation(token: string | undefined, show: (value: TestInvitati
   });
 }
 
-function InvitationList() {
+function useInviteUpdate(onDone: () => void) {
   const cache = useQueryClient();
+  return useMutation({
+    mutationFn: (input: InviteChange) =>
+      input.email
+        ? setAlphaInviteEmail(supabase, {
+            email: input.email,
+            role: input.role,
+            active: input.active,
+          })
+        : setAlphaInvite(supabase, {
+            phone: input.phone ?? "",
+            role: input.role,
+            active: input.active,
+          }),
+    onSuccess: () => {
+      onDone();
+      return cache.invalidateQueries({ queryKey: ["alpha-invites"] });
+    },
+  });
+}
+
+function InvitationList() {
   const { session } = useSession();
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState<"client" | "driver">("client");
@@ -119,14 +150,7 @@ function InvitationList() {
     queryKey: ["alpha-invites"],
     queryFn: () => listAlphaInvites(supabase),
   });
-  const update = useMutation({
-    mutationFn: (input: { phone: string; role: "client" | "driver"; active: boolean }) =>
-      setAlphaInvite(supabase, input),
-    onSuccess: () => {
-      setCredentials(null);
-      return cache.invalidateQueries({ queryKey: ["alpha-invites"] });
-    },
-  });
+  const update = useInviteUpdate(() => setCredentials(null));
   const provision = useTestInvitation(session?.access_token, setCredentials);
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -139,6 +163,7 @@ function InvitationList() {
     <section className="rounded-xl border border-neutral-200 bg-neutral-0 p-4">
       <h2 className="font-bold">Invitations à l’alpha fermée</h2>
       <p className="my-2 text-sm">{invitationIntro}</p>
+      <AlphaEmailInvite />
       {!fixedCampaign && (
         <form onSubmit={submit} className="flex flex-wrap gap-2">
           {!syntheticAccounts && (

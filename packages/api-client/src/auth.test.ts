@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { signInWithPhoneOtp, signOut, verifyPhoneOtp } from "./auth";
+import {
+  signInWithEmailOtp,
+  signInWithPhoneOtp,
+  signOut,
+  verifyEmailOtp,
+  verifyPhoneOtp,
+} from "./auth";
 import type { TekoClient } from "./client";
 
 function authClient(methods: Record<string, unknown>): TekoClient {
@@ -54,5 +60,43 @@ describe("auth téléphone (OTP SMS)", () => {
     client.rpc = vi.fn().mockResolvedValue({ error: { message: "Network request failed" } });
     await expect(signOut(client)).rejects.toMatchObject({ code: "network" });
     expect(exit).not.toHaveBeenCalled();
+  });
+});
+
+describe("auth e-mail (code à 6 chiffres)", () => {
+  it("signInWithEmailOtp normalise l'adresse et autorise la création du compte", async () => {
+    const signInWithOtp = vi.fn().mockResolvedValue({ error: null });
+    await signInWithEmailOtp(authClient({ signInWithOtp }), "  Invitee@Example.COM ");
+    expect(signInWithOtp).toHaveBeenCalledWith({
+      email: "invitee@example.com",
+      options: { shouldCreateUser: true },
+    });
+  });
+
+  it("verifyEmailOtp renvoie la session, type email", async () => {
+    const session = { access_token: "jwt" };
+    const verifyOtp = vi.fn().mockResolvedValue({ data: { session }, error: null });
+    const result = await verifyEmailOtp(authClient({ verifyOtp }), "Invitee@Example.com", "123456");
+    expect(result).toBe(session);
+    expect(verifyOtp).toHaveBeenCalledWith({
+      email: "invitee@example.com",
+      token: "123456",
+      type: "email",
+    });
+  });
+
+  it("verifyEmailOtp : code refusé ou session absente → TekoApiError", async () => {
+    const bad = authClient({
+      verifyOtp: vi.fn().mockResolvedValue({ data: {}, error: { message: "Token has expired" } }),
+    });
+    await expect(verifyEmailOtp(bad, "a@b.co", "000000")).rejects.toMatchObject({
+      code: "unknown",
+    });
+    const noSession = authClient({
+      verifyOtp: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    });
+    await expect(verifyEmailOtp(noSession, "a@b.co", "123456")).rejects.toMatchObject({
+      code: "unknown",
+    });
   });
 });

@@ -1,24 +1,25 @@
-// D-03 Code OTP chauffeur — 6 chiffres, renvoi 30 s puis 60 s, repli e-mail
-// MVP après deux renvois. Après vérification : pas de fiche chauffeur →
+// D-03 Code chauffeur — 6 chiffres reçus par e-mail (ou par SMS pour un
+// compte à numéro), renvoi 30 s puis 60 s. Après vérification : pas de fiche chauffeur →
 // D-04 identité (parcours G) ; sinon retour au splash qui route l'état.
 
-import { getMyDriver, signInWithPhoneOtp, TekoApiError, verifyPhoneOtp } from "@teko/api-client";
+import { getMyDriver, TekoApiError } from "@teko/api-client";
 import { color, spacing, typography } from "@teko/ui";
-import { Button, MvpBadge, OtpInput } from "@teko/ui/native";
+import { Button, OtpInput } from "@teko/ui/native";
 import { type Href, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { otpChannel } from "../../src/features/auth/otp-channel";
 import { supabase } from "../../src/lib/supabase";
 
 export default function Otp() {
-  const { phone } = useLocalSearchParams<{ phone: string }>();
+  const params = useLocalSearchParams<{ phone?: string; email?: string }>();
+  const channel = otpChannel(params);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(30);
-  const [resendCount, setResendCount] = useState(0);
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -29,18 +30,17 @@ export default function Otp() {
   }, [resendIn]);
 
   const resend = async () => {
-    if (!phone) return;
-    setResendCount((n) => n + 1);
+    if (!channel) return;
     setResendIn(60);
-    await signInWithPhoneOtp(supabase, phone).catch(() => setError(t("erreurs.generique")));
+    await channel.send().catch(() => setError(t("erreurs.generique")));
   };
 
   const verify = async (value: string) => {
-    if (!phone || value.length < 6) return;
+    if (!channel || value.length < 6) return;
     setBusy(true);
     setError(null);
     try {
-      const session = await verifyPhoneOtp(supabase, phone, value);
+      const session = await channel.verify(value);
       const driver = await getMyDriver(supabase, session.user.id);
       if (driver) router.replace("/");
       else router.replace("/(auth)/identity" as Href);
@@ -59,7 +59,10 @@ export default function Otp() {
     <SafeAreaView style={styles.screen}>
       <Text style={styles.title}>{t("kyc:otp.titre")}</Text>
       <Text style={styles.text}>
-        {t("kyc:otp.envoyeAu", { phone })}{" "}
+        {t(channel?.kind === "email" ? "kyc:otp.envoyeParEmail" : "kyc:otp.envoyeAu", {
+          phone: channel?.target,
+          email: channel?.target,
+        })}{" "}
         <Text style={styles.modify} onPress={() => router.back()}>
           {t("kyc:otp.modifier")}
         </Text>
@@ -84,7 +87,7 @@ export default function Otp() {
           disabled={code.length < 6}
           testID="otp-continue"
         />
-        <ResendBlock resendIn={resendIn} resendCount={resendCount} onResend={() => void resend()} />
+        <ResendBlock resendIn={resendIn} onResend={() => void resend()} />
       </View>
     </SafeAreaView>
   );
@@ -92,12 +95,11 @@ export default function Otp() {
 
 interface ResendBlockProps {
   resendIn: number;
-  resendCount: number;
   onResend: () => void;
 }
 
-/** Renvoi du code (compte à rebours) + repli e-mail MVP après deux renvois. */
-function ResendBlock({ resendIn, resendCount, onResend }: ResendBlockProps) {
+/** Renvoi du code, après le compte à rebours. */
+function ResendBlock({ resendIn, onResend }: ResendBlockProps) {
   const { t } = useTranslation();
   return (
     <>
@@ -113,15 +115,6 @@ function ResendBlock({ resendIn, resendCount, onResend }: ResendBlockProps) {
           <Text style={styles.resendText}>{t("kyc:otp.renvoyer")}</Text>
         </Pressable>
       )}
-      {resendCount >= 2 ? (
-        <View style={styles.fallback}>
-          <Text style={styles.resendWait}>{t("kyc:otp.ou")}</Text>
-          <View style={styles.fallbackRow}>
-            <Text style={styles.resendText}>{t("kyc:otp.repliEmail")}</Text>
-            <MvpBadge />
-          </View>
-        </View>
-      ) : null}
     </>
   );
 }
@@ -150,6 +143,4 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     fontVariant: ["tabular-nums"],
   },
-  fallback: { alignItems: "center", gap: spacing[1] },
-  fallbackRow: { flexDirection: "row", alignItems: "center", gap: spacing[2] },
 });

@@ -18,6 +18,19 @@ export const accountFr = {
     slide3Texte:
       "Compteur de consommation intégré et mode éco — Teko roule aussi sur les petits forfaits.",
   },
+  email: {
+    titre: "Votre adresse e-mail",
+    texte:
+      "Votre compte Teko suit votre adresse e-mail — pas de mot de passe. Vous pourrez changer de numéro sans perdre votre compte.",
+    label: "Adresse e-mail",
+    placeholder: "vous@exemple.com",
+    helper: "Un code à 6 chiffres vous sera envoyé par e-mail.",
+    cta: "Recevoir le code",
+    avecNumero: "Se connecter avec mon numéro",
+    erreurFormat: "Adresse e-mail invalide.",
+    erreurEnvoi:
+      "Code non envoyé. Vérifiez l'adresse ; l'essai est réservé aux personnes invitées.",
+  },
   phone: {
     titre: "Votre numéro",
     texte: "Votre compte Teko suit votre numéro de téléphone — pas de mot de passe.",
@@ -31,6 +44,7 @@ export const accountFr = {
   otp: {
     titre: "Code de vérification",
     envoyeAu: "Envoyé par SMS au {{phone}}.",
+    envoyeParEmail: "Envoyé par e-mail à {{email}}.",
     modifier: "Modifier",
     renvoyerDans: "Renvoyer le code dans {{s}} s",
     renvoyer: "Renvoyer le code",
@@ -49,6 +63,9 @@ export const accountFr = {
     email: "E-mail",
     emailPlaceholder: "vous@exemple.com",
     emailHelper: "Recommandé : permet de récupérer votre compte si vous perdez votre numéro.",
+    telephone: "Numéro de téléphone",
+    telephoneHelper:
+      "Pour que le chauffeur puisse vous joindre. Vous pourrez le changer plus tard.",
     cta: "Continuer",
   },
   location: {

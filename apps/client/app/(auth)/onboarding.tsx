@@ -3,7 +3,7 @@
 
 import { color, spacing, typography } from "@teko/ui";
 import { Button, CarIcon, DataBarsIcon, LandmarkPinIcon } from "@teko/ui/native";
-import { useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -23,14 +23,14 @@ export default function Onboarding() {
   const slide = SLIDES[index] ?? SLIDES[0];
 
   const next = () => {
-    if (last) router.replace("/(auth)/phone");
+    if (last) router.replace("/(auth)/email" as Href);
     else setIndex((i) => i + 1);
   };
 
   return (
     <SafeAreaView style={styles.screen}>
       <Pressable
-        onPress={() => router.replace("/(auth)/phone")}
+        onPress={() => router.replace("/(auth)/email" as Href)}
         style={styles.skip}
         accessibilityRole="button"
       >

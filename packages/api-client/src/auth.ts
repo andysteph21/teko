@@ -1,5 +1,7 @@
-// Authentification par téléphone (C-03/C-04, D-03) — OTP SMS Supabase.
-// En local : numéros de test de supabase/config.toml (code fixe 123456).
+// Authentification (C-03/C-04, D-03). Décision du 23 novembre 2026 : le code
+// par e-mail est mis en avant ; le code par SMS reste disponible pour le jour
+// où un prestataire sera activé, et pour les comptes de test du banc
+// (numéros de supabase/config.toml, code fixe 123456).
 
 import type { Session } from "@supabase/supabase-js";
 import type { TekoClient } from "./client";
@@ -23,6 +25,37 @@ export async function verifyPhoneOtp(
   const { data, error } = await client.auth.verifyOtp({ phone, token, type: "sms" });
   if (error) throw mapApiError(error);
   if (!data.session) throw mapApiError({ message: "Session absente après vérification OTP" });
+  return data.session;
+}
+
+/** Adresse normalisée comme la base la compare : sans espaces, en minuscules. */
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+/** Envoie un code à 6 chiffres à l'adresse. Le serveur refuse la création
+ *  d'un compte dont l'adresse n'est pas invitée. */
+export async function signInWithEmailOtp(client: TekoClient, email: string): Promise<void> {
+  const { error } = await client.auth.signInWithOtp({
+    email: normalizeEmail(email),
+    options: { shouldCreateUser: true },
+  });
+  if (error) throw mapApiError(error);
+}
+
+/** Vérifie le code reçu par e-mail — crée le compte au premier passage. */
+export async function verifyEmailOtp(
+  client: TekoClient,
+  email: string,
+  token: string,
+): Promise<Session> {
+  const { data, error } = await client.auth.verifyOtp({
+    email: normalizeEmail(email),
+    token,
+    type: "email",
+  });
+  if (error) throw mapApiError(error);
+  if (!data.session) throw mapApiError({ message: "Session absente après vérification du code" });
   return data.session;
 }
 
