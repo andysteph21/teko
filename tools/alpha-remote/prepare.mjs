@@ -48,6 +48,25 @@ sender_name = "Teko"
 `;
 }
 
+// Connexion Google : client OAuth « application Web » créé par le porteur,
+// fourni dans un fichier privé hors dépôt. Sans lui, le bouton reste absent.
+function googleBlock() {
+  const file = resolve(root, ".local/alpha-services/google-oauth.json");
+  if (!existsSync(file)) return "";
+  const google = JSON.parse(readFileSync(file, "utf8"));
+  for (const key of ["clientId", "secret"]) {
+    if (/["\\\n]/.test(String(google[key] ?? "")) || !google[key]) {
+      throw new Error(`Connexion Google : champ ${key} manquant ou invalide`);
+    }
+  }
+  return `
+[auth.external.google]
+enabled = true
+client_id = "${google.clientId}"
+secret = "${google.secret}"
+`;
+}
+
 const config = `[api]
 port = 58421
 
@@ -71,6 +90,7 @@ enabled = true
 # refuse toute adresse ou tout numéro sans invitation active.
 enable_signup = true
 site_url = "${api}"
+additional_redirect_urls = ["teko-client-alpha://auth", "teko-driver-alpha://auth"]
 jwt_secret = "${nonce()}"
 publishable_key = "sb_publishable_${nonce()}"
 secret_key = "sb_secret_${nonce()}"
@@ -90,6 +110,7 @@ content_path = "./supabase/templates/code.html"
 subject = "Votre code Teko"
 content_path = "./supabase/templates/code.html"
 ${smtpBlock()}
+${googleBlock()}
 [auth.hook.before_user_created]
 enabled = true
 uri = "pg-functions://postgres/public/alpha_before_user_created"

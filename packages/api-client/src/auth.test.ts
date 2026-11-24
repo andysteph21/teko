@@ -100,3 +100,36 @@ describe("auth e-mail (code à 6 chiffres)", () => {
     });
   });
 });
+
+describe("connexion Google par navigateur", () => {
+  it("demande l'adresse sans ouvrir de navigateur et la retourne", async () => {
+    const signInWithOAuth = vi.fn().mockResolvedValue({ data: { url: "https://g" }, error: null });
+    const { googleSignInUrl } = await import("./auth");
+    expect(await googleSignInUrl(authClient({ signInWithOAuth }), "teko-client-alpha://auth")).toBe(
+      "https://g",
+    );
+    expect(signInWithOAuth).toHaveBeenCalledWith({
+      provider: "google",
+      options: { redirectTo: "teko-client-alpha://auth", skipBrowserRedirect: true },
+    });
+    signInWithOAuth.mockResolvedValue({ data: { url: null }, error: null });
+    await expect(googleSignInUrl(authClient({ signInWithOAuth }), "x://auth")).rejects.toThrow();
+    signInWithOAuth.mockResolvedValue({ data: {}, error: { message: "fermé" } });
+    await expect(googleSignInUrl(authClient({ signInWithOAuth }), "x://auth")).rejects.toThrow();
+  });
+
+  it("le retour échange le code, ignore un lien sans code et remonte un refus", async () => {
+    const session = { access_token: "jwt" };
+    const exchangeCodeForSession = vi.fn().mockResolvedValue({ data: { session }, error: null });
+    const { completeOAuthSignIn } = await import("./auth");
+    const client = authClient({ exchangeCodeForSession });
+    expect(await completeOAuthSignIn(client, "teko-client-alpha://auth?code=abc#x")).toBe(session);
+    expect(exchangeCodeForSession).toHaveBeenCalledWith("abc");
+    expect(await completeOAuthSignIn(client, "teko-client-alpha://auth")).toBeNull();
+    await expect(
+      completeOAuthSignIn(client, "teko-client-alpha://auth?error=access_denied&error_code=403"),
+    ).rejects.toThrow();
+    exchangeCodeForSession.mockResolvedValue({ data: {}, error: { message: "code expiré" } });
+    await expect(completeOAuthSignIn(client, "x://auth?code=old")).rejects.toThrow();
+  });
+});

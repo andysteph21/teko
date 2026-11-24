@@ -42,6 +42,8 @@ export {
 } from "./admin";
 export { listAlphaInvites, setAlphaInvite, setAlphaInviteEmail } from "./alpha-invites";
 export {
+  completeOAuthSignIn,
+  googleSignInUrl,
   normalizeEmail,
   type Session,
   signInWithEmailOtp,
