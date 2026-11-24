@@ -2,6 +2,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { serviceMutants } from "./mutations-services.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 const container = "supabase_db_teko-alpha-audit";
@@ -141,9 +142,12 @@ const mutants = [
     file: "alpha-invitations.test.ts",
     test: "une invitation chauffeur retirée",
     inject:
-      "create or replace function public.is_alpha_invited(p_role text) returns boolean language sql stable security definer set search_path=public as $$ select true $$;",
-    restore: sql("select pg_get_functiondef('public.is_alpha_invited(text)'::regprocedure);"),
+      "create or replace function private.user_alpha_invited(p_user uuid, p_role text) returns boolean language sql stable security definer set search_path=public as $$ select true $$;",
+    restore: sql(
+      "select pg_get_functiondef('private.user_alpha_invited(uuid,text)'::regprocedure);",
+    ),
   },
+  ...serviceMutants(sql),
   {
     name: "gps-retention-visible",
     file: "gps-retention.test.ts",

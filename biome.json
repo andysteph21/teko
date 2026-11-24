@@ -12,6 +12,7 @@
       "!**/docs",
       "!**/supabase/tests/e2e",
       "!**/supabase/functions",
+      "!**/supabase/templates",
       "!**/infra",
       "!**/envoi-client",
       "!**/indication client",

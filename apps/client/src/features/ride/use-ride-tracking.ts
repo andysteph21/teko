@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { VALHALLA_URL } from "../../config";
 import { supabase } from "../../lib/supabase";
+import { usePositionFallback } from "./use-position-fallback";
 
 /** Latence max avant bandeau « position figée » (doc 11 : tolérer les trous). */
 export const STALE_POSITION_MS = 15_000;
@@ -152,7 +153,7 @@ function useVehiclePositions(refreshEta: (from: LonLat) => Promise<void>) {
   const handlePosition = useCallback(
     (event: RidePositionEvent) => {
       const recordedAt = Date.parse(event.recordedAt);
-      if (!Number.isFinite(recordedAt) || recordedAt < (lastPositionAt.current ?? 0)) return;
+      if (!Number.isFinite(recordedAt) || recordedAt <= (lastPositionAt.current ?? 0)) return;
       lastPositionAt.current = recordedAt;
       const stale = Date.now() - recordedAt > STALE_POSITION_MS;
       setPositionStale(stale);
@@ -236,6 +237,7 @@ export function useRideTracking(rideId: string | undefined): RideTracking {
   const { vehicle, positionStale, handlePosition } = useVehiclePositions(refreshEta);
   const handleStatus = useStatusHandler(rideId, setStatus, load, rideRef);
   useRideChannel(rideId, handleStatus, handlePosition);
+  usePositionFallback(rideId, status, handlePosition);
 
   return {
     ride,

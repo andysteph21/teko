@@ -7,6 +7,7 @@ export {
   restoreAccountIfDeletionPending,
   touchLastSeen,
   type UpdateProfileInput,
+  updateContactPhone,
   updateProfile,
 } from "./account";
 export {
@@ -39,14 +40,38 @@ export {
   validateLandmarkProposal,
   validateRoadProposal,
 } from "./admin";
-export { listAlphaInvites, setAlphaInvite } from "./alpha-invites";
-export { type Session, signInWithPhoneOtp, signOut, verifyPhoneOtp } from "./auth";
+export { listAlphaInvites, setAlphaInvite, setAlphaInviteEmail } from "./alpha-invites";
+export {
+  completeOAuthSignIn,
+  googleSignInUrl,
+  normalizeEmail,
+  type Session,
+  signInWithEmailOtp,
+  signInWithPhoneOtp,
+  signOut,
+  verifyEmailOtp,
+  verifyPhoneOtp,
+} from "./auth";
 export {
   type CreateTekoClientOptions,
   createTekoClient,
   type SessionStorage,
   type TekoClient,
 } from "./client";
+export {
+  completeDelivery,
+  DELIVERY_PROOF_BUCKET,
+  type DeliveryOutcome,
+  deliveryCode,
+  deliveryProofPath,
+  getRideParcel,
+  type ParcelInput,
+  type ParcelSize,
+  type RideParcel,
+  requestDelivery,
+  setDeliveryEnabled,
+  uploadDeliveryProof,
+} from "./deliveries";
 export {
   driverHeartbeat,
   driverOffline,
@@ -96,15 +121,19 @@ export {
   subscribeNotifications,
 } from "./notifications";
 export {
+  landmarkNames,
   listMyLandmarkProposals,
   listSavedPlaces,
   searchLandmarksByName,
 } from "./places";
 export {
   createRealtimePositionsChannel,
+  latestRidePosition,
   type PositionsChannel,
   type RealtimePositionsOptions,
   type RidePositionEvent,
+  rideClientPosition,
+  setRideClientPosition,
   type Unsubscribe,
 } from "./positions";
 export { getRideQuote, quoteRoute, type RideQuote, requestQuotedRide } from "./quotes";
@@ -130,6 +159,20 @@ export {
   startRide,
 } from "./rides";
 export {
+  acceptedRouteChange,
+  arriveStop,
+  getRouteChangeQuote,
+  latestRouteChange,
+  leaveStop,
+  listRideStops,
+  type RideStop,
+  type RouteChange,
+  type RoutePlace,
+  requestRouteChange,
+  respondRouteChange,
+  routeChangeRoute,
+} from "./route-changes";
+export {
   createTripShare,
   getSharedTrip,
   type ReportIncidentInput,
@@ -137,4 +180,12 @@ export {
   type SharedTripView,
 } from "./safety";
 export { getSessionIdentity, type SessionIdentity } from "./session-identity";
+export {
+  type ServiceAvailability,
+  type SharedTripProgress,
+  type SharedTripStop,
+  serviceAvailability,
+  setSharedRides,
+  sharedTripProgress,
+} from "./shared-rides";
 export { reopenVehicleReview, updateReviewedVehicle } from "./vehicle-review";

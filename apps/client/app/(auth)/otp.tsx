@@ -1,24 +1,25 @@
-// C-04 Code OTP — 6 chiffres, renvoi 30 s puis 60 s, verrouillage doux géré
-// par le backend. Repli e-mail = MVP uniquement (badge ambre), proposé après
-// deux renvois. Nouveau compte → C-05 profil ; compte existant → routage C-01.
+// C-04 Code — 6 chiffres reçus par e-mail (ou par SMS pour un compte à
+// numéro), renvoi 30 s puis 60 s, verrouillage doux géré par le backend.
+// Nouveau compte → C-05 profil ; compte existant → routage C-01.
 
-import { getProfile, signInWithPhoneOtp, TekoApiError, verifyPhoneOtp } from "@teko/api-client";
+import { getProfile, TekoApiError } from "@teko/api-client";
 import { color, spacing, typography } from "@teko/ui";
-import { Button, MvpBadge, OtpInput } from "@teko/ui/native";
+import { Button, OtpInput } from "@teko/ui/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { otpChannel } from "../../src/features/auth/otp-channel";
 import { supabase } from "../../src/lib/supabase";
 
 export default function Otp() {
-  const { phone } = useLocalSearchParams<{ phone: string }>();
+  const params = useLocalSearchParams<{ phone?: string; email?: string }>();
+  const channel = otpChannel(params);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(30);
-  const [resendCount, setResendCount] = useState(0);
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -29,18 +30,17 @@ export default function Otp() {
   }, [resendIn]);
 
   const resend = async () => {
-    if (!phone) return;
-    setResendCount((n) => n + 1);
+    if (!channel) return;
     setResendIn(60);
-    await signInWithPhoneOtp(supabase, phone).catch(() => setError(t("erreurs.generique")));
+    await channel.send().catch(() => setError(t("erreurs.generique")));
   };
 
   const verify = async (value: string) => {
-    if (!phone || value.length < 6) return;
+    if (!channel || value.length < 6) return;
     setBusy(true);
     setError(null);
     try {
-      const session = await verifyPhoneOtp(supabase, phone, value);
+      const session = await channel.verify(value);
       const profile = await getProfile(supabase, session.user.id);
       if (profile.full_name) router.replace("/");
       else router.replace("/(auth)/profile-setup");
@@ -59,7 +59,10 @@ export default function Otp() {
     <SafeAreaView style={styles.screen}>
       <Text style={styles.title}>{t("account:otp.titre")}</Text>
       <Text style={styles.text}>
-        {t("account:otp.envoyeAu", { phone })}{" "}
+        {t(channel?.kind === "email" ? "account:otp.envoyeParEmail" : "account:otp.envoyeAu", {
+          phone: channel?.target,
+          email: channel?.target,
+        })}{" "}
         <Text style={styles.modify} onPress={() => router.back()}>
           {t("account:otp.modifier")}
         </Text>
@@ -89,15 +92,6 @@ export default function Otp() {
             <Text style={styles.resendText}>{t("account:otp.renvoyer")}</Text>
           </Pressable>
         )}
-        {resendCount >= 2 ? (
-          <View style={styles.fallback}>
-            <Text style={styles.resendWait}>{t("account:otp.ou")}</Text>
-            <View style={styles.fallbackRow}>
-              <Text style={styles.resendText}>{t("account:otp.repliEmail")}</Text>
-              <MvpBadge />
-            </View>
-          </View>
-        ) : null}
       </View>
     </SafeAreaView>
   );
@@ -123,6 +117,4 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     fontVariant: ["tabular-nums"],
   },
-  fallback: { alignItems: "center", gap: spacing[1] },
-  fallbackRow: { flexDirection: "row", alignItems: "center", gap: spacing[2] },
 });

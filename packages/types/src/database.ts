@@ -51,14 +51,14 @@ isOneToOne: false
                   ]
                 },"alpha_invites": {
                   Row: {
-                    "created_at": string,"id": string,"invited_by": string | null,"is_active": boolean,"phone": string,"role": string,"updated_at": string
+                    "created_at": string,"email": string | null,"id": string,"invited_by": string | null,"is_active": boolean,"phone": string | null,"role": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"invited_by"?: string | null,"is_active"?: boolean,"phone": string,"role": string,"updated_at"?: string
+                    "created_at"?: string,"email"?: string | null,"id"?: string,"invited_by"?: string | null,"is_active"?: boolean,"phone"?: string | null,"role": string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"invited_by"?: string | null,"is_active"?: boolean,"phone"?: string,"role"?: string,"updated_at"?: string
+                    "created_at"?: string,"email"?: string | null,"id"?: string,"invited_by"?: string | null,"is_active"?: boolean,"phone"?: string | null,"role"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -201,16 +201,36 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"devices": {
+                },"device_accounts": {
                   Row: {
-                    "created_at": string,"id": string,"last_seen": string,"platform": string,"push_token": string,"session_id": string | null,"user_id": string
+                    "first_seen": string,"push_token": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"last_seen"?: string,"platform": string,"push_token": string,"session_id"?: string | null,"user_id": string
+                    "first_seen"?: string,"push_token": string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"last_seen"?: string,"platform"?: string,"push_token"?: string,"session_id"?: string | null,"user_id"?: string
+                    "first_seen"?: string,"push_token"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "device_accounts_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"devices": {
+                  Row: {
+                    "created_at": string,"id": string,"last_seen": string,"offer_channel": boolean,"platform": string,"push_token": string,"session_id": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"last_seen"?: string,"offer_channel"?: boolean,"platform": string,"push_token": string,"session_id"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"last_seen"?: string,"offer_channel"?: boolean,"platform"?: string,"push_token"?: string,"session_id"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -269,14 +289,14 @@ isOneToOne: true
                   ]
                 },"drivers": {
                   Row: {
-                    "categories": (Database["public"]['Enums']["vehicle_category"])[],"created_at": string,"current_balance_cache": number,"deactivated_reason": string | null,"gps_consent": boolean,"id": string,"is_active": boolean,"kyc_status": Database["public"]['Enums']["kyc_status"],"payout_msisdn": string | null,"physical_verified_at": string | null,"physical_verified_by": string | null,"rating_avg": number,"updated_at": string,"vehicle_locked_at": string | null
+                    "categories": (Database["public"]['Enums']["vehicle_category"])[],"created_at": string,"current_balance_cache": number,"deactivated_reason": string | null,"delivery_enabled": boolean,"gps_consent": boolean,"id": string,"is_active": boolean,"kyc_status": Database["public"]['Enums']["kyc_status"],"payout_msisdn": string | null,"physical_verified_at": string | null,"physical_verified_by": string | null,"rating_avg": number,"shared_enabled": boolean,"updated_at": string,"vehicle_locked_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "categories"?: (Database["public"]['Enums']["vehicle_category"])[],"created_at"?: string,"current_balance_cache"?: number,"deactivated_reason"?: string | null,"gps_consent"?: boolean,"id": string,"is_active"?: boolean,"kyc_status"?: Database["public"]['Enums']["kyc_status"],"payout_msisdn"?: string | null,"physical_verified_at"?: string | null,"physical_verified_by"?: string | null,"rating_avg"?: number,"updated_at"?: string,"vehicle_locked_at"?: string | null
+                    "categories"?: (Database["public"]['Enums']["vehicle_category"])[],"created_at"?: string,"current_balance_cache"?: number,"deactivated_reason"?: string | null,"delivery_enabled"?: boolean,"gps_consent"?: boolean,"id": string,"is_active"?: boolean,"kyc_status"?: Database["public"]['Enums']["kyc_status"],"payout_msisdn"?: string | null,"physical_verified_at"?: string | null,"physical_verified_by"?: string | null,"rating_avg"?: number,"shared_enabled"?: boolean,"updated_at"?: string,"vehicle_locked_at"?: string | null
                   }
                   Update: {
-                    "categories"?: (Database["public"]['Enums']["vehicle_category"])[],"created_at"?: string,"current_balance_cache"?: number,"deactivated_reason"?: string | null,"gps_consent"?: boolean,"id"?: string,"is_active"?: boolean,"kyc_status"?: Database["public"]['Enums']["kyc_status"],"payout_msisdn"?: string | null,"physical_verified_at"?: string | null,"physical_verified_by"?: string | null,"rating_avg"?: number,"updated_at"?: string,"vehicle_locked_at"?: string | null
+                    "categories"?: (Database["public"]['Enums']["vehicle_category"])[],"created_at"?: string,"current_balance_cache"?: number,"deactivated_reason"?: string | null,"delivery_enabled"?: boolean,"gps_consent"?: boolean,"id"?: string,"is_active"?: boolean,"kyc_status"?: Database["public"]['Enums']["kyc_status"],"payout_msisdn"?: string | null,"physical_verified_at"?: string | null,"physical_verified_by"?: string | null,"rating_avg"?: number,"shared_enabled"?: boolean,"updated_at"?: string,"vehicle_locked_at"?: string | null
                   }
                   Relationships: [
                     {
@@ -577,14 +597,14 @@ isOneToOne: true
                   ]
                 },"pricing_rules": {
                   Row: {
-                    "base_fare": number,"category": Database["public"]['Enums']["vehicle_category"],"created_at": string,"created_by": string | null,"id": string,"min_fare": number,"multipliers": NonNullable<Json>,"per_km": number,"per_min": number,"valid_from": string,"zone_id": string | null
+                    "base_fare": number,"category": Database["public"]['Enums']["vehicle_category"],"created_at": string,"created_by": string | null,"id": string,"max_fare": number | null,"min_fare": number,"multipliers": NonNullable<Json>,"per_km": number,"per_min": number,"service_type": string,"valid_from": string,"zone_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "base_fare"?: number,"category": Database["public"]['Enums']["vehicle_category"],"created_at"?: string,"created_by"?: string | null,"id"?: string,"min_fare"?: number,"multipliers"?: NonNullable<Json>,"per_km"?: number,"per_min"?: number,"valid_from"?: string,"zone_id"?: string | null
+                    "base_fare"?: number,"category": Database["public"]['Enums']["vehicle_category"],"created_at"?: string,"created_by"?: string | null,"id"?: string,"max_fare"?: number | null,"min_fare"?: number,"multipliers"?: NonNullable<Json>,"per_km"?: number,"per_min"?: number,"service_type"?: string,"valid_from"?: string,"zone_id"?: string | null
                   }
                   Update: {
-                    "base_fare"?: number,"category"?: Database["public"]['Enums']["vehicle_category"],"created_at"?: string,"created_by"?: string | null,"id"?: string,"min_fare"?: number,"multipliers"?: NonNullable<Json>,"per_km"?: number,"per_min"?: number,"valid_from"?: string,"zone_id"?: string | null
+                    "base_fare"?: number,"category"?: Database["public"]['Enums']["vehicle_category"],"created_at"?: string,"created_by"?: string | null,"id"?: string,"max_fare"?: number | null,"min_fare"?: number,"multipliers"?: NonNullable<Json>,"per_km"?: number,"per_min"?: number,"service_type"?: string,"valid_from"?: string,"zone_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -673,6 +693,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"ride_client_positions": {
+                  Row: {
+                    "geom": unknown,"recorded_at": string,"ride_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "geom": unknown,"recorded_at"?: string,"ride_id": string
+                  }
+                  Update: {
+                    "geom"?: unknown,"recorded_at"?: string,"ride_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ride_client_positions_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: true
+      referencedRelation: "rides"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"ride_events": {
                   Row: {
                     "actor": string | null,"at": string,"id": number,"meta": NonNullable<Json>,"ride_id": string,"type": string
@@ -751,16 +791,36 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"ride_quotes": {
+                },"ride_parcels": {
                   Row: {
-                    "category": Database["public"]['Enums']["vehicle_category"],"client_id": string,"created_at": string,"dest_geom": unknown,"distance_m": number,"duration_s": number,"expires_at": string,"id": string,"origin_geom": unknown,"price": number,"ride_id": string | null,"route_shape": string
+                    "created_at": string,"delivered_at": string | null,"description": string,"erased_at": string | null,"photo_path": string | null,"recipient_name": string,"recipient_phone": string,"ride_id": string,"size": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "category": Database["public"]['Enums']["vehicle_category"],"client_id": string,"created_at"?: string,"dest_geom": unknown,"distance_m": number,"duration_s": number,"expires_at": string,"id"?: string,"origin_geom": unknown,"price": number,"ride_id"?: string | null,"route_shape": string
+                    "created_at"?: string,"delivered_at"?: string | null,"description": string,"erased_at"?: string | null,"photo_path"?: string | null,"recipient_name": string,"recipient_phone": string,"ride_id": string,"size": string
                   }
                   Update: {
-                    "category"?: Database["public"]['Enums']["vehicle_category"],"client_id"?: string,"created_at"?: string,"dest_geom"?: unknown,"distance_m"?: number,"duration_s"?: number,"expires_at"?: string,"id"?: string,"origin_geom"?: unknown,"price"?: number,"ride_id"?: string | null,"route_shape"?: string
+                    "created_at"?: string,"delivered_at"?: string | null,"description"?: string,"erased_at"?: string | null,"photo_path"?: string | null,"recipient_name"?: string,"recipient_phone"?: string,"ride_id"?: string,"size"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ride_parcels_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: true
+      referencedRelation: "rides"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"ride_quotes": {
+                  Row: {
+                    "category": Database["public"]['Enums']["vehicle_category"],"client_id": string,"created_at": string,"dest_geom": unknown,"distance_m": number,"duration_s": number,"expires_at": string,"id": string,"origin_geom": unknown,"price": number,"ride_id": string | null,"route_shape": string,"seats": number,"service_type": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category": Database["public"]['Enums']["vehicle_category"],"client_id": string,"created_at"?: string,"dest_geom": unknown,"distance_m": number,"duration_s": number,"expires_at": string,"id"?: string,"origin_geom": unknown,"price": number,"ride_id"?: string | null,"route_shape": string,"seats"?: number,"service_type"?: string
+                  }
+                  Update: {
+                    "category"?: Database["public"]['Enums']["vehicle_category"],"client_id"?: string,"created_at"?: string,"dest_geom"?: unknown,"distance_m"?: number,"duration_s"?: number,"expires_at"?: string,"id"?: string,"origin_geom"?: unknown,"price"?: number,"ride_id"?: string | null,"route_shape"?: string,"seats"?: number,"service_type"?: string
                   }
                   Relationships: [
                     {
@@ -777,16 +837,80 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
-                },"rides": {
+                },"ride_route_changes": {
                   Row: {
-                    "accepted_at": string | null,"arrived_at": string | null,"cancel_reason": string | null,"category": Database["public"]['Enums']["vehicle_category"],"client_id": string,"completed_at": string | null,"created_at": string,"dest_geom": unknown,"dest_hint": string | null,"dest_landmark_id": string | null,"distance_est_m": number | null,"driver_id": string | null,"duration_est_s": number | null,"id": string,"meeting_landmark_id": string | null,"origin_geom": unknown,"origin_hint": string | null,"origin_landmark_id": string | null,"payment_method": Database["public"]['Enums']["payment_method"] | null,"pin_code": string | null,"price_est": number | null,"price_final": number | null,"scheduled_at": string | null,"started_at": string | null,"status": Database["public"]['Enums']["ride_status"],"updated_at": string
+                    "client_id": string,"created_at": string,"dest_geom": unknown,"dest_hint": string | null,"dest_landmark_id": string | null,"driven_m": number,"driver_id": string,"expires_at": string,"id": string,"new_price": number,"old_price": number,"remaining_m": number,"remaining_s": number,"requested_at": string | null,"respond_by": string | null,"responded_at": string | null,"ride_id": string,"route_shape": string,"status": string,"stops": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "accepted_at"?: string | null,"arrived_at"?: string | null,"cancel_reason"?: string | null,"category": Database["public"]['Enums']["vehicle_category"],"client_id": string,"completed_at"?: string | null,"created_at"?: string,"dest_geom": unknown,"dest_hint"?: string | null,"dest_landmark_id"?: string | null,"distance_est_m"?: number | null,"driver_id"?: string | null,"duration_est_s"?: number | null,"id"?: string,"meeting_landmark_id"?: string | null,"origin_geom": unknown,"origin_hint"?: string | null,"origin_landmark_id"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"] | null,"pin_code"?: string | null,"price_est"?: number | null,"price_final"?: number | null,"scheduled_at"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["ride_status"],"updated_at"?: string
+                    "client_id": string,"created_at"?: string,"dest_geom": unknown,"dest_hint"?: string | null,"dest_landmark_id"?: string | null,"driven_m": number,"driver_id": string,"expires_at": string,"id"?: string,"new_price": number,"old_price": number,"remaining_m": number,"remaining_s": number,"requested_at"?: string | null,"respond_by"?: string | null,"responded_at"?: string | null,"ride_id": string,"route_shape": string,"status"?: string,"stops"?: NonNullable<Json>
                   }
                   Update: {
-                    "accepted_at"?: string | null,"arrived_at"?: string | null,"cancel_reason"?: string | null,"category"?: Database["public"]['Enums']["vehicle_category"],"client_id"?: string,"completed_at"?: string | null,"created_at"?: string,"dest_geom"?: unknown,"dest_hint"?: string | null,"dest_landmark_id"?: string | null,"distance_est_m"?: number | null,"driver_id"?: string | null,"duration_est_s"?: number | null,"id"?: string,"meeting_landmark_id"?: string | null,"origin_geom"?: unknown,"origin_hint"?: string | null,"origin_landmark_id"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"] | null,"pin_code"?: string | null,"price_est"?: number | null,"price_final"?: number | null,"scheduled_at"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["ride_status"],"updated_at"?: string
+                    "client_id"?: string,"created_at"?: string,"dest_geom"?: unknown,"dest_hint"?: string | null,"dest_landmark_id"?: string | null,"driven_m"?: number,"driver_id"?: string,"expires_at"?: string,"id"?: string,"new_price"?: number,"old_price"?: number,"remaining_m"?: number,"remaining_s"?: number,"requested_at"?: string | null,"respond_by"?: string | null,"responded_at"?: string | null,"ride_id"?: string,"route_shape"?: string,"status"?: string,"stops"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ride_route_changes_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ride_route_changes_dest_landmark_id_fkey"
+      columns: ["dest_landmark_id"]
+isOneToOne: false
+      referencedRelation: "landmarks"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ride_route_changes_driver_id_fkey"
+      columns: ["driver_id"]
+isOneToOne: false
+      referencedRelation: "drivers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ride_route_changes_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "rides"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"ride_stops": {
+                  Row: {
+                    "arrived_at": string | null,"created_at": string,"geom": unknown,"hint": string | null,"id": string,"landmark_id": string | null,"left_at": string | null,"ride_id": string,"seq": number,"wait_charged": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "arrived_at"?: string | null,"created_at"?: string,"geom": unknown,"hint"?: string | null,"id"?: string,"landmark_id"?: string | null,"left_at"?: string | null,"ride_id": string,"seq": number,"wait_charged"?: number
+                  }
+                  Update: {
+                    "arrived_at"?: string | null,"created_at"?: string,"geom"?: unknown,"hint"?: string | null,"id"?: string,"landmark_id"?: string | null,"left_at"?: string | null,"ride_id"?: string,"seq"?: number,"wait_charged"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ride_stops_landmark_id_fkey"
+      columns: ["landmark_id"]
+isOneToOne: false
+      referencedRelation: "landmarks"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ride_stops_ride_id_fkey"
+      columns: ["ride_id"]
+isOneToOne: false
+      referencedRelation: "rides"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"rides": {
+                  Row: {
+                    "accepted_at": string | null,"arrived_at": string | null,"cancel_reason": string | null,"category": Database["public"]['Enums']["vehicle_category"],"client_id": string,"completed_at": string | null,"created_at": string,"dest_geom": unknown,"dest_hint": string | null,"dest_landmark_id": string | null,"distance_est_m": number | null,"driver_id": string | null,"duration_est_s": number | null,"id": string,"meeting_landmark_id": string | null,"origin_geom": unknown,"origin_hint": string | null,"origin_landmark_id": string | null,"payment_method": Database["public"]['Enums']["payment_method"] | null,"pin_code": string | null,"price_est": number | null,"price_final": number | null,"scheduled_at": string | null,"seats": number,"service_type": string,"shared_trip_id": string | null,"started_at": string | null,"status": Database["public"]['Enums']["ride_status"],"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "accepted_at"?: string | null,"arrived_at"?: string | null,"cancel_reason"?: string | null,"category": Database["public"]['Enums']["vehicle_category"],"client_id": string,"completed_at"?: string | null,"created_at"?: string,"dest_geom": unknown,"dest_hint"?: string | null,"dest_landmark_id"?: string | null,"distance_est_m"?: number | null,"driver_id"?: string | null,"duration_est_s"?: number | null,"id"?: string,"meeting_landmark_id"?: string | null,"origin_geom": unknown,"origin_hint"?: string | null,"origin_landmark_id"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"] | null,"pin_code"?: string | null,"price_est"?: number | null,"price_final"?: number | null,"scheduled_at"?: string | null,"seats"?: number,"service_type"?: string,"shared_trip_id"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["ride_status"],"updated_at"?: string
+                  }
+                  Update: {
+                    "accepted_at"?: string | null,"arrived_at"?: string | null,"cancel_reason"?: string | null,"category"?: Database["public"]['Enums']["vehicle_category"],"client_id"?: string,"completed_at"?: string | null,"created_at"?: string,"dest_geom"?: unknown,"dest_hint"?: string | null,"dest_landmark_id"?: string | null,"distance_est_m"?: number | null,"driver_id"?: string | null,"duration_est_s"?: number | null,"id"?: string,"meeting_landmark_id"?: string | null,"origin_geom"?: unknown,"origin_hint"?: string | null,"origin_landmark_id"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"] | null,"pin_code"?: string | null,"price_est"?: number | null,"price_final"?: number | null,"scheduled_at"?: string | null,"seats"?: number,"service_type"?: string,"shared_trip_id"?: string | null,"started_at"?: string | null,"status"?: Database["public"]['Enums']["ride_status"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -818,6 +942,12 @@ isOneToOne: false
       columns: ["origin_landmark_id"]
 isOneToOne: false
       referencedRelation: "landmarks"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "rides_shared_trip_id_fkey"
+      columns: ["shared_trip_id"]
+isOneToOne: false
+      referencedRelation: "shared_trips"
       referencedColumns: ["id"]
     }
                   ]
@@ -890,6 +1020,26 @@ isOneToOne: false
       columns: ["user_id"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"shared_trips": {
+                  Row: {
+                    "closed_at": string | null,"created_at": string,"driver_id": string,"id": string,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "closed_at"?: string | null,"created_at"?: string,"driver_id": string,"id"?: string,"status"?: string
+                  }
+                  Update: {
+                    "closed_at"?: string | null,"created_at"?: string,"driver_id"?: string,"id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shared_trips_driver_id_fkey"
+      columns: ["driver_id"]
+isOneToOne: false
+      referencedRelation: "drivers"
       referencedColumns: ["id"]
     }
                   ]
@@ -1012,6 +1162,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1026,7 +1179,7 @@ isOneToOne: false
 { Args: { "p_payment": string }; Returns: undefined
                            },
 "_create_ride_quote":
-{ Args: { "p_category": Database["public"]['Enums']["vehicle_category"],"p_client": string,"p_dest": unknown,"p_distance_m": number,"p_duration_s": number,"p_origin": unknown,"p_shape": string }; Returns: {
+{ Args: { "p_category": Database["public"]['Enums']["vehicle_category"],"p_client": string,"p_dest": unknown,"p_distance_m": number,"p_duration_s": number,"p_options"?: Json,"p_origin": unknown,"p_shape": string }; Returns: {
               "category": Database["public"]['Enums']["vehicle_category"],
 "client_id": string,
 "created_at": string,
@@ -1038,7 +1191,9 @@ isOneToOne: false
 "origin_geom": unknown,
 "price": number,
 "ride_id": string | null,
-"route_shape": string
+"route_shape": string,
+"seats": number,
+"service_type": string
             }
                           SetofOptions: {
         from: "*"
@@ -1080,6 +1235,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1115,6 +1273,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1153,6 +1314,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1165,6 +1329,9 @@ isOneToOne: false
       } },
 "activate_scheduled_rides":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"alpha_before_user_created":
+{ Args: { "event": Json }; Returns: Json
                            },
 "approve_manual_receipt":
 { Args: { "p_receipt": string }; Returns: {
@@ -1194,8 +1361,30 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"arrive_stop":
+{ Args: { "p_stop": string }; Returns: {
+              "arrived_at": string | null,
+"created_at": string,
+"geom": unknown,
+"hint": string | null,
+"id": string,
+"landmark_id": string | null,
+"left_at": string | null,
+"ride_id": string,
+"seq": number,
+"wait_charged": number
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "ride_stops"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "assert_admin_or_service":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"auto_complete_stale_rides":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "bump_landmark_usage":
 { Args: { "p_landmark": string }; Returns: undefined
@@ -1231,6 +1420,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1246,11 +1438,14 @@ isOneToOne: false
                            },
 "claim_push_deliveries":
 { Args: { "p_notification"?: string }; Returns: {
-              "device_id": string,"expires_at": string,"id": string,"notification_id": string,"payload": Json,"push_token": string,"type": string
+              "device_id": string,"expires_at": string,"id": string,"notification_id": string,"offer_channel": boolean,"payload": Json,"push_token": string,"type": string
             }[]
                            },
 "commission_amount":
 { Args: { "p_price": number }; Returns: number
+                           },
+"complete_delivery":
+{ Args: { "p_code": string,"p_photo_path": string,"p_ride": string }; Returns: Json
                            },
 "complete_ride":
 { Args: { "p_price_final"?: number,"p_ride": string }; Returns: {
@@ -1277,6 +1472,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1291,7 +1489,7 @@ isOneToOne: false
 { Args: { "p_payment": string }; Returns: undefined
                            },
 "create_ride_quote":
-{ Args: { "p_category": Database["public"]['Enums']["vehicle_category"],"p_client": string,"p_dest": unknown,"p_distance_m": number,"p_duration_s": number,"p_origin": unknown,"p_shape": string }; Returns: {
+{ Args: { "p_category": Database["public"]['Enums']["vehicle_category"],"p_client": string,"p_dest": unknown,"p_distance_m": number,"p_duration_s": number,"p_options"?: Json,"p_origin": unknown,"p_shape": string }; Returns: {
               "category": Database["public"]['Enums']["vehicle_category"],
 "client_id": string,
 "created_at": string,
@@ -1303,11 +1501,42 @@ isOneToOne: false
 "origin_geom": unknown,
 "price": number,
 "ride_id": string | null,
-"route_shape": string
+"route_shape": string,
+"seats": number,
+"service_type": string
             }
                           SetofOptions: {
         from: "*"
         to: "ride_quotes"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"create_route_change_quote":
+{ Args: { "p_client": string,"p_dest": Json,"p_ride": string,"p_route": Json,"p_stops": Json }; Returns: {
+              "client_id": string,
+"created_at": string,
+"dest_geom": unknown,
+"dest_hint": string | null,
+"dest_landmark_id": string | null,
+"driven_m": number,
+"driver_id": string,
+"expires_at": string,
+"id": string,
+"new_price": number,
+"old_price": number,
+"remaining_m": number,
+"remaining_s": number,
+"requested_at": string | null,
+"respond_by": string | null,
+"responded_at": string | null,
+"ride_id": string,
+"route_shape": string,
+"status": string,
+"stops": NonNullable<Json>
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "ride_route_changes"
         isOneToOne: true
         isSetofReturn: false
       } },
@@ -1356,6 +1585,9 @@ isOneToOne: false
 "daily_close":
 { Args: { "p_day"?: string }; Returns: number
                            },
+"delivery_code":
+{ Args: { "p_ride": string }; Returns: string
+                           },
 "driver_balance":
 { Args: { "p_driver": string }; Returns: number
                            },
@@ -1383,8 +1615,14 @@ isOneToOne: false
 "estimate_cancellation_fee":
 { Args: { "p_ride": string }; Returns: number
                            },
+"estimate_delivery_price":
+{ Args: { "p_category": Database["public"]['Enums']["vehicle_category"],"p_distance_m": number,"p_duration_s": number,"p_zone"?: string }; Returns: number
+                           },
 "estimate_price":
 { Args: { "p_category": Database["public"]['Enums']["vehicle_category"],"p_distance_m": number,"p_duration_s": number,"p_zone"?: string }; Returns: number
+                           },
+"expire_route_changes":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "expire_stale_offers":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -1421,10 +1659,28 @@ isOneToOne: false
 "invite_alpha":
 { Args: { "p_active"?: boolean,"p_phone": string,"p_role": string }; Returns: {
               "created_at": string,
+"email": string | null,
 "id": string,
 "invited_by": string | null,
 "is_active": boolean,
-"phone": string,
+"phone": string | null,
+"role": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "alpha_invites"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"invite_alpha_email":
+{ Args: { "p_active"?: boolean,"p_email": string,"p_role": string }; Returns: {
+              "created_at": string,
+"email": string | null,
+"id": string,
+"invited_by": string | null,
+"is_active": boolean,
+"phone": string | null,
 "role": string,
 "updated_at": string
             }
@@ -1449,6 +1705,25 @@ isOneToOne: false
 "is_superadmin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"leave_stop":
+{ Args: { "p_stop": string }; Returns: {
+              "arrived_at": string | null,
+"created_at": string,
+"geom": unknown,
+"hint": string | null,
+"id": string,
+"landmark_id": string | null,
+"left_at": string | null,
+"ride_id": string,
+"seq": number,
+"wait_charged": number
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "ride_stops"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "mark_arrived":
 { Args: { "p_ride": string }; Returns: {
               "accepted_at": string | null,
@@ -1474,6 +1749,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1642,6 +1920,9 @@ isOneToOne: false
 "purge_deleted_accounts":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"purge_parcel_recipients":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "purge_ride_locations":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -1649,7 +1930,7 @@ isOneToOne: false
 { Args: { "p_driver": string,"p_note": string }; Returns: undefined
                            },
 "register_push_device":
-{ Args: { "p_platform": string,"p_token": string,"p_user": string }; Returns: undefined
+{ Args: { "p_offer_channel"?: boolean,"p_platform": string,"p_token": string,"p_user": string }; Returns: undefined
                            },
 "reject_manual_receipt":
 { Args: { "p_reason": string,"p_receipt": string }; Returns: {
@@ -1704,6 +1985,44 @@ isOneToOne: false
 "request_account_deletion":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"request_delivery":
+{ Args: { "p_dest_hint"?: string,"p_dest_landmark"?: string,"p_origin_hint"?: string,"p_origin_landmark"?: string,"p_parcel": Json,"p_quote": string }; Returns: {
+              "accepted_at": string | null,
+"arrived_at": string | null,
+"cancel_reason": string | null,
+"category": Database["public"]['Enums']["vehicle_category"],
+"client_id": string,
+"completed_at": string | null,
+"created_at": string,
+"dest_geom": unknown,
+"dest_hint": string | null,
+"dest_landmark_id": string | null,
+"distance_est_m": number | null,
+"driver_id": string | null,
+"duration_est_s": number | null,
+"id": string,
+"meeting_landmark_id": string | null,
+"origin_geom": unknown,
+"origin_hint": string | null,
+"origin_landmark_id": string | null,
+"payment_method": Database["public"]['Enums']["payment_method"] | null,
+"pin_code": string | null,
+"price_est": number | null,
+"price_final": number | null,
+"scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
+"started_at": string | null,
+"status": Database["public"]['Enums']["ride_status"],
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "rides"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "request_quoted_pickup":
 { Args: { "p_dest_hint"?: string,"p_dest_landmark"?: string,"p_meeting_landmark": string,"p_origin_hint"?: string,"p_quote": string }; Returns: {
               "accepted_at": string | null,
@@ -1729,6 +2048,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1764,6 +2086,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1799,6 +2124,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1806,6 +2134,35 @@ isOneToOne: false
                           SetofOptions: {
         from: "*"
         to: "rides"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"request_route_change":
+{ Args: { "p_change": string }; Returns: {
+              "client_id": string,
+"created_at": string,
+"dest_geom": unknown,
+"dest_hint": string | null,
+"dest_landmark_id": string | null,
+"driven_m": number,
+"driver_id": string,
+"expires_at": string,
+"id": string,
+"new_price": number,
+"old_price": number,
+"remaining_m": number,
+"remaining_s": number,
+"requested_at": string | null,
+"respond_by": string | null,
+"responded_at": string | null,
+"ride_id": string,
+"route_shape": string,
+"status": string,
+"stops": NonNullable<Json>
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "ride_route_changes"
         isOneToOne: true
         isSetofReturn: false
       } },
@@ -1834,6 +2191,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1841,6 +2201,35 @@ isOneToOne: false
                           SetofOptions: {
         from: "*"
         to: "rides"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"respond_route_change":
+{ Args: { "p_accept": boolean,"p_change": string }; Returns: {
+              "client_id": string,
+"created_at": string,
+"dest_geom": unknown,
+"dest_hint": string | null,
+"dest_landmark_id": string | null,
+"driven_m": number,
+"driver_id": string,
+"expires_at": string,
+"id": string,
+"new_price": number,
+"old_price": number,
+"remaining_m": number,
+"remaining_s": number,
+"requested_at": string | null,
+"respond_by": string | null,
+"responded_at": string | null,
+"ride_id": string,
+"route_shape": string,
+"status": string,
+"stops": NonNullable<Json>
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "ride_route_changes"
         isOneToOne: true
         isSetofReturn: false
       } },
@@ -1884,8 +2273,11 @@ isOneToOne: false
 "ride_pin":
 { Args: { "p_ride": string }; Returns: string
                            },
+"route_change_origin":
+{ Args: { "p_client": string,"p_ride": string }; Returns: Json
+                           },
 "search_landmarks":
-{ Args: { "p_limit"?: number,"p_query": string }; Returns: {
+{ Args: { "p_limit"?: number,"p_near"?: unknown,"p_query": string }; Returns: {
               "aliases": (string)[],
 "category": Database["public"]['Enums']["landmark_category"],
 "created_at": string,
@@ -1912,11 +2304,26 @@ isOneToOne: false
 "send_settlement_reminders":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"service_availability":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "set_commission":
 { Args: { "p_type": string,"p_value": number }; Returns: Json
                            },
+"set_delivery_enabled":
+{ Args: { "p_enabled": boolean }; Returns: boolean
+                           },
+"set_ride_client_position":
+{ Args: { "p_point": unknown,"p_ride": string }; Returns: undefined
+                           },
 "set_service_mode":
 { Args: { "p_on": boolean }; Returns: undefined
+                           },
+"set_shared_rides":
+{ Args: { "p_enabled": boolean }; Returns: boolean
+                           },
+"shared_trip_progress":
+{ Args: { "p_ride": string }; Returns: Json
                            },
 "start_ride":
 { Args: { "p_pin": string,"p_ride": string }; Returns: {
@@ -1943,6 +2350,9 @@ isOneToOne: false
 "price_est": number | null,
 "price_final": number | null,
 "scheduled_at": string | null,
+"seats": number,
+"service_type": string,
+"shared_trip_id": string | null,
 "started_at": string | null,
 "status": Database["public"]['Enums']["ride_status"],
 "updated_at": string
@@ -1967,6 +2377,9 @@ isOneToOne: false
                            },
 "unregister_session_devices":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"update_contact_phone":
+{ Args: { "p_phone": string }; Returns: string
                            },
 "update_reviewed_vehicle":
 { Args: { "p_category": Database["public"]['Enums']["vehicle_category"],"p_plate": string,"p_reason": string,"p_vehicle": string }; Returns: {

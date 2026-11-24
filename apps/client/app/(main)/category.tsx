@@ -1,6 +1,7 @@
 // C-10 Catégorie & estimation — itinéraire sur carte (haut), feuille blanche :
 // 3 catégories à prix ferme (backend, décision n° 6), paiement Espèces/Airtel,
 // CTA « Commander {catégorie} · {prix} ». Sans brouillon complet → accueil.
+// Covoiturage (R4) : le CTA attend le devis du nombre de places affiché.
 
 import { formatXaf } from "@teko/core";
 import { color, spacing, typography } from "@teko/ui";
@@ -34,6 +35,7 @@ export default function Category() {
       paymentMethod: s.paymentMethod,
       route: s.route,
       estimates: s.estimates,
+      stale: s.category === "covoiturage" && s.quotes.covoiturage?.seats !== s.seats,
     })),
   );
   const setCategory = useBookingStore((s) => s.setCategory);
@@ -50,11 +52,11 @@ export default function Category() {
       <QuoteErrorScreen
         error={estimatesQuery.error}
         onRetry={() => void estimatesQuery.refetch()}
+        onEdit={() => router.dismissTo("/(main)/search" as Href)}
       />
     );
   }
 
-  const minutes = draft.route ? Math.max(1, Math.round(draft.route.durationS / 60)) : 0;
   const price = draft.estimates[draft.category];
   const loading = estimatesQuery.isPending;
 
@@ -91,7 +93,7 @@ export default function Category() {
           <CategoryList
             estimates={draft.estimates}
             selected={draft.category}
-            minutes={minutes}
+            minutes={draft.route ? Math.max(1, Math.round(draft.route.durationS / 60)) : 0}
             onSelect={setCategory}
           />
         )}
@@ -103,7 +105,7 @@ export default function Category() {
             prix: price != null ? formatXaf(price, "FCFA") : "—",
           })}
           onPress={() => router.push("/(main)/meeting" as Href)}
-          disabled={loading || price == null}
+          disabled={loading || draft.stale || price == null}
           testID="order-cta"
         />
       </BottomPanel>

@@ -20,7 +20,7 @@ beforeAll(async () => {
 beforeEach(() => jest.clearAllMocks());
 
 describe("D-02 Onboarding chauffeur", () => {
-  it("déroule les 3 diapos puis mène au numéro", async () => {
+  it("déroule les 3 diapos puis mène à l'adresse e-mail", async () => {
     const user = userEvent.setup();
     render(<Onboarding />);
 
@@ -31,15 +31,15 @@ describe("D-02 Onboarding chauffeur", () => {
     expect(screen.getByText("Maître de vos horaires")).toBeOnTheScreen();
     await user.press(screen.getByTestId("onboarding-next"));
 
-    expect(mockReplace).toHaveBeenCalledWith("/(auth)/phone");
+    expect(mockReplace).toHaveBeenCalledWith("/(auth)/email");
   });
 
-  it("« Passer » saute directement au numéro", async () => {
+  it("« Passer » saute directement à l'adresse e-mail", async () => {
     const user = userEvent.setup();
     render(<Onboarding />);
 
     await user.press(screen.getByTestId("onboarding-skip"));
 
-    expect(mockReplace).toHaveBeenCalledWith("/(auth)/phone");
+    expect(mockReplace).toHaveBeenCalledWith("/(auth)/email");
   });
 });

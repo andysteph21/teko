@@ -2,12 +2,28 @@
 // Les brouillons hérités planifiés ou Airtel sont refusés pendant l'alpha.
 
 import { useMutation } from "@tanstack/react-query";
-import { quoteRoute, type RideQuote, requestQuotedRide, TekoApiError } from "@teko/api-client";
+import {
+  quoteRoute,
+  type RideQuote,
+  requestQuotedRide,
+  TekoApiError,
+  type TekoApiErrorCode,
+} from "@teko/api-client";
 import { type Href, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import { supabase } from "../../lib/supabase";
+import { shareOrderPosition } from "./share-order-position";
 import { type MeetingPick, useBookingStore } from "./store";
+
+/** Refus de commande expliqués au passager ; tout autre code reste générique. */
+const ERROR_KEYS: Partial<Record<TekoApiErrorCode, string>> = {
+  network: "erreurs.reseau",
+  quote_expired: "booking:rencontre.devisExpire",
+  fees_due: "booking:rencontre.fraisDus",
+  seats_full: "booking:covoiturage.complet",
+  service_closed: "booking:covoiturage.ferme",
+};
 
 export interface RequestConfirmation {
   quote: RideQuote;
@@ -58,6 +74,7 @@ export function useRequestRide(): RequestRideController {
       });
     },
     onSuccess: (ride, confirmed) => {
+      void shareOrderPosition(ride.id);
       if (confirmed) {
         const store = useBookingStore.getState();
         const { quote, meeting } = confirmed;
@@ -78,12 +95,9 @@ export function useRequestRide(): RequestRideController {
     },
   });
 
+  const code = mutation.error instanceof TekoApiError ? mutation.error.code : null;
   const errorMessage = mutation.error
-    ? mutation.error instanceof TekoApiError && mutation.error.code === "network"
-      ? t("erreurs.reseau")
-      : mutation.error instanceof TekoApiError && mutation.error.code === "quote_expired"
-        ? t("booking:rencontre.devisExpire")
-        : t("erreurs.generique")
+    ? t(ERROR_KEYS[code ?? "unknown"] ?? "erreurs.generique")
     : null;
 
   return {

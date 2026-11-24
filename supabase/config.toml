@@ -12,6 +12,34 @@ enabled = true
 site_url = "http://127.0.0.1:3000"
 additional_redirect_urls = ["teko-client://auth", "teko-driver://auth", "teko-client-alpha://auth", "teko-driver-alpha://auth", "http://127.0.0.1:3000"]
 
+# Auth e-mail (décision du 23 novembre 2026) : code à 6 chiffres, sans mot de
+# passe ni lien. En local, les messages sont interceptés par la boîte de
+# test ; le SMTP réel est configuré par environnement.
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+otp_length = 6
+otp_expiry = 600
+max_frequency = "5s"
+
+[auth.email.template.magic_link]
+subject = "Votre code Teko"
+content_path = "./supabase/templates/code.html"
+
+[auth.email.template.confirmation]
+subject = "Votre code Teko"
+content_path = "./supabase/templates/code.html"
+
+# Garde de création de compte de l'alpha : seule une adresse ou un numéro
+# invité peut ouvrir un compte par l'app (les créations par l'API
+# d'administration n'y passent pas). Elle reste désactivée en développement
+# local, où les numéros de test s'inscrivent librement ; le banc distant
+# l'active (tools/alpha-remote/prepare.mjs). Vérifiée le 23 novembre 2026 sur
+# une instance jetable : adresse non invitée refusée en 403.
+# [auth.hook.before_user_created]
+# enabled = true
+# uri = "pg-functions://postgres/public/alpha_before_user_created"
+
 # Auth téléphone (parcours C-03/C-04, D-03) — en local, PAS de fournisseur
 # SMS : les numéros de test ci-dessous acceptent un code fixe, sans réseau.
 # Le fournisseur réel (question n° 21, CL-03) sera configuré par environnement.

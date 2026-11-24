@@ -4,7 +4,7 @@ import type { Href, useRouter } from "expo-router";
 
 type Router = ReturnType<typeof useRouter>;
 
-import { emitPushOffer } from "./push-events";
+import { emitPushOffer, emitPushRouteChange } from "./push-events";
 import { supabase } from "./supabase";
 
 interface RoutingOptions {
@@ -19,11 +19,12 @@ async function resolveTarget(data: Record<string, unknown>, userId: string) {
   const row = await getNotification(supabase, candidate.notificationId);
   const current = await supabase.auth.getSession();
   if (current.data.session?.user.id !== userId) return null;
-  return pushTarget({
+  const target = pushTarget({
     notification_id: row.id,
     type: row.type,
     payload: JSON.stringify(row.payload),
   });
+  return target ? { ...target, type: row.type } : null;
 }
 
 /** Aucune URL reçue ni action automatique ; les données se relisent sous JWT. */
@@ -39,6 +40,9 @@ export async function routePush(
       emitPushOffer(target.offerId);
       return;
     }
+    // La demande de modification réveille la lecture sous JWT de l'écran de
+    // course ; elle n'accepte jamais rien.
+    if (target.rideId && target.type === "route_change_request") emitPushRouteChange(target.rideId);
     if (!options.tapped) return;
     if (!target.rideId) {
       options.router.push("/(main)/home" as Href);

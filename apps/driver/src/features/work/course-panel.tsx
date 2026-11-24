@@ -1,11 +1,13 @@
 // Feuille basse D-13 — course en cours : catégorie · montant · mode de
-// paiement, chrono depuis started_at, « Terminer la course ».
+// paiement, chrono depuis started_at, « Terminer la course ». En tête :
+// passagers du covoiturage (lot R4) ; au milieu : arrêts de la course (lot
+// R3) — la fin de course reste indisponible tant qu'un arrêt est en cours.
 
 import { formatXaf } from "@teko/core";
 import type { RideRow } from "@teko/types";
 import { borderRadius, color, spacing, typography } from "@teko/ui";
 import { BottomPanel, Button } from "@teko/ui/native";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -32,9 +34,16 @@ export interface CoursePanelProps {
   ride: RideRow;
   busy: boolean;
   onComplete: () => void;
+  /** Contenu en tête de feuille (passagers du covoiturage). */
+  header?: ReactNode;
+  /** Arrêts de la course, entre le résumé et le bouton. */
+  stops?: ReactNode;
+  /** Arrêt en cours (arrivé, pas reparti) : le serveur refuserait la fin. */
+  completeBlocked?: boolean;
 }
 
-export function CoursePanel({ ride, busy, onComplete }: CoursePanelProps) {
+export function CoursePanel(props: CoursePanelProps) {
+  const { ride, busy, onComplete, header, stops, completeBlocked = false } = props;
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const chrono = useChrono(ride.started_at);
@@ -48,6 +57,7 @@ export function CoursePanel({ ride, busy, onComplete }: CoursePanelProps) {
       style={{ ...styles.panel, paddingBottom: insets.bottom + spacing[5] }}
       testID="ride-panel"
     >
+      {header}
       <View style={styles.row}>
         <View style={styles.body}>
           <Text style={styles.title}>{t("work:course.courseEnCours")}</Text>
@@ -61,10 +71,17 @@ export function CoursePanel({ ride, busy, onComplete }: CoursePanelProps) {
           {chrono}
         </Text>
       </View>
+      {stops}
+      {completeBlocked ? (
+        <Text style={styles.blocked} testID="complete-blocked">
+          {t("work:course.terminerBloque")}
+        </Text>
+      ) : null}
       <Button
         label={t("work:course.terminer")}
         accent="driver"
         busy={busy}
+        disabled={completeBlocked}
         onPress={onComplete}
         testID="ride-complete"
       />
@@ -78,6 +95,11 @@ const styles = StyleSheet.create({
   body: { flex: 1 },
   title: { fontSize: typography.fontSize.base, fontWeight: "600", color: color.neutral[700] },
   sub: { fontSize: typography.fontSize.xs + 1, color: color.neutral[500], marginTop: 1 },
+  blocked: {
+    fontSize: typography.fontSize.sm,
+    color: color.semantic.warning.dark,
+    marginBottom: spacing[2],
+  },
   time: {
     fontFamily: typography.fontFamily.mono,
     fontSize: typography.fontSize.sm + 1,

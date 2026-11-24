@@ -13,6 +13,7 @@ export interface PlacePick {
   position: LonLat;
   label: string;
   landmarkId?: string;
+  source?: "gps";
   hint?: string;
 }
 
@@ -22,7 +23,16 @@ export interface MeetingPick {
   position: LonLat;
 }
 
+/** Type de service du brouillon : course (défaut) ou livraison de colis. */
+export type BookingService = "ride" | "delivery";
+
 export interface BookingState {
+  /** Livraison (R5) : même brouillon départ/arrivée, parcours colis ensuite. */
+  service: BookingService;
+  /** Covoiturage (R4) : 1 à 3 places, le prix total vient du serveur. */
+  seats: number;
+  /** Prix ferme de la livraison commandée, relu par l'écran de recherche. */
+  deliveryPrice: number | null;
   origin: PlacePick | null;
   destination: PlacePick | null;
   category: VehicleCategory;
@@ -34,6 +44,9 @@ export interface BookingState {
   quotes: Partial<Record<VehicleCategory, RideQuote>>;
   meeting: MeetingPick | null;
 
+  setService: (service: BookingService) => void;
+  setSeats: (seats: number) => void;
+  setDeliveryPrice: (price: number | null) => void;
   setOrigin: (origin: PlacePick | null) => void;
   setDestination: (destination: PlacePick | null) => void;
   setDestinationHint: (hint: string) => void;
@@ -49,7 +62,12 @@ export interface BookingState {
   reset: () => void;
 }
 
+export const MAX_SEATS = 3;
+
 const INITIAL = {
+  service: "ride" as BookingService,
+  seats: 1,
+  deliveryPrice: null,
   origin: null,
   destination: null,
   category: "eco" as VehicleCategory,
@@ -63,6 +81,9 @@ const INITIAL = {
 
 export const useBookingStore = create<BookingState>((set) => ({
   ...INITIAL,
+  setService: (service) => set({ service }),
+  setSeats: (seats) => set({ seats: Math.min(MAX_SEATS, Math.max(1, Math.round(seats))) }),
+  setDeliveryPrice: (deliveryPrice) => set({ deliveryPrice }),
   setOrigin: (origin) => set({ origin, route: null, estimates: {}, quotes: {}, meeting: null }),
   setDestination: (destination) =>
     set({ destination, route: null, estimates: {}, quotes: {}, meeting: null }),
@@ -80,6 +101,11 @@ export const useBookingStore = create<BookingState>((set) => ({
   setQuotes: (quotes) => set({ quotes }),
   reset: () => set(INITIAL),
 }));
+
+/** Écran qui suit le choix de la destination, selon le service du brouillon. */
+export function quoteScreenFor(service: BookingService): "/(main)/delivery" | "/(main)/category" {
+  return service === "delivery" ? "/(main)/delivery" : "/(main)/category";
+}
 
 /** Le brouillon est-il prêt à être commandé (C-11 → request_ride) ? */
 export function isReadyToRequest(

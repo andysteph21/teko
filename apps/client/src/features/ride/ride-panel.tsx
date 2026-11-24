@@ -3,6 +3,7 @@
 // C-13, arrived → C-13b, started → C-14.
 
 import type { RideRow } from "@teko/types";
+import type { ReactNode } from "react";
 import { CoursePanel } from "./course-panel";
 import { ApproachPanel, ArrivedPanel } from "./pin-panels";
 import type { RideTracking } from "./use-ride-tracking";
@@ -14,13 +15,17 @@ export interface RidePanelProps {
   sharing: boolean;
   onShare: () => void;
   onCancel: () => void;
+  /** Bloc de compléments (RideExtrasBlock), identique dans les trois états. */
+  extras?: ReactNode;
 }
 
 export function RidePanel(props: RidePanelProps) {
-  const { tracking, ride, destinationLabel, sharing, onShare, onCancel } = props;
+  const { tracking, ride, destinationLabel, sharing, onShare, onCancel, extras } = props;
   if (tracking.status === "arrived") {
     return (
-      <ArrivedPanel driverName={tracking.driverName} pin={ride.pin_code} onCancel={onCancel} />
+      <ArrivedPanel driverName={tracking.driverName} pin={ride.pin_code} onCancel={onCancel}>
+        {extras}
+      </ArrivedPanel>
     );
   }
   if (tracking.status === "started") {
@@ -32,7 +37,9 @@ export function RidePanel(props: RidePanelProps) {
         positionStale={tracking.positionStale}
         sharing={sharing}
         onShare={onShare}
-      />
+      >
+        {extras}
+      </CoursePanel>
     );
   }
   return (
@@ -41,6 +48,8 @@ export function RidePanel(props: RidePanelProps) {
       pin={ride.pin_code}
       etaMin={tracking.etaMin}
       onCancel={onCancel}
-    />
+    >
+      {extras}
+    </ApproachPanel>
   );
 }

@@ -5,6 +5,38 @@
 
 **Relance suggérée :** J+7 sur les 6 questions bloquantes si aucune réponse.
 
+## Retours de l’essai terrain du 20 novembre 2026
+
+Message reçu le 21 novembre, avec trois vidéos de l’essai et le document
+« TEKO COVOITURAGE ». Essai Android jugé concluant. Six suggestions reçues,
+**aucune arbitrée ni implémentée** : le
+[plan d’implémentation](21-plan-retours-essai-20-novembre.md) liste les
+dix-neuf arbitrages (A1 à A19) à soumettre avant tout développement.
+
+| Suggestion | Lot du plan | État |
+|---|---|---|
+| Changer de destination | R3 | ➡️ Développé dans le dépôt le 23 novembre, non déployé |
+| Ajouter des arrêts en cours de trajet | R3 | ➡️ Développé dans le dépôt le 23 novembre (2 arrêts, ajoutés après acceptation), non déployé |
+| Livraison comme option | R5 | ➡️ Développée dans le dépôt le 23 novembre, fermée côté serveur jusqu’à l’avis juridique ; grille tarifaire à confirmer |
+| Covoiturage au tarif à la place (250 FCFA/km, 500 à 1 850 FCFA, 3 places) | R4 | ➡️ Développé dans le dépôt le 23 novembre, fermé par défaut ; essai à trois passagers avant ouverture |
+| Accueil affichant directement les options | R2 | ➡️ Implémenté dans le dépôt le 23 novembre ; maquette C-07 à mettre à jour, non publié |
+| Compte validé par e-mail ou Google, numéro simplement enregistré | R1 | ➡️ Code par e-mail implémenté dans le dépôt le 23 novembre, non déployé ; Google, anti-comptes multiples et rattachement des comptes existants à faire |
+
+**Réponse du porteur du 23 novembre 2026 :** accord pour implémenter les six
+suggestions. La sonnerie des propositions et les annonces vocales ont « très
+bien fonctionné » pendant l’essai. Les arbitrages A1 à A19 ont ensuite été tranchés
+un par un le même jour ; ils sont consignés dans le
+[registre produit](../product/05-questions-ouvertes.md). Quatre réponses
+s’écartent de la recommandation : SMS conservé comme option future (A1),
+covoiturage d’office pour toutes les voitures (A13), code et photo à la
+remise d’un colis (A17), livraison en voiture et en moto.
+
+**Attendu du porteur :** la liste complète de ce qu’il doit fournir, décider
+et faire régler est dans [Ce qu’il reste à configurer](23-configuration-a-faire.md).
+En bref : relais SMTP, client OAuth Google, adresses e-mail des testeurs,
+grille de livraison, avis juridique, dates d’ouverture du covoiturage et de la
+livraison, accord pour déployer.
+
 ## Réponses du porteur pour l’alpha du 18 octobre 2026
 
 Ces réponses sont distinctes des 26 réponses client du 25 août. Elles sont

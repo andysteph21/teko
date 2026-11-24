@@ -12,9 +12,21 @@ export type TekoApiErrorCode =
   | "pin_incorrect"
   | "pin_blocked"
   | "ride_in_progress"
+  | "fees_due"
   | "role_change_forbidden"
   | "network"
   | "quote_expired"
+  | "quote_points_too_close"
+  | "quote_route_not_found"
+  | "quote_outside_service_area"
+  | "service_closed"
+  | "route_too_many_stops"
+  | "route_too_many_changes"
+  | "route_not_editable"
+  | "route_change_handled"
+  | "seats_full"
+  | "delivery_proof_required"
+  | "stop_open"
   | "unknown";
 
 export class TekoApiError extends Error {
@@ -38,6 +50,14 @@ const MESSAGE_RULES: [string, TekoApiErrorCode][] = [
   ["offre expirée", "offer_expired"],
   ["pin incorrect", "pin_incorrect"],
   ["course est en cours", "ride_in_progress"],
+  ["frais d'annulation à régler", "fees_due"],
+  ["service non ouvert", "service_closed"],
+  ["un arrêt est en cours", "stop_open"],
+  ["modification déjà traitée", "route_change_handled"],
+  ["trajet non modifiable", "route_not_editable"],
+  ["plus assez de places", "seats_full"],
+  ["photo de remise requise", "delivery_proof_required"],
+  ["preuve de remise requise", "delivery_proof_required"],
   ["rôle non autorisée", "role_change_forbidden"],
   ["failed to fetch", "network"],
   ["network request failed", "network"],

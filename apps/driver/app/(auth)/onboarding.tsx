@@ -47,14 +47,14 @@ export default function Onboarding() {
   const slide = SLIDES[index] ?? SLIDES[0];
 
   const next = () => {
-    if (index === SLIDES.length - 1) router.replace("/(auth)/phone" as Href);
+    if (index === SLIDES.length - 1) router.replace("/(auth)/email" as Href);
     else setIndex((i) => i + 1);
   };
 
   return (
     <SafeAreaView style={styles.screen}>
       <Pressable
-        onPress={() => router.replace("/(auth)/phone" as Href)}
+        onPress={() => router.replace("/(auth)/email" as Href)}
         style={styles.skip}
         accessibilityRole="button"
         testID="onboarding-skip"

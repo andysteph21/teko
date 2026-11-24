@@ -2,37 +2,34 @@
 // statut backend : accepted/enroute (vers le passager), arrived (attente +
 // PIN D-12), started (vers la destination + positions 5 s), completed
 // (encaissement espèces D-14 ou Airtel D-14b).
+//
+// Par-dessus : demande de modification de trajet (lot R3), offre d'un
+// passager supplémentaire pendant un covoiturage (lot R4 — une course par
+// passager, l'écran en affiche une à la fois) et remise d'une livraison par
+// photo et code (lot R5).
 
 import { driverBalance } from "@teko/api-client";
-import type { RideRow, RideStatus } from "@teko/types";
 import { color, spacing, typography } from "@teko/ui";
-import { Button, DataWidget, EcoPill } from "@teko/ui/native";
-import { type Href, useLocalSearchParams, useRouter } from "expo-router";
+import { Button } from "@teko/ui/native";
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { DEFAULT_CENTER, TILES_URL } from "../../../src/config";
 import { useSession } from "../../../src/features/auth/use-session";
-import { TekoMapView } from "../../../src/features/map/native-map";
+import { ActiveRideView } from "../../../src/features/work/active-ride-view";
 import { AirtelPanel } from "../../../src/features/work/airtel-panel";
 import { CompletePanel } from "../../../src/features/work/complete-panel";
-import { CoursePanel } from "../../../src/features/work/course-panel";
-import { useDataUsage, useResolvedMapMode } from "../../../src/features/work/data-state";
-import {
-  DestinationDot,
-  MeetingPin,
-  RouteLine,
-  VehicleDot,
-} from "../../../src/features/work/map-layers";
-import { PassengerPanel } from "../../../src/features/work/passenger-panel";
+import { useResolvedMapMode } from "../../../src/features/work/data-state";
+import { DeliveryHandoff } from "../../../src/features/work/delivery-handoff";
+import { DeliveryDonePanel } from "../../../src/features/work/delivery-panels";
+import { OfferModal } from "../../../src/features/work/offer-modal";
 import { PinPanel } from "../../../src/features/work/pin-panel";
-import { RideBanner } from "../../../src/features/work/ride-banner";
-import { WorkToast } from "../../../src/features/work/toast";
-import { useDevicePosition } from "../../../src/features/work/use-device-position";
+import { isActiveStatus, isDelivery } from "../../../src/features/work/ride-kind";
+import { RouteChangeModal } from "../../../src/features/work/route-change-modal";
 import { type DriverRide, useDriverRide } from "../../../src/features/work/use-driver-ride";
 import { usePushPositions } from "../../../src/features/work/use-push-positions";
 import { type RideActions, useRideActions } from "../../../src/features/work/use-ride-actions";
+import { type RideExtras, useRideExtras } from "../../../src/features/work/use-ride-extras";
 import { supabase } from "../../../src/lib/supabase";
 
 /** Solde du jour rafraîchi après clôture (ligne « nouveau solde » de D-14). */
@@ -78,114 +75,37 @@ function LoadingView({ loadError, onRetry }: { loadError: boolean; onRetry: () =
   );
 }
 
-interface ActiveViewProps {
+/** Saisie plein écran ouverte par-dessus la carte. */
+type Entry = "none" | "pin" | "handoff";
+
+interface ContentProps {
   state: DriverRide;
   actions: RideActions;
+  extras: RideExtras;
   eco: boolean;
-  onRequestPin: () => void;
 }
 
-/** Phase d'approche : rencontre visible, destination cachée (anti-écrémage). */
-function isPickup(status: RideStatus): boolean {
-  return status === "accepted" || status === "enroute" || status === "arrived";
-}
-
-function ActiveBanner({ ride, status }: { ride: RideRow; status: RideStatus }) {
-  const insets = useSafeAreaInsets();
-  if (status === "requested") return null;
-  const banner = status === "started" ? "started" : status === "arrived" ? "arrived" : "enroute";
-  return (
-    <RideBanner
-      status={banner}
-      originHint={ride.origin_hint}
-      destHint={ride.dest_hint}
-      topInset={insets.top}
-    />
-  );
-}
-
-function ActivePanel({ state, actions, onRequestPin }: Omit<ActiveViewProps, "eco">) {
+/** Fin de course : remise faite (livraison), espèces D-14 ou Airtel D-14b. */
+function CompletedView({ state, actions }: ContentProps) {
   const ride = state.ride;
-  const status = state.status;
-  if (!ride || !status) return null;
-  if (status === "started") {
-    return <CoursePanel ride={ride} busy={actions.busy} onComplete={actions.complete} />;
-  }
-  if (!isPickup(status)) return null;
-  return (
-    <PassengerPanel
-      status={status === "arrived" ? "arrived" : "enroute"}
-      originHint={ride.origin_hint}
-      arrivedAt={status === "arrived" ? ride.updated_at : null}
-      busy={actions.busy}
-      onArrive={actions.arrive}
-      onRequestPin={onRequestPin}
-      onNoShow={actions.noShow}
-    />
-  );
-}
-
-function ActiveRideView({ state, actions, eco, onRequestPin }: ActiveViewProps) {
-  const router = useRouter();
-  const usage = useDataUsage();
-  const devicePosition = useDevicePosition();
-  const ride = state.ride;
-  const status = state.status;
-  if (!ride || !status) return null;
-
-  return (
-    <View style={styles.screen}>
-      <TekoMapView
-        options={{ tilesUrl: TILES_URL, eco }}
-        center={state.origin ?? DEFAULT_CENTER}
-        zoom={14.5}
-      >
-        <RouteLine coordinates={state.routeCoords} />
-        <MeetingPin position={isPickup(status) ? state.origin : null} />
-        <DestinationDot position={state.destination} />
-        <VehicleDot position={devicePosition} />
-      </TekoMapView>
-      <ActiveBanner ride={ride} status={status} />
-      <View style={styles.widgetStack} pointerEvents="box-none">
-        {eco ? <EcoPill /> : null}
-        <DataWidget
-          quantityText={usage.quantityText}
-          state={usage.state}
-          onPress={() => router.push("/(main)/settings" as Href)}
-          testID="data-widget"
-        />
-      </View>
-      <ActivePanel state={state} actions={actions} onRequestPin={onRequestPin} />
-      <WorkToast />
-    </View>
-  );
-}
-
-export default function DriverRideScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const state = useDriverRide(id);
-  const actions = useRideActions(id, state.applyRide);
-  const [pinMode, setPinMode] = useState(false);
-  const mode = useResolvedMapMode();
-  const eco = mode.mode === "eco";
-  const { ride, status } = state;
-  usePushPositions(
-    id,
-    status ? ["accepted", "enroute", "arrived", "started"].includes(status) : undefined,
-    eco,
-  );
+  const delivery = isDelivery(ride);
   const cash = ride?.payment_method !== "airtel";
-  const newBalance = useNewBalance(status === "completed" && cash);
+  const newBalance = useNewBalance(cash && !delivery);
+  if (!ride) return null;
+  if (delivery) return <DeliveryDonePanel ride={ride} onDone={actions.cashDone} />;
+  if (!cash) return <AirtelPanel ride={ride} />;
+  return <CompletePanel ride={ride} newBalance={newBalance} onDone={actions.cashDone} />;
+}
+
+function RideContent(props: ContentProps) {
+  const { state, actions, extras, eco } = props;
+  const [entry, setEntry] = useState<Entry>("none");
+  const { ride, status } = state;
+  const back = () => setEntry("none");
 
   if (!ride) return <LoadingView loadError={state.loadError} onRetry={state.reload} />;
-  if (status === "completed") {
-    return cash ? (
-      <CompletePanel ride={ride} newBalance={newBalance} onDone={actions.cashDone} />
-    ) : (
-      <AirtelPanel ride={ride} />
-    );
-  }
-  if (pinMode && status === "arrived") {
+  if (status === "completed") return <CompletedView {...props} />;
+  if (entry === "pin" && status === "arrived") {
     return (
       <PinPanel
         busy={actions.busy}
@@ -193,22 +113,83 @@ export default function DriverRideScreen() {
         fails={actions.pinFails}
         onSubmit={actions.start}
         onClearError={actions.clearPinError}
-        onBack={() => setPinMode(false)}
+        onBack={back}
+        delivery={isDelivery(ride)}
       />
     );
+  }
+  if (entry === "handoff" && status === "started" && isDelivery(ride)) {
+    return <DeliveryHandoff delivery={extras.delivery} onBack={back} />;
   }
   return (
     <ActiveRideView
       state={state}
       actions={actions}
+      extras={extras}
       eco={eco}
-      onRequestPin={() => setPinMode(true)}
+      onRequestPin={() => setEntry("pin")}
+      onHandoff={() => setEntry("handoff")}
     />
   );
 }
 
+/** Fenêtres à échéance par-dessus l'écran, quelle que soit la vue affichée. */
+function RideOverlays({ extras }: { extras: RideExtras }) {
+  const { routeChange, feed } = extras;
+  return (
+    <>
+      {routeChange.pending ? (
+        <RouteChangeModal
+          change={routeChange.pending}
+          destinationName={routeChange.destinationName}
+          busy={routeChange.busy}
+          onAccept={routeChange.accept}
+          onRefuse={routeChange.refuse}
+          onExpire={routeChange.expire}
+        />
+      ) : null}
+      {feed.offer ? (
+        <OfferModal
+          offer={feed.offer}
+          busy={feed.busy}
+          onAccept={feed.accept}
+          onDecline={feed.decline}
+          onExpire={feed.expire}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function RideScreen({ id }: { id: string }) {
+  const state = useDriverRide(id);
+  const actions = useRideActions(id, state.applyRide, state.leave);
+  const extras = useRideExtras(state);
+  const eco = useResolvedMapMode().mode === "eco";
+  const { status } = state;
+  // Covoiturage : une course close ne coupe pas le suivi tant qu'un autre
+  // passager est à bord ou attendu — le serveur recopie la position envoyée
+  // pour une course vers les autres courses du trajet.
+  const active = isActiveStatus(status);
+  const other = active ? null : extras.shared.otherActiveId;
+  usePushPositions(other ?? id, status ? active || other !== null : undefined, eco);
+
+  return (
+    <View style={styles.root}>
+      <RideContent state={state} actions={actions} extras={extras} eco={eco} />
+      <RideOverlays extras={extras} />
+    </View>
+  );
+}
+
+export default function DriverRideScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  // Une course par passager : changer de course repart d'un état neuf.
+  return <RideScreen key={id} id={id} />;
+}
+
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.neutral[50] },
+  root: { flex: 1 },
   loading: {
     flex: 1,
     backgroundColor: color.neutral[50],
@@ -218,10 +199,4 @@ const styles = StyleSheet.create({
     padding: spacing[5],
   },
   loadError: { fontSize: typography.fontSize.base, color: color.neutral[500] },
-  widgetStack: {
-    position: "absolute",
-    left: spacing[4],
-    bottom: 196,
-    gap: spacing[2],
-  },
 });

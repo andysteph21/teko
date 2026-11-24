@@ -5,11 +5,12 @@
 import { cancelRide, completeRide, markArrived, startRide, TekoApiError } from "@teko/api-client";
 import { isValidPinFormat } from "@teko/core";
 import type { RideRow } from "@teko/types";
-import { type Href, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard } from "react-native";
 import { supabase } from "../../lib/supabase";
+import { HOME_HREF } from "./shared-rides";
 import { useWorkStore } from "./store";
 
 export interface RideActions {
@@ -28,6 +29,8 @@ export interface RideActions {
 export function useRideActions(
   rideId: string | undefined,
   applyRide: (row: RideRow) => void,
+  /** Sortie de l'écran ; par défaut l'accueil (covoiturage : passager suivant). */
+  leave?: () => void,
 ): RideActions {
   const [busy, setBusy] = useState(false);
   const [pinError, setPinError] = useState<string | null>(null);
@@ -35,6 +38,10 @@ export function useRideActions(
   const router = useRouter();
   const { t } = useTranslation();
   const showToast = useWorkStore((s) => s.showToast);
+  const exit = useCallback(() => {
+    if (leave) leave();
+    else router.replace(HOME_HREF);
+  }, [leave, router]);
 
   const run = useCallback(
     async (rpc: (id: string) => Promise<RideRow>) => {
@@ -86,17 +93,17 @@ export function useRideActions(
     try {
       await cancelRide(supabase, rideId, "passager absent", "no_show");
       showToast(t("work:course.annuleeAbsent"));
-      router.replace("/(main)/home" as Href);
+      exit();
     } catch {
       showToast(t("erreurs.generique"));
       setBusy(false);
     }
-  }, [rideId, router, showToast, t]);
+  }, [rideId, exit, showToast, t]);
 
   const cashDone = useCallback(() => {
     showToast(t("work:fin.soldeMisAJour"));
-    router.replace("/(main)/home" as Href);
-  }, [router, showToast, t]);
+    exit();
+  }, [exit, showToast, t]);
 
   return {
     busy,

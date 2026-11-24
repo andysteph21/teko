@@ -1,6 +1,7 @@
 // C-15 Paiement — montant qui fait foi (final sinon estimé), encaissement
 // Airtel Money suivi par poll 3 s (push USSD, renvoi, échec) ; le repli
 // espèces n'est JAMAIS une impasse. Espèces : consigne + Continuer → C-16.
+// Livraison (R5) : déjà réglée au retrait, l'écran annonce la remise du colis.
 
 import { formatXaf } from "@teko/core";
 import { color, spacing, typography } from "@teko/ui";
@@ -52,13 +53,21 @@ function AirtelSection({
   );
 }
 
-function CashSection({ montant, onContinuer }: { montant: number; onContinuer: () => void }) {
+interface CashSectionProps {
+  montant: number;
+  /** Livraison : déjà réglée au retrait, rien à remettre à l'arrivée. */
+  delivered: boolean;
+  onContinuer: () => void;
+}
+
+function CashSection({ montant, delivered, onContinuer }: CashSectionProps) {
   const { t } = useTranslation();
+  const key = delivered ? "payment:paiement.livraisonRegle" : "payment:paiement.remettez";
   return (
     <>
       <CashCard
         titre={t("payment:paiement.especes")}
-        texte={t("payment:paiement.remettez", { montant: formatXaf(montant, "FCFA") })}
+        texte={t(key, { montant: formatXaf(montant, "FCFA") })}
       />
       <View style={styles.continuer}>
         <Button label={t("commun.continuer")} onPress={onContinuer} testID="payment-continue" />
@@ -74,7 +83,8 @@ export default function PaymentScreen() {
   const { session } = useSession();
   const [repliEspeces, setRepliEspeces] = useState(false);
   const rideQ = useRide(rideId);
-  const modeAirtel = !repliEspeces && rideQ.data?.payment_method === "airtel";
+  const delivered = rideQ.data?.service_type === "delivery";
+  const modeAirtel = !delivered && !repliEspeces && rideQ.data?.payment_method === "airtel";
   const { payment } = useRideCollection(rideId, modeAirtel);
 
   const versEvaluation = useCallback(
@@ -96,9 +106,15 @@ export default function PaymentScreen() {
       {modeAirtel ? (
         <AirtelSection payment={payment} numero={numero} onCash={() => setRepliEspeces(true)} />
       ) : (
-        <CashSection montant={montantCourse(rideQ.data)} onContinuer={versEvaluation} />
+        <CashSection
+          montant={montantCourse(rideQ.data)}
+          delivered={delivered}
+          onContinuer={versEvaluation}
+        />
       )}
-      <Text style={styles.note}>{t("payment:paiement.note")}</Text>
+      <Text style={styles.note}>
+        {t(delivered ? "payment:paiement.livraisonNote" : "payment:paiement.note")}
+      </Text>
     </SafeAreaView>
   );
 }

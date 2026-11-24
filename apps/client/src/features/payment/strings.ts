@@ -22,6 +22,9 @@ export const paymentFr = {
     altTexte: "Remettez le montant exact au chauffeur.",
     note: "Le chauffeur est notifié automatiquement dès la confirmation.",
     verification: "Vérification du paiement…",
+    livraisonTitre: "Colis remis",
+    livraisonRegle: "Vous avez réglé {{montant}} au coursier à la prise en charge.",
+    livraisonNote: "Le destinataire a donné le code de remise ; une photo a été enregistrée.",
   },
   evaluation: {
     passer: "Passer",

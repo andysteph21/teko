@@ -56,11 +56,16 @@ export const accountFr = {
     parametres: "Paramètres",
     deconnecter: "Se déconnecter",
     deconnecterTitre: "Se déconnecter ?",
-    deconnecterTexte: "Vous pourrez vous reconnecter avec votre numéro de téléphone.",
+    deconnecterTexte: "Vous pourrez vous reconnecter avec votre adresse e-mail.",
   },
   parametres: {
     titre: "Paramètres",
     secCarte: "Carte collaborative",
+    secVoix: "Annonces vocales",
+    voixTitre: "Lire les annonces à voix haute",
+    voixTexte: "Nouvelle course, repère du passager, arrivée et destination.",
+    voixManquante:
+      "Aucune voix française sur ce téléphone : installez-la dans Paramètres Android, Synthèse vocale.",
     gpsTitre: "Partager mes traces GPS",
     gpsTexte:
       "Anonymisées et conservées 12 mois, elles aident Teko à découvrir les routes manquantes de la carte.",
@@ -68,6 +73,13 @@ export const accountFr = {
     repereSous: "Depuis la carte pendant vos attentes",
     repereTexte:
       "Proposez un repère directement depuis la carte de l'accueil, pendant vos attentes.",
+    secServices: "Services",
+    covoitTitre: "Recevoir des covoiturages",
+    covoitTexte: "Jusqu'à 3 places, chaque passager paie sa place.",
+    covoitMoto: "Réservé aux voitures.",
+    livraisonTitre: "Recevoir des livraisons",
+    livraisonTexte: "Colis remis contre photo et code du destinataire.",
+    serviceFerme: "Ce service n'est pas encore ouvert.",
     secDonnees: "Données",
     modeTitre: "Mode éco",
     modeSous: "Carte simplifiée, position toutes les 5 s",

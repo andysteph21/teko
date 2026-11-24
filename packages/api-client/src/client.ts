@@ -20,6 +20,9 @@ export interface CreateTekoClientOptions {
   storage?: SessionStorage;
   /** true seulement sur le web (liens magiques) — false sur mobile. */
   detectSessionInUrl?: boolean;
+  /** Retour de connexion Google par code à usage unique (PKCE) : aucun
+   *  jeton ne transite par le lien de retour vers l'app. */
+  pkce?: boolean;
 }
 
 export function createTekoClient(options: CreateTekoClientOptions): TekoClient {
@@ -29,6 +32,7 @@ export function createTekoClient(options: CreateTekoClientOptions): TekoClient {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: options.detectSessionInUrl ?? false,
+      flowType: options.pkce ? "pkce" : "implicit",
     },
   });
 }

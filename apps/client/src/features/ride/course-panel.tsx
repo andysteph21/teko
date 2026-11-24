@@ -6,6 +6,7 @@ import { formatXaf } from "@teko/core";
 import type { RideRow } from "@teko/types";
 import { color, spacing, typography } from "@teko/ui";
 import { BottomPanel, Button, DriverCard } from "@teko/ui/native";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,6 +26,8 @@ export interface CoursePanelProps {
   positionStale: boolean;
   sharing: boolean;
   onShare: () => void;
+  /** Compléments du service (arrêts, covoiturage, livraison). */
+  children?: ReactNode;
 }
 
 export function CoursePanel(props: CoursePanelProps) {
@@ -68,6 +71,7 @@ export function CoursePanel(props: CoursePanelProps) {
         detail={t("ride:suivi.vousConduit")}
         testID="driver-card"
       />
+      {props.children}
       <View style={styles.actions}>
         <Button
           label={t("ride:suivi.partager")}

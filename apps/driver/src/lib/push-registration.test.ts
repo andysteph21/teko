@@ -12,6 +12,8 @@ jest.mock("expo-constants", () => ({
 }));
 jest.mock("expo-notifications", () => ({
   AndroidImportance: { MAX: 5 },
+  AndroidNotificationVisibility: { PUBLIC: 1 },
+  AndroidAudioUsage: { NOTIFICATION_RINGTONE: 6 },
   setNotificationChannelAsync: jest.fn(),
   getPermissionsAsync: jest.fn(),
   requestPermissionsAsync: jest.fn(),
@@ -33,13 +35,16 @@ it("obtient un jeton Expo du projet alpha et le lie à la session Android", asyn
     "teko-alerts",
     expect.objectContaining({ importance: 5 }),
   );
-  expect(Notifications.getExpoPushTokenAsync).toHaveBeenCalledWith({ projectId: "alpha-project" });
-  expect(registerDevice).toHaveBeenCalledWith(
-    supabase,
-    "owner",
-    "ExpoPushToken[device-test]",
-    "android",
+  // Canal dédié aux propositions : sonnerie longue et vibration forte.
+  expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith(
+    "teko-offers",
+    expect.objectContaining({ importance: 5, sound: "teko_offre.wav", lockscreenVisibility: 1 }),
   );
+  expect(Notifications.getExpoPushTokenAsync).toHaveBeenCalledWith({ projectId: "alpha-project" });
+  expect(registerDevice).toHaveBeenCalledWith(supabase, "owner", "ExpoPushToken[device-test]", {
+    platform: "android",
+    offerChannel: true,
+  });
 });
 it("un refus définitif n'obtient aucun jeton et ne redemande pas la permission", async () => {
   jest
@@ -62,11 +67,9 @@ it("une permission accordée est suivie de l'enregistrement, un réseau indispon
 it("un iPhone enregistre un jeton Expo avec la plateforme iOS", async () => {
   Object.defineProperty(Platform, "OS", { configurable: true, value: "ios" });
   expect(await registerPush("owner")).toBe("ready");
-  expect(registerDevice).toHaveBeenCalledWith(
-    supabase,
-    "owner",
-    "ExpoPushToken[device-test]",
-    "ios",
-  );
+  expect(registerDevice).toHaveBeenCalledWith(supabase, "owner", "ExpoPushToken[device-test]", {
+    platform: "ios",
+    offerChannel: false,
+  });
   expect(Notifications.setNotificationChannelAsync).not.toHaveBeenCalled();
 });

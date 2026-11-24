@@ -19,7 +19,7 @@ const target = "/tmp/teko-alpha-bench/supabase";
 // Retire uniquement les anciennes copies des tests du banc jetable.
 rmSync(`${target}/tests`, { recursive: true, force: true });
 mkdirSync(`${target}/tests`, { recursive: true });
-for (const name of ["migrations", "functions", "tests/database"]) {
+for (const name of ["migrations", "functions", "templates", "tests/database"]) {
   cpSync(`${source}/${name}`, `${target}/${name}`, { recursive: true });
 }
 cpSync(`${source}/seed.sql`, `${target}/seed.sql`);

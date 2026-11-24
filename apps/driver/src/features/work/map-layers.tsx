@@ -39,7 +39,25 @@ export function VehicleDot({ position }: { position: LonLat | null }) {
   );
 }
 
-/** Point de rencontre : goutte repère ambre avec halo doux. */
+/** Passager à la commande : point magenta (même teinte que côté passager). */
+export function ClientPin({ position }: { position: LonLat | null }) {
+  if (!position) return null;
+  return (
+    <GeoJSONSource id="drv-client" data={pointFc(position) as never}>
+      <Layer
+        type="circle"
+        paint={{
+          "circle-color": MAP_COLORS.markerClient,
+          "circle-radius": 7,
+          "circle-stroke-color": MAP_COLORS.halo,
+          "circle-stroke-width": 2.5,
+        }}
+      />
+    </GeoJSONSource>
+  );
+}
+
+/** Point de rencontre : pastille Teko agrandie avec halo ambre doux. */
 export function MeetingPin({ position }: { position: LonLat | null }) {
   if (!position) return null;
   return (
@@ -53,12 +71,12 @@ export function MeetingPin({ position }: { position: LonLat | null }) {
         }}
       />
       <Layer
-        type="circle"
-        paint={{
-          "circle-color": MAP_COLORS.markerLandmark,
-          "circle-radius": 9,
-          "circle-stroke-color": MAP_COLORS.halo,
-          "circle-stroke-width": 2.5,
+        type="symbol"
+        layout={{
+          "icon-image": "landmark-other",
+          "icon-size": 1.2,
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
         }}
       />
     </GeoJSONSource>
@@ -75,6 +93,28 @@ export function DestinationDot({ position }: { position: LonLat | null }) {
         paint={{
           "circle-color": color.brand[900],
           "circle-radius": 9,
+          "circle-stroke-color": MAP_COLORS.halo,
+          "circle-stroke-width": 2.5,
+        }}
+      />
+    </GeoJSONSource>
+  );
+}
+
+/** Arrêts restants de la course (lot R3) : points ambre cerclés blanc. */
+export function StopDots({ positions }: { positions: LonLat[] }) {
+  if (positions.length === 0) return null;
+  const data: FeatureCollection = {
+    type: "FeatureCollection",
+    features: positions.flatMap((p) => pointFc(p).features),
+  };
+  return (
+    <GeoJSONSource id="drv-stops" data={data as never}>
+      <Layer
+        type="circle"
+        paint={{
+          "circle-color": MAP_COLORS.markerLandmark,
+          "circle-radius": 7,
           "circle-stroke-color": MAP_COLORS.halo,
           "circle-stroke-width": 2.5,
         }}

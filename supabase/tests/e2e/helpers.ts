@@ -71,23 +71,29 @@ export async function createUser(
     adminRole?: "ops" | "carto" | "finance" | "superadmin";
     phone?: string;
     invited?: boolean;
+    /** Compte sans téléphone, invité par son e-mail vérifié (lot R1). */
+    emailOnly?: boolean;
   } = {},
 ): Promise<TestUser> {
   const email = `e2e-${randomUUID()}@test.teko.ga`;
   const password = "e2e-Passw0rd!";
-  const phone = opts.phone ?? `24107${String(BigInt(`0x${randomUUID().replaceAll("-", "")}`) % 10000000000n).padStart(10, "0")}`;
+  const phone = opts.emailOnly ? undefined : opts.phone ?? `24107${String(BigInt(`0x${randomUUID().replaceAll("-", "")}`) % 10000000000n).padStart(10, "0")}`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
-    phone, phone_confirm: true,
+    ...(phone ? { phone, phone_confirm: true } : {}),
   });
   if (error) throw error;
   const id = data.user.id;
   fixtureUsers.add(id);
   if (opts.invited !== false && opts.role !== "admin") {
-    await serviceSql("insert into public.alpha_invites(phone,role) values($1,$2) on conflict(phone,role) do update set is_active=true",
-      [phone.replace(/\D/g, ""), opts.role ?? "client"]);
+    if (phone) {
+      await serviceSql("insert into public.alpha_invites(phone,role) values($1,$2) on conflict(phone,role) do update set is_active=true",
+        [phone.replace(/\D/g, ""), opts.role ?? "client"]);
+    } else {
+      await serviceSql("insert into public.alpha_invites(email,role) values($1,$2)", [email, opts.role ?? "client"]);
+    }
   }
 
   if (opts.role && opts.role !== "client") {

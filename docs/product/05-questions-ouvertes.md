@@ -253,3 +253,189 @@ La garde est commune à la préparation des règlements et des versements.
   à préciser. Cette estimation n’autorise pas l’ouverture aux vraies courses.
 
 Document : [Budget Teko pour un mois de tests](../../livrables/budget-alpha-un-mois-2026-10-22.docx).
+
+## Retours du jour 2 de l’alpha — décisions du 11 novembre 2026
+
+Suite au retour du porteur du 10 novembre (interaction chauffeur-passager,
+couverture, prise en charge partout au Gabon). Détail dans
+[le plan du jour 2](../plan/14-plan-alpha-jour2.md).
+
+- **Clôturé — prise en charge partout au Gabon :** demande du porteur. Le banc
+  alpha reçoit une zone de service couvrant le pays ; Libreville reste une
+  zone distincte. Les tarifs ne dépendent pas de la zone à ce stade.
+- **Appliqué à l’alpha, à confirmer par le porteur — module d’acceptation chauffeur :** conservé. La fenêtre de
+  proposition D-10 reste le seul moyen d’accepter ou de refuser.
+- **Appliqué à l’alpha, à confirmer par le porteur — délai de réponse :**
+  30 secondes au lieu de 12. Le compte à rebours de la maquette D-10 suit
+  l’échéance du serveur. La valeur de lancement reste à arrêter.
+- **Appliqué à l’alpha, à confirmer par le porteur — nouvelle proposition :**
+  une offre expirée sans réponse est reproposée au même chauffeur quand aucun
+  autre n’est disponible. Un refus explicite reste définitif. La règle
+  antérieure (« jamais deux offres au même chauffeur ») bloquait toute
+  course avec un seul chauffeur en ligne.
+- **Appliqué à l’alpha, à confirmer par le porteur — repères OpenStreetMap :**
+  les lieux nommés d’OSM sont publiés directement comme repères validés
+  (source et provenance `osm`, ODbL). Ops peut les repasser en brouillon.
+- **Banc uniquement — catégories :** les chauffeurs voiture de test reçoivent
+  Éco et Confort. La règle d’attribution des catégories selon le véhicule
+  n’est pas modifiée.
+- **Ouvert :** destination de la copie hors serveur des sauvegardes ;
+  diagnostic des erreurs 502/503 de la livraison push.
+
+## Retours du jour 3 de l’alpha — décisions du 12 novembre 2026
+
+Détail dans [le plan du jour 3](../plan/18-plan-corrections-jour3.md).
+
+- **Clôturé — position du passager :** le porteur retient l’option A. Le
+  chauffeur attribué voit la position du téléphone du passager au moment de
+  la commande, en plus du point de rencontre. Elle est effacée à la prise en
+  charge. L’adressage par repères reste la règle ; la position en direct
+  (option B) n’est pas retenue à ce stade.
+- **Appliqué à l’alpha, à confirmer par le porteur — précision GPS :** haute
+  précision pendant une course, au prix d’une consommation de batterie plus
+  élevée ; précision équilibrée hors course.
+- **Clôturé — clôture automatique :** demande du porteur. Une course
+  démarrée est terminée par le serveur après 3 heures, ou quatre fois la
+  durée estimée si c’est plus long. Elle suit le circuit normal : prix
+  annoncé et commission due par le chauffeur en cash. Le délai de 3 heures
+  est une valeur de départ, à ajuster après les essais.
+- **Ouvert :** guidage vocal intégré ou bouton vers Google Maps ; sort d’une
+  course acceptée mais jamais démarrée.
+- **Clôturé — marqueur des repères :** le porteur retient la « pastille
+  Teko » (carré arrondi ambre, pictogramme violet nuit par catégorie, taille
+  selon la saillance) à la place du cercle lettré. Le langage carte
+  (`docs/design/08-carte-langage.md`) est mis à jour ; l’ambre reste la
+  couleur réservée aux repères.
+
+## Salve des 15 et 16 novembre — décisions du 17 novembre 2026
+
+Détail dans [le rapport](../plan/19-rapport-test-jour4.md).
+
+- **Clôturé — suspension pour solde en retard :** conservée pendant
+  l’alpha ; elle fait partie de ce que les essais vérifient.
+- **Clôturé — catégorie Moto :** masquée dans l’app passager pendant
+  l’alpha. Le tarif et la catégorie restent en base.
+- **Clôturé — alerte de course :** chantier lancé. Lot 1 : canal Android
+  dédié avec sonnerie et vibration, vibration en appli. Lot 2 à décider.
+- **Ouvert :** option de guidage vocal ; service de livraison à cadrer ;
+  réécriture native à trancher après mesure sur l’OPPO A15.
+
+## Essai du 20 novembre — réponse du porteur du 23 novembre 2026
+
+Détail dans [le plan des retours](../plan/21-plan-retours-essai-20-novembre.md)
+et [le rapport de test](../plan/22-rapport-test-20-novembre.md).
+
+- **Clôturé — périmètre :** le porteur demande d’implémenter les six
+  suggestions de l’essai (compte par e-mail ou Google, accueil avec options,
+  changement de destination et arrêts, covoiturage à la place, livraison).
+  Le covoiturage et la livraison, exclus du MVP, y entrent.
+- **Clôturé — arbitrages A1 à A19 :** tranchés un par un par le porteur le
+  23 novembre, voir la section suivante.
+- **Clôturé — accueil (lot R2) :** options de service affichées dès
+  l’accueil ; une destination récente préremplit la commande et ouvre le
+  devis. Écart assumé avec la maquette C-07, à mettre à jour.
+- **Ouvert :** identifiants Google et service d’envoi d’e-mails, à fournir
+  par le porteur avant le lot R1 ; avis juridique avant toute livraison
+  réelle (A18).
+
+## Arbitrages des retours du 20 novembre — réponses du porteur du 23 novembre 2026
+
+Réponses données question par question. Sauf mention, la recommandation du
+[plan](../plan/21-plan-retours-essai-20-novembre.md) est retenue.
+
+| N° | Sujet | Décision |
+|---|---|---|
+| A1 | SMS pour les chauffeurs | **Écart avec la recommandation.** Le code par SMS reste prévu comme option, proposée une fois un prestataire activé. D’ici là, la connexion se fait par e-mail, mis en avant, pour les passagers comme pour les chauffeurs. |
+| A2 | Méthodes de connexion | Bouton Google en premier, code à 6 chiffres par e-mail en second. Pas de mot de passe. |
+| A3 | Unicité du numéro | Aucune unicité bloquante : le numéro sert au contact, l’e-mail à l’identité. |
+| A4 | Invitations alpha | Rattachées à l’e-mail vérifié. |
+| A5 | Comptes multiples | Les frais dus restent bloquants pour tout compte déclarant le même numéro ou utilisant le même appareil. |
+| A6 | Prix après modification du trajet | Distance parcourue + itinéraire restant recalculé par le serveur, jamais inférieur au prix accepté, confirmé par le passager. |
+| A7 | Refus par le chauffeur | Oui, 30 secondes pour répondre ; sans réponse ou refus, la course initiale se poursuit. |
+| A8 | Limites | 2 arrêts et 3 modifications par course ; attente gratuite 3 minutes puis facturée à la minute. |
+| A9 | Places de covoiturage | 3 places par véhicule ; un client peut en prendre 1 à 3. |
+| A10 | Distance facturée | Trajet direct du passager, calculé à la commande. |
+| A11 | Zone limitrophe | 400 m de l’itinéraire restant et 5 minutes de détour au plus, réglables. |
+| A12 | Commission covoiturage | 15 % par place. |
+| A13 | Véhicules en covoiturage | **Écart avec la recommandation.** Toutes les voitures reçoivent le covoiturage d’office ; le chauffeur peut le désactiver. |
+| A14 | Règle « passagère à bord » | Aucune prise en charge hors application ; engagement de la charte chauffeur, signalement possible. |
+| A15 | Annulation en covoiturage | Règle classique, calculée sur le prix de la place. |
+| A16 | Paiement de la livraison | L’expéditeur, en espèces, à la remise du colis au coursier. |
+| A17 | Preuve de remise | **Écart avec la recommandation.** Code à 4 chiffres **et** photo du colis remis. |
+| A18 | Cadre juridique de la livraison | Développement sur le banc ; ouverture aux vraies livraisons bloquée côté serveur jusqu’à l’avis du cabinet. |
+| — | Véhicules de livraison | **Écart avec la recommandation.** Voitures et motos dès le départ ; tarif propre à chacun. |
+| A19 | Ordre des lots | Compte par e-mail avant l’ouverture, modification de trajet pendant l’alpha, covoiturage puis livraison après les premières semaines de vraies courses. |
+
+Conséquences à traiter dans les lots : la catégorie Moto, masquée le
+17 novembre, redevient nécessaire côté chauffeur pour la livraison ; la photo
+de remise ajoute un stockage et une durée de conservation à définir ; le
+prestataire SMS reste à choisir pour l’option SMS.
+
+
+
+### Mise en œuvre du compte par e-mail — décisions d’ingénierie du 23 novembre 2026
+
+- **Inscription ouverte mais gardée.** L’invitation par e-mail suppose que
+  l’invité crée lui-même son compte : l’inscription Auth est donc ouverte sur
+  le banc distant, et une garde serveur exécutée avant toute création
+  (`alpha_before_user_created`) refuse l’adresse ou le numéro sans invitation
+  active. Un administrateur invité passe par son numéro. Les RPC continuent
+  de vérifier l’invitation : la garde est une seconde barrière, pas la seule.
+- **Garde désactivée en développement local**, où les numéros de test
+  s’inscrivent librement ; elle est active dans la configuration du banc
+  distant.
+- **Code à 6 chiffres valable 10 minutes**, un envoi par minute au plus sur
+  le banc distant. Pas de lien magique : le modèle de message ne contient que
+  le code.
+- **Restent ouverts :** bouton Google (client OAuth à créer par le porteur),
+  rattachement des comptes existants, relais SMTP. Aucun déploiement fait.
+
+### Frais d’annulation dus bloquants (A5) — mise en œuvre du 23 novembre 2026
+
+- **Constat.** Avant ce lot, des frais d’annulation dus ne bloquaient rien :
+  la créance attendait son encaissement et le passager pouvait recommander.
+  L’arbitrage A5 suppose le blocage ; il est donc **introduit** ici, et non
+  seulement étendu.
+- **Règle.** Un passager ne peut plus commander tant qu’une créance
+  d’annulation est en attente sur son compte, ou sur un compte **ouvert avant
+  le sien** qui déclare le même numéro ou a utilisé le même appareil.
+  L’encaissement validé par Finance lève le blocage.
+- **Sens unique voulu.** Le lien ne joue que d’un compte ancien vers un
+  compte récent : déclarer le numéro d’autrui ne bloque pas son compte déjà
+  ouvert (risque relevé en A3). Reste possible : un débiteur déclare un numéro
+  avant que son vrai titulaire n’ouvre un compte ; Ops lève alors le blocage
+  en traitant la créance.
+- **Appareil.** Reconnu par son jeton de notification, mémorisé à chaque
+  enregistrement (`device_accounts`). Une réinstallation peut changer ce
+  jeton : frein, non preuve. À durcir après l’alpha.
+- **Réglage.** `cancellation_fee.block_orders` dans la configuration,
+  actif par défaut. Le mettre à `false` rétablit l’ancien comportement.
+- **Effet sur les essais.** Un testeur passager qui annule après acceptation
+  (300 FCFA ou 20 %) ou qui est déclaré absent (1 000 FCFA) est bloqué
+  jusqu’au règlement par le circuit Ops puis Finance, comme un chauffeur
+  suspendu. À la notice données personnelles : l’historique compte-appareil
+  est conservé jusqu’à la suppression du compte.
+
+### Lots R3 à R5 — décisions d’ingénierie du 23 novembre 2026
+
+- **Services fermés par défaut.** Le covoiturage et la livraison sont
+  développés mais refusés par le serveur tant que `shared_ride.enabled` et
+  `delivery.enabled` ne sont pas activés en console (A18, A19). Les apps
+  lisent cet état et masquent l’option.
+- **Modification de trajet réservée aux courses classiques** : ni
+  covoiturage, ni livraison.
+- **Arrêts ajoutés après l’acceptation seulement**, par une modification que
+  le chauffeur accepte ; pas de devis à étapes dès la commande.
+- **Covoiturage sans plan d’étapes calculé** : chaque passager garde sa
+  course, l’ordre des arrêts est indicatif et laissé au chauffeur ; la
+  proximité est estimée à vol d’oiseau. À revoir avant l’ouverture.
+- **Grille de livraison provisoire**, posée sans consigne : voiture
+  500 FCFA + 200 FCFA/km (minimum 1 000), moto 300 FCFA + 150 FCFA/km
+  (minimum 700). **À confirmer par le porteur.**
+- **Preuve de remise** : la photo est déposée dans un stockage privé, lisible
+  de l’expéditeur, du coursier et des opérations ; aucune durée de
+  conservation n’est encore fixée pour la photo elle-même.
+- **Connexion Google par le navigateur du téléphone**, avec retour par code à
+  usage unique : aucun module natif ajouté, client OAuth de type « application
+  Web » et non lié à la clé de signature.
+

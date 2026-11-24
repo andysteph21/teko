@@ -1,11 +1,14 @@
 // C-07 Accueil — carte plein écran (régime éco/auto/complet résolu), cloche
 // + avatar flottants, widget data (bas-gauche, au-dessus de la feuille),
-// feuille « Où allez-vous ? » : recherche de repère, récents, planifier.
+// feuille « Où allez-vous ? » : options de service, recherche de repère,
+// récents. Un récent préremplit la destination et mène au devis (retour du
+// 20 novembre 2026 : afficher directement les options).
 
 import { color, spacing, typography } from "@teko/ui";
 import {
   BellIcon,
   BottomPanel,
+  Button,
   DataWidget,
   EcoPill,
   LandmarkPinIcon,
@@ -13,11 +16,15 @@ import {
   RecentIcon,
 } from "@teko/ui/native";
 import { type Href, useRouter } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DEFAULT_CENTER, TILES_URL } from "../../src/config";
 import { useProfile } from "../../src/features/auth/use-profile";
+import { DeliveryOption } from "../../src/features/booking/delivery-option";
+import { ServiceOptions } from "../../src/features/booking/service-options";
+import { useHomeShortcuts } from "../../src/features/booking/use-home-shortcuts";
 import { useDataUsage, useResolvedMapMode } from "../../src/features/data/data-state";
 import { ClientDot } from "../../src/features/map/client-dot";
 import { TekoMapView } from "../../src/features/map/native-map";
@@ -28,11 +35,17 @@ export default function Home() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const position = useHomePosition();
+  const gps = useHomePosition();
+  const { position } = gps;
   const mode = useResolvedMapMode();
   const usage = useDataUsage();
   const profile = useProfile();
   const recents = useRecentDestinations();
+  const { category, setCategory, openRecent, openSearch } = useHomeShortcuts();
+  // Hauteur réelle de la feuille : le widget et « Ma position » restent
+  // juste au-dessus, quel que soit le nombre d'options et de récents.
+  const [panelHeight, setPanelHeight] = useState(282);
+  const floating = { bottom: panelHeight + spacing[3] };
 
   const initial = (profile.data?.full_name ?? "•").trim().charAt(0).toUpperCase();
 
@@ -42,13 +55,14 @@ export default function Home() {
         options={{ tilesUrl: TILES_URL, eco: mode.mode === "eco" }}
         center={position ?? DEFAULT_CENTER}
         zoom={14.2}
+        recenter={position}
       >
         <ClientDot position={position} />
       </TekoMapView>
 
       <FloatingChips topInset={insets.top} initial={initial} />
 
-      <View style={styles.widgetStack} pointerEvents="box-none">
+      <View style={[styles.widgetStack, floating]} pointerEvents="box-none">
         {mode.mode === "eco" ? <EcoPill /> : null}
         <DataWidget
           quantityText={usage.quantityText}
@@ -58,29 +72,47 @@ export default function Home() {
         />
       </View>
 
-      <BottomPanel
-        title={t("booking:home.ouAllezVous")}
-        style={{ ...styles.panel, paddingBottom: insets.bottom + spacing[5] }}
+      <View style={[styles.gps, floating]} pointerEvents="box-none">
+        <Button
+          label="Ma position"
+          variant="secondary"
+          busy={gps.busy}
+          onPress={gps.refresh}
+          testID="gps-recenter"
+        />
+      </View>
+
+      <View
+        style={styles.panel}
+        onLayout={(event) => setPanelHeight(event.nativeEvent.layout.height)}
       >
-        <Pressable
-          style={styles.search}
-          onPress={() => router.push("/(main)/search" as Href)}
-          accessibilityRole="button"
-          testID="home-search"
+        <BottomPanel
+          title={t("booking:home.ouAllezVous")}
+          style={{ paddingBottom: insets.bottom + spacing[5] }}
         >
-          <LandmarkPinIcon />
-          <Text style={styles.searchText}>{t("booking:home.chercherRepere")}</Text>
-        </Pressable>
-        {recents.slice(0, 2).map((r) => (
-          <LandmarkRow
-            key={r.id}
-            title={r.label}
-            subtitle={`${t("booking:home.recent")} · ${r.when}`}
-            icon={<RecentIcon />}
-            onPress={() => router.push("/(main)/search" as Href)}
-          />
-        ))}
-      </BottomPanel>
+          <ServiceOptions selected={category} onSelect={setCategory} />
+          <Pressable
+            style={styles.search}
+            onPress={openSearch}
+            accessibilityRole="button"
+            testID="home-search"
+          >
+            <LandmarkPinIcon />
+            <Text style={styles.searchText}>{t("booking:home.chercherRepere")}</Text>
+          </Pressable>
+          <DeliveryOption />
+          {recents.slice(0, 2).map((r) => (
+            <LandmarkRow
+              key={r.id}
+              title={r.label}
+              subtitle={`${t("booking:home.recent")} · ${r.when}`}
+              icon={<RecentIcon />}
+              onPress={() => openRecent(r)}
+              testID={`home-recent-${r.id}`}
+            />
+          ))}
+        </BottomPanel>
+      </View>
     </View>
   );
 }
@@ -127,9 +159,9 @@ const styles = StyleSheet.create({
   widgetStack: {
     position: "absolute",
     left: spacing[4],
-    bottom: 282,
     gap: spacing[2],
   },
+  gps: { position: "absolute", right: spacing[4] },
   panel: { position: "absolute", left: 0, right: 0, bottom: 0 },
   search: {
     height: spacing[12],

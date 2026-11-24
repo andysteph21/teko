@@ -18,7 +18,7 @@ import {
   NoDriverSheetContent,
   SearchingSheetContent,
 } from "../../src/features/booking/searching-sheet";
-import { useBookingStore } from "../../src/features/booking/store";
+import { quoteScreenFor, useBookingStore } from "../../src/features/booking/store";
 import { useSearchStatus } from "../../src/features/booking/use-search-status";
 import { useDataUsage, useResolvedMapMode } from "../../src/features/data/data-state";
 import { TekoMapView } from "../../src/features/map/native-map";
@@ -31,9 +31,10 @@ export default function Searching() {
   const draft = useBookingStore(
     useShallow((s) => ({
       category: s.category,
-      estimates: s.estimates,
+      price: s.service === "delivery" ? (s.deliveryPrice ?? undefined) : s.estimates[s.category],
       meeting: s.meeting,
       origin: s.origin,
+      service: s.service,
     })),
   );
   const reset = useBookingStore((s) => s.reset);
@@ -91,13 +92,14 @@ export default function Searching() {
         {noDriver ? (
           <NoDriverSheetContent
             cancelling={cancelling}
-            onRetry={() => router.replace("/(main)/category" as Href)}
+            onRetry={() => router.replace(quoteScreenFor(draft.service) as Href)}
             onHome={() => void cancelAndGoHome()}
           />
         ) : (
           <SearchingSheetContent
             category={draft.category}
-            price={draft.estimates[draft.category]}
+            price={draft.price}
+            delivery={draft.service === "delivery"}
             place={draft.meeting?.name ?? draft.origin?.label}
             cancelling={cancelling}
             onCancel={() => void cancelAndGoHome()}

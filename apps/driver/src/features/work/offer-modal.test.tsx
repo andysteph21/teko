@@ -3,7 +3,7 @@
 // fermeture différée, et marge basse qui réserve insets.bottom
 // (edge-to-edge : la rangée d'actions recouvre HomeTabs).
 
-import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 jest.mock("@teko/maps", () => ({ fetchRoute: jest.fn() }));
 jest.mock("./use-device-position", () => ({
@@ -90,5 +90,88 @@ describe("OfferModal", () => {
     mountOffer(12_000);
 
     expect(screen.getByTestId("offer-sheet")).toHaveStyle({ marginBottom: 52 });
+  });
+});
+
+describe("alerte en appli (chantier du 17 novembre 2026)", () => {
+  it("vibre en boucle tant que la proposition attend, puis s'arrête", () => {
+    const { Vibration } = require("react-native");
+    const vibrate = jest.spyOn(Vibration, "vibrate").mockImplementation(() => undefined);
+    const cancel = jest.spyOn(Vibration, "cancel").mockImplementation(() => undefined);
+    const view = render(
+      <OfferModal
+        offer={{ ...OFFER, expiresAt: new Date(Date.now() + 30_000).toISOString() }}
+        busy={false}
+        onAccept={jest.fn()}
+        onDecline={jest.fn()}
+        onExpire={jest.fn()}
+      />,
+    );
+    expect(vibrate).toHaveBeenCalledWith([0, 700, 350, 700, 350, 700, 1200], true);
+    view.unmount();
+    expect(cancel).toHaveBeenCalled();
+    vibrate.mockRestore();
+    cancel.mockRestore();
+  });
+});
+
+describe("annonce vocale de la proposition (option C)", () => {
+  it("lit la proposition une fois, puis se tait au démontage", async () => {
+    const Speech = require("expo-speech");
+    jest.mocked(Speech.speak).mockClear();
+    const view = render(
+      <OfferModal
+        offer={{ ...OFFER, expiresAt: new Date(Date.now() + 30_000).toISOString() }}
+        busy={false}
+        onAccept={jest.fn()}
+        onDecline={jest.fn()}
+        onExpire={jest.fn()}
+      />,
+    );
+    await waitFor(() => expect(Speech.speak).toHaveBeenCalledTimes(1));
+    expect(jest.mocked(Speech.speak).mock.calls[0]?.[0]).toMatch(/^Nouvelle course/);
+    view.unmount();
+    expect(Speech.stop).toHaveBeenCalled();
+  });
+});
+
+describe("nature de la proposition (lots R4 et R5)", () => {
+  const mountKind = (patch: Partial<OfferDetails>) =>
+    render(
+      <OfferModal
+        offer={{ ...OFFER, expiresAt: new Date(Date.now() + 30_000).toISOString(), ...patch }}
+        busy={false}
+        onAccept={jest.fn()}
+        onDecline={jest.fn()}
+        onExpire={jest.fn()}
+      />,
+    );
+
+  it("course classique : aucune étiquette de service", () => {
+    mountKind({ seats: 1, sharedSeatsTaken: null, serviceType: "ride", parcelSize: null });
+    expect(screen.queryByTestId("offer-service")).toBeNull();
+    expect(screen.getByText("Accepter la course")).toBeOnTheScreen();
+  });
+
+  it("covoiturage : places demandées, sans places prises hors trajet en cours", () => {
+    mountKind({ category: "covoiturage", seats: 2, sharedSeatsTaken: 0, serviceType: "ride" });
+    const service = screen.getByTestId("offer-service");
+    expect(service).toHaveTextContent(/Covoiturage/);
+    expect(service).toHaveTextContent(/2 places demandées/);
+    expect(service).not.toHaveTextContent(/déjà prise/);
+  });
+
+  it("covoiturage pendant un trajet : places déjà prises", () => {
+    mountKind({ category: "covoiturage", seats: 1, sharedSeatsTaken: 1, serviceType: "ride" });
+    expect(screen.getByTestId("offer-service")).toHaveTextContent(/1 place déjà prise sur 3/);
+  });
+
+  it("livraison : libellé, taille du colis et bouton dédiés", () => {
+    mountKind({ category: "moto", serviceType: "delivery", parcelSize: "large", seats: 1 });
+    expect(screen.getByText("Nouvelle livraison · Moto")).toBeOnTheScreen();
+    const service = screen.getByTestId("offer-service");
+    expect(service).toHaveTextContent(/Livraison/);
+    expect(service).toHaveTextContent(/Colis grand/);
+    expect(screen.getByText("Accepter la livraison")).toBeOnTheScreen();
   });
 });

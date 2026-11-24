@@ -14,6 +14,8 @@ export interface RideBannerProps {
   originHint: string | null;
   destHint: string | null;
   topInset: number;
+  /** Hauteur rendue : l'écran place le widget de données juste dessous. */
+  onHeight?: (height: number) => void;
 }
 
 function ArrowIcon() {
@@ -45,12 +47,18 @@ function CheckIcon() {
   );
 }
 
-export function RideBanner({ status, originHint, destHint, topInset }: RideBannerProps) {
+export function RideBanner({ status, originHint, destHint, topInset, onHeight }: RideBannerProps) {
   const { t } = useTranslation();
+  const measure = onHeight
+    ? (e: { nativeEvent: { layout: { height: number } } }) => onHeight(e.nativeEvent.layout.height)
+    : undefined;
 
   if (status === "arrived") {
     return (
-      <View style={[styles.banner, styles.arrived, { paddingTop: topInset + spacing[4] }]}>
+      <View
+        style={[styles.banner, styles.arrived, { paddingTop: topInset + spacing[4] }]}
+        onLayout={measure}
+      >
         <CheckIcon />
         <View style={styles.body}>
           <Text style={styles.title}>{t("work:course.arriveTitre")}</Text>
@@ -63,7 +71,10 @@ export function RideBanner({ status, originHint, destHint, topInset }: RideBanne
   const started = status === "started";
   const hint = started ? destHint : originHint;
   return (
-    <View style={[styles.banner, styles.dark, { paddingTop: topInset + spacing[4] }]}>
+    <View
+      style={[styles.banner, styles.dark, { paddingTop: topInset + spacing[4] }]}
+      onLayout={measure}
+    >
       <View style={styles.pad}>
         <ArrowIcon />
       </View>

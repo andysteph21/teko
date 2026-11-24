@@ -4,6 +4,8 @@ node_modules/
 
 # Templates Taxido achetés — référence seule (104 Mo, non versionnés ; cf. docs/product/05-questions-ouvertes.md)
 templates/
+# Modèles de message d'Auth : à ne pas confondre avec les gabarits Taxido.
+!supabase/templates/
 
 # Build / sorties
 dist/

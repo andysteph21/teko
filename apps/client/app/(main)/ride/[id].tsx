@@ -8,7 +8,7 @@ import { color, spacing, typography } from "@teko/ui";
 import { Button, DataWidget, EcoPill } from "@teko/ui/native";
 import * as Location from "expo-location";
 import { type Href, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,13 +17,18 @@ import { useBookingStore } from "../../../src/features/booking/store";
 import { useDataUsage, useResolvedMapMode } from "../../../src/features/data/data-state";
 import { ClientDot } from "../../../src/features/map/client-dot";
 import { TekoMapView } from "../../../src/features/map/native-map";
+import { rideEntryRedirect } from "../../../src/features/ride/ride-entry";
+import { RideExtrasBlock } from "../../../src/features/ride/ride-extras";
 import {
   DestinationFlag,
   OriginPin,
   RouteLine,
+  StopMarkers,
   VehicleMarker,
 } from "../../../src/features/ride/ride-map-layers";
 import { RidePanel } from "../../../src/features/ride/ride-panel";
+import { useRouteChangeSignal } from "../../../src/features/ride/route-change-signal";
+import { useRideExtras } from "../../../src/features/ride/use-ride-extras";
 import { useRideTracking } from "../../../src/features/ride/use-ride-tracking";
 import { useShareTrip } from "../../../src/features/ride/use-share-trip";
 
@@ -79,9 +84,24 @@ export default function RideScreen() {
   const devicePosition = useDevicePosition();
   const bookingDestination = useBookingStore((s) => s.destination);
   const { sharing, share } = useShareTrip(id);
+  const { ride, reload } = tracking;
+  const extras = useRideExtras(ride, tracking.status);
+  // Modification acceptée : prix et destination relus sur la course.
+  const changeVersion = useRouteChangeSignal((s) => s.version);
+  const seenVersion = useRef(changeVersion);
+  useEffect(() => {
+    if (seenVersion.current === changeVersion) return;
+    seenVersion.current = changeVersion;
+    reload();
+  }, [changeVersion, reload]);
 
-  const { ride } = tracking;
-  if (!ride) return <LoadingView loadError={tracking.loadError} onRetry={tracking.reload} />;
+  const redirect = ride ? rideEntryRedirect(ride) : null;
+  useEffect(() => {
+    if (redirect) router.replace(redirect);
+  }, [redirect, router]);
+  if (!ride || redirect) {
+    return <LoadingView loadError={tracking.loadError} onRetry={tracking.reload} />;
+  }
 
   return (
     <View style={styles.screen}>
@@ -89,9 +109,11 @@ export default function RideScreen() {
         options={{ tilesUrl: TILES_URL, eco: mode.mode === "eco" }}
         center={tracking.origin ?? DEFAULT_CENTER}
         zoom={14.5}
+        recenter={tracking.vehicle}
       >
-        <RouteLine coordinates={tracking.routeCoords} />
+        <RouteLine coordinates={extras.changeRoute ?? tracking.routeCoords} />
         <OriginPin position={tracking.origin} />
+        <StopMarkers positions={extras.stops.map((stop) => stop.position)} />
         <DestinationFlag position={tracking.destination} />
         <ClientDot position={devicePosition} />
         <VehicleMarker position={tracking.vehicle} />
@@ -124,6 +146,15 @@ export default function RideScreen() {
           sharing={sharing}
           onShare={() => void share()}
           onCancel={() => router.push(`/(main)/cancel/${ride.id}` as Href)}
+          extras={
+            <RideExtrasBlock
+              extras={extras}
+              price={ride.price_est === null ? null : Number(ride.price_est)}
+              sharing={sharing}
+              onEditRoute={() => router.push(`/(main)/route-change/${ride.id}` as Href)}
+              onShareDelivery={(code) => void share(code)}
+            />
+          }
         />
       </View>
     </View>

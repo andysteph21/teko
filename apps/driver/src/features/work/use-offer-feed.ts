@@ -37,6 +37,14 @@ function isOfferGone(e: unknown): boolean {
   );
 }
 
+/** Message de l'accord refusé — par code stable, jamais par texte serveur. */
+function acceptErrorKey(e: unknown): string {
+  if (isOfferGone(e)) return "work:offre.attribueeAutre";
+  // Covoiturage : les places restantes ont été prises entre-temps (lot R4).
+  if (e instanceof TekoApiError && e.code === "seats_full") return "work:offre.placesCompletes";
+  return "erreurs.generique";
+}
+
 export function useOfferFeed(userId: string | undefined, online: boolean): OfferFeed {
   const [offer, setOffer] = useState<OfferDetails | null>(null);
   const [busy, setBusy] = useState(false);
@@ -93,7 +101,7 @@ export function useOfferFeed(userId: string | undefined, online: boolean): Offer
       else showToast(t("work:offre.attribueeAutre"));
     } catch (e) {
       setOffer(null);
-      showToast(isOfferGone(e) ? t("work:offre.attribueeAutre") : t("erreurs.generique"));
+      showToast(t(acceptErrorKey(e)));
     } finally {
       setBusy(false);
     }

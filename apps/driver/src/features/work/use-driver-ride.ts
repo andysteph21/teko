@@ -6,11 +6,12 @@
 import { createRealtimePositionsChannel, getRide } from "@teko/api-client";
 import { costingForCategory, fetchRoute, type GeomInput, type LonLat, toLonLat } from "@teko/maps";
 import type { RideRow, RideStatus } from "@teko/types";
-import { type Href, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { VALHALLA_URL } from "../../config";
 import { supabase } from "../../lib/supabase";
+import { leaveRide } from "./shared-rides";
 import { useWorkStore } from "./store";
 import { fetchDevicePosition } from "./use-device-position";
 
@@ -24,6 +25,8 @@ export interface DriverRide {
   reload: () => void;
   /** Ligne retournée par un RPC (mark_arrived, start_ride, complete_ride). */
   applyRide: (row: RideRow) => void;
+  /** Sortie de l'écran : passager suivant du covoiturage, sinon l'accueil. */
+  leave: () => void;
 }
 
 export function safeLonLat(geom: unknown): LonLat | null {
@@ -87,6 +90,12 @@ export function useDriverRide(rideId: string | undefined): DriverRide {
   const router = useRouter();
   const { t } = useTranslation();
   const showToast = useWorkStore((s) => s.showToast);
+  const rideRef = useRef(ride);
+  rideRef.current = ride;
+  const leave = useCallback(
+    () => leaveRide(rideRef.current, (href) => router.replace(href)),
+    [router],
+  );
 
   const load = useCallback(async () => {
     if (!rideId) return;
@@ -114,14 +123,12 @@ export function useDriverRide(rideId: string | undefined): DriverRide {
       }
       if (next === "cancelled_client") {
         showToast(t("work:course.annuleeClient"));
-        router.replace("/(main)/home" as Href);
+        leave();
         return;
       }
-      if (next === "cancelled_driver" || next === "no_show" || next === "failed") {
-        router.replace("/(main)/home" as Href);
-      }
+      if (next === "cancelled_driver" || next === "no_show" || next === "failed") leave();
     },
-    [load, router, showToast, t],
+    [load, leave, showToast, t],
   );
 
   useEffect(() => {
@@ -136,6 +143,8 @@ export function useDriverRide(rideId: string | undefined): DriverRide {
     setStatus(row.status);
   }, []);
 
+  const reload = useCallback(() => void load(), [load]);
+
   return {
     ride,
     status,
@@ -143,7 +152,8 @@ export function useDriverRide(rideId: string | undefined): DriverRide {
     origin: safeLonLat(ride?.origin_geom),
     destination: status === "started" ? safeLonLat(ride?.dest_geom) : null,
     loadError,
-    reload: () => void load(),
+    reload,
     applyRide,
+    leave,
   };
 }

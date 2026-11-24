@@ -223,6 +223,12 @@ describe("annulation et frais (E-03 comblé)", () => {
   });
 
   it("no_show exige arrivée et cinq minutes avant de créer la créance", async () => {
+    // Les frais du test précédent bloquent toute nouvelle commande (A5) :
+    // ils sont encaissés avant de recommander.
+    await serviceSql(
+      "update public.cancellation_claims set status='collected',collected_at=now() where client_id=$1 and status='pending'",
+      [nadia.id],
+    );
     const ride = await requestRide(nadia.client);
     await boris.client.rpc("accept_ride", { p_ride: ride.id });
     const early = await boris.client.rpc("cancel_ride", { p_ride: ride.id, p_status: "no_show" });

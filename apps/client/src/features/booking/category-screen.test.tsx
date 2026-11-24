@@ -6,9 +6,10 @@ import { render, screen, userEvent } from "@testing-library/react-native";
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockDismissTo = jest.fn();
 const mockRedirect = jest.fn();
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn() }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace, dismissTo: mockDismissTo }),
   Redirect: ({ href }: { href: string }) => {
     mockRedirect(href);
     return null;
@@ -34,6 +35,11 @@ jest.mock("react-native-safe-area-context", () => ({
 const mockEstimatesQuery = jest.fn();
 jest.mock("./use-estimates", () => ({
   useEstimates: () => mockEstimatesQuery(),
+}));
+
+const mockSharedEstimate = jest.fn();
+jest.mock("./use-shared-estimate", () => ({
+  useSharedEstimate: () => mockSharedEstimate(),
 }));
 
 import Category from "../../../app/(main)/category";
@@ -62,6 +68,52 @@ beforeEach(() => {
   useBookingStore.getState().reset();
   useBookingStore.setState(DRAFT);
   mockEstimatesQuery.mockReturnValue({ isPending: false, error: null, refetch: jest.fn() });
+  mockSharedEstimate.mockReturnValue({ available: false, updating: false });
+});
+
+describe("C-10 Covoiturage (R4)", () => {
+  const SHARED_QUOTE = {
+    id: "q-shared",
+    category: "covoiturage",
+    seats: 2,
+    price: 1550,
+    route_shape: "_p~iF~ps|U_ulLnnqC_mqNvxq`@",
+    distance_m: 4200,
+    duration_s: 840,
+  };
+
+  it("service fermé : aucune carte Covoiturage, aucune erreur", () => {
+    render(<Category />);
+    expect(screen.queryByTestId("cat-covoiturage")).toBeNull();
+    expect(screen.getByTestId("cat-eco")).toBeOnTheScreen();
+  });
+
+  it("service ouvert : prix total, prix par place, places et avertissement", async () => {
+    mockSharedEstimate.mockReturnValue({ available: true, updating: false });
+    useBookingStore.setState({
+      seats: 2,
+      estimates: { ...DRAFT.estimates, covoiturage: 1550 },
+      quotes: { covoiturage: SHARED_QUOTE as never },
+    });
+    const user = userEvent.setup();
+    render(<Category />);
+
+    expect(screen.getByText("Covoiturage")).toBeOnTheScreen();
+    expect(screen.getByText(/775.*par place/)).toBeOnTheScreen();
+    expect(screen.queryByTestId("shared-details")).toBeNull();
+
+    await user.press(screen.getByTestId("cat-covoiturage"));
+    expect(useBookingStore.getState().category).toBe("covoiturage");
+    expect(screen.getByText(/d’autres passagers peuvent monter en route/)).toBeOnTheScreen();
+    expect(screen.getByTestId("order-cta")).toHaveTextContent(/Commander Covoiturage · 1.550/);
+    expect(screen.getByTestId("order-cta")).toBeEnabled();
+
+    // Trois places demandées : la commande attend le devis de trois places.
+    await user.press(screen.getByTestId("shared-seats-3"));
+    expect(useBookingStore.getState().seats).toBe(3);
+    expect(screen.getByTestId("order-cta")).toBeDisabled();
+    expect(screen.queryByTestId("shared-seats-4")).toBeNull();
+  });
 });
 
 describe("C-10 Catégorie", () => {
@@ -79,8 +131,10 @@ describe("C-10 Catégorie", () => {
     // 14 min arrondies depuis durationS = 840 s.
     expect(screen.getByText(/4 places · 14 min/)).toBeOnTheScreen();
 
-    await user.press(screen.getByTestId("cat-moto"));
-    expect(useBookingStore.getState().category).toBe("moto");
+    // Moto masquée pendant l'alpha (décision du 17 novembre 2026).
+    expect(screen.queryByTestId("cat-moto")).toBeNull();
+    await user.press(screen.getByTestId("cat-confort"));
+    expect(useBookingStore.getState().category).toBe("confort");
 
     // Airtel Money masqué pour l'instant (payment-methods.ts) : seule la
     // pastille Espèces est proposée, déjà sélectionnée.
@@ -129,5 +183,23 @@ describe("C-10 Catégorie", () => {
     await user.press(screen.getByTestId("quote-retry"));
     expect(refetch).toHaveBeenCalledTimes(1);
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("un trajet invalide revient à la sélection sans relancer le même devis", async () => {
+    const refetch = jest.fn();
+    mockEstimatesQuery.mockReturnValue({
+      isPending: false,
+      error: new TekoApiError("quote_points_too_close", "POINTS_TOO_CLOSE"),
+      refetch,
+    });
+    const user = userEvent.setup();
+    render(<Category />);
+
+    expect(screen.getByText("Départ et arrivée trop proches")).toBeOnTheScreen();
+    expect(screen.queryByTestId("quote-retry")).toBeNull();
+    expect(screen.queryByTestId("order-cta")).toBeNull();
+    await user.press(screen.getByTestId("quote-edit"));
+    expect(mockDismissTo).toHaveBeenCalledWith("/(main)/search");
+    expect(refetch).not.toHaveBeenCalled();
   });
 });

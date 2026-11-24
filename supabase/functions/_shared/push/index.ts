@@ -4,7 +4,12 @@ import { fcmProvider } from "./fcm.ts";
 import { expoProvider } from "./expo.ts";
 import type { PushMessage, PushProvider, PushResult } from "./provider.ts";
 
-export { messageForType } from "./provider.ts";
+export {
+  channelFor,
+  DEFAULT_CHANNEL,
+  messageForType,
+  OFFER_CHANNEL,
+} from "./provider.ts";
 export type { PushMessage, PushProvider, PushResult } from "./provider.ts";
 
 export function mockProvider(): PushProvider {
