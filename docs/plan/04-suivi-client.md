@@ -10,7 +10,7 @@
 Message reçu le 21 novembre, avec trois vidéos de l’essai et le document
 « TEKO COVOITURAGE ». Essai Android jugé concluant. Six suggestions reçues,
 **aucune arbitrée ni implémentée** : le
-[plan d’implémentation](12-plan-retours-essai-terrain.md) liste les
+[plan d’implémentation](21-plan-retours-essai-20-novembre.md) liste les
 dix-neuf arbitrages (A1 à A19) à soumettre avant tout développement.
 
 | Suggestion | Lot du plan | État |

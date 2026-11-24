@@ -8,28 +8,32 @@ avant application, puis reporté dans le [suivi](04-suivi-client.md) et le
 **Sources :** message de retour du 21 novembre (six suggestions), trois vidéos
 de l’essai (course réelle en voiture, passager et chauffeur), document
 « TEKO COVOITURAGE » joint, et l’état des essais précédents
-([plan alpha](08-plan-alpha.md), [audit](09-audit-alpha.md)).
+(rapports 14 à 20 de ce dossier).
 
 ## 1. Où en sont les essais
 
-| Passe | Ce qui est acquis | Ce qui reste ouvert |
+Base de travail : la branche `codex/alpha-essai-distance` (pull request n° 2,
+brouillon, 44 commits d’avance sur `main`), fusionnée dans la branche de ce
+plan. `main` s’arrête au 22 octobre et ne reflète plus l’état réel.
+
+| Passe | Acquis | Resté ouvert |
 |---|---|---|
-| Durcissement alpha, 18–19 octobre | Devis serveur nominatif, PIN privé, invitations, règlements manuels, arrondi cash au pas de 25, 21 fautes injectées détectées. | Revue indépendante, restauration prouvée, responsables Finance/SOS. |
-| Banc USB, 22 octobre | Deux courses cash complètes (OPPO et Pixel), 1 425 FCFA, commission −225 ; reprise GPS écran éteint 300 s. 89 tests SQL, 125 tests JWT/HTTP. | GPS fictif uniquement : aucune validation terrain. |
-| **Essai terrain, 20 novembre** | Course réelle en voiture, GPS réel, paiement simulé : écran « En course » passager (itinéraire, repères, partage du trajet, SOS) et écran chauffeur « Terminer la course » fonctionnent. Retour : « tout s’est bien passé ». | Voir ci-dessous. |
+| Durcissement et banc USB, 18–22 octobre ([audit](09-audit-alpha.md)) | Devis serveur, PIN privé, invitations, règlements manuels, arrondi au pas de 25 ; courses cash complètes en GPS fictif. | Revue indépendante, restauration prouvée, responsables Finance/SOS. |
+| Mise en ligne du banc, 8–9 novembre ([exploitation](12-exploitation-alpha-vps.md)) | VPS `alpha.tekomove.com` : portail d’installation par rôle, console, cartes, Valhalla ; APK signés « GPS réel · paiement simulé ». | — |
+| Jour 2, 10–11 novembre ([rapport](15-rapport-test-jour2.md)) | Zone Gabon, 1 697 repères OSM, nouvelle proposition après expiration, délai de 30 s, VPS durci. | Distance maximale de dispatch, repères au nom générique, copie des sauvegardes hors serveur, fermeture de l’accès root. |
+| Jour 3, 12 novembre ([rapport](17-rapport-test-jour3.md)) | Point du chauffeur vivant, position du passager à la commande, pastilles Teko, clôture automatique après 3 h. | Course acceptée mais jamais démarrée. |
+| Salve des 15–16 novembre ([rapport](19-rapport-test-jour4.md), [mesures OPPO](20-performance-oppo-a15.md)) | 4 courses jusqu’au reçu ; Moto masquée ; sonnerie dédiée aux propositions ; annonces vocales ; pas de réécriture native justifiée. | J4-01 (aucune position de course enregistrée) corrigé par déduction, **jamais confirmé sur téléphone** ; compteur de données à zéro ; erreurs 502/503 du push ; lot 2 de l’alerte ; livraison à cadrer. |
+| **Essai du 20 novembre** (APK du 17 novembre) | Course réelle en voiture filmée : écran « En course » passager (itinéraire, pastilles, partage, SOS) et « Terminer la course » chauffeur. Retour : « tout s’est bien passé ». | Pas encore de rapport ni de relevé du VPS pour cette salve. |
 
-Deux constats sur l’essai du 20 novembre :
+Ce qui reste à établir pour l’essai du 20 novembre, par un relevé du VPS en
+lecture seule (je n’y ai pas accès depuis cette session) : des positions de
+course ont-elles bien été enregistrées (J4-01), la sonnerie et les annonces
+vocales ont-elles fonctionné, et combien de courses ont abouti.
 
-- **Il n’est pas consigné dans le dépôt.** Le dernier commit date du 22 octobre
-  et le bandeau visible dans les vidéos (« ESSAI PRIVÉ · GPS RÉEL · PAIEMENT
-  SIMULÉ ») n’existe dans aucun fichier de `main`. La version testée vient donc
-  d’un travail non poussé. À faire avant tout développement : pousser cette
-  version, puis ajouter la passe dans l’audit (version des APK, appareils,
-  trajet, limites).
-- **Il lève une condition de sortie** (« valider sur place GPS réel et
-  itinéraires ») mais pas les six critères bloquants du plan alpha, qui restent
-  tous non cochés. Les suggestions ci-dessous s’ajoutent à ces critères ; elles
-  ne les remplacent pas.
+La demande de livraison n’est pas nouvelle : le 16 novembre le porteur
+proposait déjà de remplacer le taxi-moto par la livraison, et Moto a été
+masquée le 17. Les six critères bloquants du [plan alpha](08-plan-alpha.md)
+restent tous non cochés ; les suggestions ci-dessous s’y ajoutent.
 
 ## 2. Les six suggestions, confrontées à l’existant
 
@@ -37,10 +41,10 @@ Deux constats sur l’essai du 20 novembre :
 |---|---|---|---|
 | 1 | Changer de destination | Destination figée à la commande (`rides.dest_geom`, devis à usage unique). | Prix ferme garanti (25 août, n° 6) : tout changement exige un nouveau devis confirmé. |
 | 2 | Arrêts en cours de trajet | Une origine, une destination ; aucun point intermédiaire. | Même contrainte de prix ferme. |
-| 3 | Livraison | Rien. | Exclue du MVP (PRD §5.2, vision future §11). |
+| 3 | Livraison | Rien. Moto est masquée depuis le 17 novembre ; aucun chauffeur du banc n’a cette catégorie. | Exclue du MVP (PRD §5.2) ; « service à cadrer » depuis le 17 novembre. |
 | 4 | Covoiturage au tarif à la place | Valeur `covoiturage` présente dans l’enum et dans `seed.sql` (grille provisoire 400 + 150/km), masquée dans les apps. Aucune mutualisation. | Reporté le 18 août ; la règle de prix manquante est maintenant fournie par le document joint. |
-| 5 | Accueil affichant directement les options | Accueil = « Où allez-vous ? » + 2 récents ; la catégorie n’apparaît qu’au 4ᵉ écran (recherche → affinage → catégorie). Un récent rouvre la recherche au lieu de préremplir la destination. | Maquette C-07 à faire évoluer (tout écart maquette/code est un bug). |
-| 6 | Validation par e-mail / Google plutôt que SMS | Connexion par OTP SMS ; e-mail facultatif, simple filet de récupération. Invitations alpha rattachées au **numéro vérifié**. | Inverse la décision OTP SMS (PRD §5.1) ; rend sans objet le choix eSMS Africa du 22 octobre. |
+| 5 | Accueil affichant directement les options | Accueil = « Où allez-vous ? » + 2 récents + bouton « Ma position » ; la catégorie (Éco ou Confort) n’apparaît qu’au 4ᵉ écran (recherche → affinage → catégorie). Un récent rouvre la recherche au lieu de préremplir la destination. | Maquette C-07 à faire évoluer (tout écart maquette/code est un bug). |
+| 6 | Validation par e-mail / Google plutôt que SMS | Connexion par code lié au numéro ; aucun SMS réel n’est envoyé, les codes sont remis à la main aux testeurs. E-mail facultatif. Invitations et portail d’installation rattachés au **numéro vérifié**. | Inverse la décision OTP SMS (PRD §5.1) ; rend sans objet le choix eSMS Africa du 22 octobre et le « SMS de secours » du lot 2 de l’alerte de course. |
 
 ## 3. Arbitrages à soumettre au porteur
 
@@ -78,7 +82,9 @@ hors essais terrain et hors attente d’arbitrage.
 
 ### R0 — Cadrage (2 à 3 jours)
 
-- Pousser la version testée le 20 novembre et consigner l’essai dans l’audit.
+- Rédiger le rapport de l’essai du 20 novembre à partir d’un relevé du VPS,
+  en confirmant J4-01 ; décider du sort de la pull request n° 2 (la fusionner
+  dans `main` avant de démarrer les lots évite de diverger davantage).
 - Enregistrer le retour dans le suivi client, obtenir les réponses A1 à A19.
 - Amender PRD §5 (périmètre), règles métier §2, §4.1 et §5, glossaire.
 - Maquettes à créer ou modifier avant tout écran : C-03/C-04 (connexion),
@@ -87,7 +93,8 @@ hors essais terrain et hors attente d’arbitrage.
 
 ### R1 — Compte par e-mail ou Google, numéro enregistré (1 à 1,5 semaine)
 
-Supprime la dépendance SMS, qui bloque aujourd’hui l’inscription réelle.
+Supprime la dépendance SMS : aujourd’hui personne ne peut s’inscrire sans
+qu’un code lui soit remis à la main.
 
 - **Backend :** activer la connexion Google (`signInWithIdToken`) et l’OTP
   e-mail dans GoTrue ; SMTP via le fournisseur déjà chiffré au budget. Nouvelle
@@ -97,7 +104,9 @@ Supprime la dépendance SMS, qui bloque aujourd’hui l’inscription réelle.
 - **Invitations :** `alpha_invites` gagne une colonne e-mail ;
   `assert_alpha_invited` et la garde de mise en ligne chauffeur comparent
   l’e-mail vérifié (`email_confirmed_at`) au lieu de `phone_confirmed_at`.
-  Console admin : inviter par e-mail.
+  Console admin et portail `/install` : inviter et se connecter par e-mail.
+  La migration `20261019102000_alpha_field_signup_hook`, réservée à l’Auth
+  terrain et non appliquée sur le VPS, est à réécrire dans ce sens.
 - **Apps :** écrans C-03/C-04 remplacés (bouton Google, saisie e-mail, code),
   numéro demandé à la création du profil ; « Modifier le profil » permet de
   changer de numéro sans perdre l’historique ; l’écran de récupération
@@ -109,22 +118,24 @@ Supprime la dépendance SMS, qui bloque aujourd’hui l’inscription réelle.
   invité ayant saisi le numéro d’un invité, changement de numéro, purge de
   compte ; fautes injectées sur la nouvelle garde d’invitation. Maestro :
   inscription complète sur OPPO.
-- **Points de vigilance :** les comptes de test existants sont identifiés par
-  téléphone (migration ou recréation à prévoir) ; le numéro Airtel de versement
+- **Points de vigilance :** les comptes des testeurs du VPS sont identifiés
+  par téléphone : prévoir leur rattachement à un e-mail sans perdre courses
+  et soldes ; le numéro Airtel de versement
   chauffeur devra être vérifié autrement quand Airtel sera réactivé ; mise à
   jour du budget (500 SMS en moins) et de la notice données personnelles.
 
 ### R2 — Accueil avec options directes (3 à 4 jours)
 
-- Feuille d’accueil : une rangée de services (Course, Moto, puis Covoiturage
-  et Livraison à mesure qu’ils sont livrés — jamais d’option inactive
-  affichée), le champ de destination, puis les récents.
+- Feuille d’accueil : une rangée d’options avec leur pictogramme (Éco, Confort,
+  puis Covoiturage et Livraison à mesure qu’ils sont livrés — jamais d’option
+  inactive affichée ; Moto reste masquée), le champ de destination, puis les récents.
 - Le service choisi présélectionne la catégorie dans le magasin de réservation ;
   l’écran catégorie reste l’endroit où le prix est confirmé.
 - Un récent préremplit la destination et mène directement au devis, soit deux
   écrans de moins pour un trajet habituel.
 - Aucun changement backend. Tests par variantes de maquette ; contrôle sur OPPO
-  que la feuille respecte la barre système (piège edge-to-edge connu).
+  que la feuille respecte la barre système et ne recouvre ni le widget de
+  données ni « Ma position » (défaut J4-03 déjà vécu côté chauffeur).
 
 ### R3 — Changement de destination et arrêts (environ 2 semaines)
 
@@ -141,6 +152,10 @@ Les deux demandes sont une seule fonction : modifier l’itinéraire d’une cou
   modification), `respond_route_change` (chauffeur), `arrive_stop` /
   `leave_stop` (chauffeur). Chaque changement est tracé dans `ride_events`
   avec ancien et nouveau prix ; `complete_ride` facture le dernier prix accepté.
+- **Annonces vocales :** le chauffeur entend la modification et le nom du
+  nouveau repère (module de synthèse déjà en place).
+- **Clôture automatique :** le délai (3 h ou quatre fois la durée estimée)
+  est recalculé sur la durée du nouvel itinéraire.
 - **Apps :** passager — bouton « Modifier le trajet » sur l’écran de course,
   recherche de repère, confirmation du nouveau prix. Chauffeur — demande à
   accepter, itinéraire et liste d’étapes mis à jour, attente à l’arrêt.
@@ -191,7 +206,9 @@ prises en charge uniquement par l’application.
 - **Parcours :** l’expéditeur commande, remet le colis et paie (A16) ; le
   coursier confirme la prise en charge par le PIN ; le destinataire suit la
   livraison par lien et donne le code de remise (A17).
-- **Tarif :** grille propre par type de service, moto en premier.
+- **Tarif :** grille propre par type de service. Véhicules : à trancher —
+  aucun chauffeur du banc n’est en moto ; commencer par les voitures déjà
+  inscrites permet d’essayer le service sans recruter.
 - **Chauffeur :** option à activer ; l’offre indique « Livraison » et la
   taille du colis avant acceptation.
 - **Admin :** suivi et litiges de livraison dans la console.
