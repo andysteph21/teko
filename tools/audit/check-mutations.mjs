@@ -141,8 +141,18 @@ const mutants = [
     file: "alpha-invitations.test.ts",
     test: "une invitation chauffeur retirée",
     inject:
-      "create or replace function public.is_alpha_invited(p_role text) returns boolean language sql stable security definer set search_path=public as $$ select true $$;",
-    restore: sql("select pg_get_functiondef('public.is_alpha_invited(text)'::regprocedure);"),
+      "create or replace function private.user_alpha_invited(p_user uuid, p_role text) returns boolean language sql stable security definer set search_path=public as $$ select true $$;",
+    restore: sql(
+      "select pg_get_functiondef('private.user_alpha_invited(uuid,text)'::regprocedure);",
+    ),
+  },
+  {
+    name: "frais-dus-contournes",
+    file: "frais-dus.test.ts",
+    test: "bloquent la commande",
+    inject:
+      "create or replace function private.fees_due(p_user uuid) returns boolean language sql stable security definer set search_path=public as $$ select false $$;",
+    restore: sql("select pg_get_functiondef('private.fees_due(uuid)'::regprocedure);"),
   },
   {
     name: "gps-retention-visible",
