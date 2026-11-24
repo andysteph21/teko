@@ -23,3 +23,11 @@ export function isShared(ride: Pick<RideRow, "category"> | null | undefined): bo
 export function isClassic(ride: Pick<RideRow, "category" | "service_type"> | null): boolean {
   return ride !== null && !isShared(ride) && !isDelivery(ride);
 }
+
+/** Numéro du destinataire tel qu'il se compose : le « + » n'est ajouté que
+ *  devant un indicatif gabonais complet, jamais devant un numéro local saisi
+ *  avec son 0 (« +074… » n'aboutit pas). */
+export function dialableRecipientPhone(digits: string | null | undefined): string | null {
+  if (!digits) return null;
+  return /^241\d{8,9}$/.test(digits) ? `+${digits}` : digits;
+}

@@ -102,7 +102,7 @@ export const accountFr = {
       "Appel ou WhatsApp — les coordonnées seront communiquées au lancement à Libreville.",
     deconnecter: "Se déconnecter",
     deconnecterTitre: "Se déconnecter ?",
-    deconnecterTexte: "Vous pourrez vous reconnecter à tout moment avec votre numéro.",
+    deconnecterTexte: "Vous pourrez vous reconnecter à tout moment avec votre adresse e-mail.",
     supprimer: "Supprimer mon compte",
   },
   modifierProfil: {

@@ -66,7 +66,9 @@ function StopRow({ stop, name }: { stop: RideStop; name: string | null }) {
           {t("work:arrets.nom", { n: stop.seq })}
           {label ? ` · ${label}` : ""}
         </Text>
-        {name && stop.hint ? <Text style={styles.state}>{`« ${stop.hint} »`}</Text> : null}
+        {name && stop.hint && stop.hint !== name ? (
+          <Text style={styles.state}>{`« ${stop.hint} »`}</Text>
+        ) : null}
         <StopState stop={stop} />
       </View>
     </View>

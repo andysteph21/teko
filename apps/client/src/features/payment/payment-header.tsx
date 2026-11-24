@@ -19,7 +19,13 @@ export function PaymentHeader({ ride }: { ride: RideRow }) {
   return (
     <View style={styles.entete}>
       <Text style={styles.eyebrow}>{eyebrow}</Text>
-      <Text style={styles.titre}>{t("payment:paiement.titre")}</Text>
+      <Text style={styles.titre}>
+        {t(
+          ride.service_type === "delivery"
+            ? "payment:paiement.livraisonTitre"
+            : "payment:paiement.titre",
+        )}
+      </Text>
       <Text style={styles.montant} testID="payment-amount">
         {formatXaf(montantCourse(ride), "FCFA")}
       </Text>

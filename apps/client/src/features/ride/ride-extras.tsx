@@ -44,7 +44,7 @@ function SharedTrip({ extras }: { extras: RideExtras }) {
     <View style={styles.card} testID="shared-trip">
       <Text style={styles.eyebrow}>{t("ride:covoiturage.titre")}</Text>
       <Text style={styles.line} testID="shared-seats-taken">
-        {t("ride:covoiturage.places", { prises: shared.seatsTaken, total: shared.seatsTotal })}
+        {t("ride:covoiturage.places", { count: shared.seatsTaken, total: shared.seatsTotal })}
       </Text>
       <Text style={styles.sub}>{t("ride:covoiturage.ordre")}</Text>
       {shared.stops.map((stop, index) => (

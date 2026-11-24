@@ -10,7 +10,13 @@ jest.mock("@teko/api-client", () => ({
 }));
 jest.mock("../../lib/supabase", () => ({ supabase: {} }));
 
-import { isActiveStatus, isClassic, isDelivery, isShared } from "./ride-kind";
+import {
+  dialableRecipientPhone,
+  isActiveStatus,
+  isClassic,
+  isDelivery,
+  isShared,
+} from "./ride-kind";
 import { changeStopsCount, isPendingChange, sameChange } from "./route-change";
 import { leaveRide, passengerAction, seatsTaken, tripPassengers } from "./shared-rides";
 import {
@@ -184,5 +190,18 @@ describe("covoiturage (lot R4)", () => {
     leaveRide(done, go);
     await new Promise<void>((resolve) => setImmediate(() => resolve()));
     expect(go).toHaveBeenCalledWith("/(main)/home");
+  });
+});
+
+describe("numéro du destinataire (lot R5)", () => {
+  it("garde un numéro local tel que saisi, sans « + »", () => {
+    expect(dialableRecipientPhone("074000009")).toBe("074000009");
+  });
+  it("préfixe un numéro portant l'indicatif gabonais", () => {
+    expect(dialableRecipientPhone("24174000009")).toBe("+24174000009");
+  });
+  it("rend null quand le numéro est effacé ou absent", () => {
+    expect(dialableRecipientPhone("")).toBeNull();
+    expect(dialableRecipientPhone(null)).toBeNull();
   });
 });

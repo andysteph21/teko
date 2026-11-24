@@ -92,7 +92,8 @@ export const rideFr = {
   },
   covoiturage: {
     titre: "Covoiturage",
-    places: "{{prises}} place(s) occupée(s) sur {{total}}",
+    places_one: "{{count}} place occupée sur {{total}}",
+    places_other: "{{count}} places occupées sur {{total}}",
     ordre: "Ordre indicatif des arrêts",
     maMontee: "Votre prise en charge",
     maDescente: "Votre arrivée",

@@ -1,6 +1,6 @@
 # Ce qu’il reste à configurer — lots R1 à R5
 
-Rédigé le 23 novembre 2026, après le développement des six suggestions de l’essai du 20 novembre ([plan](21-plan-retours-essai-20-novembre.md)). Tout le code est dans la branche d’essai ; **rien n’est déployé sur le VPS et aucun APK n’est publié**. Ce document liste ce que le porteur doit fournir ou décider, puis ce qui se règle ensuite sur le VPS et dans la console.
+Rédigé le 23 novembre 2026, complété le 24 par le contrôle sur téléphone (section 6), après le développement des six suggestions de l’essai du 20 novembre ([plan](21-plan-retours-essai-20-novembre.md)). Tout le code est dans la branche d’essai ; **rien n’est déployé sur le VPS et aucun APK n’est publié**. Ce document liste ce que le porteur doit fournir ou décider, puis ce qui se règle ensuite sur le VPS et dans la console.
 
 Aucun secret ne s’écrit dans le dépôt : les identifiants cités vont dans les fichiers privés indiqués.
 
@@ -67,16 +67,49 @@ Dans cet ordre, hors course active, après une sauvegarde de la base. Le détail
 | Covoiturage et livraison | Refusés tant que le réglage `enabled` est à `false` |
 | Sauvegarde de 03 h 30 | Présente le lendemain |
 
-## 6. Ce qui n’est pas vérifié
+## 6. Contrôle sur OPPO A15 — 24 novembre 2026
 
-- Aucun des nouveaux écrans n’a été vu sur téléphone ; aucun parcours Maestro n’a été écrit pour ces lots.
+Deux réglages du banc ont dû être remis d’aplomb avant le contrôle : le serveur de tuiles, qui redémarrait en boucle faute du dossier des pastilles, et la pile Supabase du banc, relancée pour relire la configuration d’authentification.
+
+Les deux APK du banc local ont été installés sur l’OPPO A15 et les parcours déroulés à la main, passager et chauffeur sur le même téléphone, contre le banc isolé (covoiturage et livraison ouverts sur le banc seulement, refermés ensuite).
+
+| Parcours | Résultat |
+| --- | --- |
+| Accueil, entrée « Envoyer un colis » service fermé | « Service bientôt disponible » affiché, aucun parcours ouvert |
+| Choix de catégorie avec la carte Covoiturage et le choix des places | Tient dans l’écran ; 1 place 500 FCFA, 2 places 1 000 FCFA |
+| Modification de trajet avec un arrêt | Nouveau prix 1 850 FCFA au lieu de 1 000 ; sans réponse en 30 secondes, la course continue inchangée ; rejouée et acceptée, prix mis à jour des deux côtés |
+| Arrêt côté chauffeur | « Arrivé à l’arrêt », décompte de l’attente gratuite, « Repartir » ; « Terminer la course » reste bloqué tant que l’arrêt est ouvert |
+| Fin de course | Encaissement et reçu à 1 850 FCFA |
+| Panneau de course passager avec arrêt, prix modifié et bandeau d’alerte | Tient dans l’écran |
+| Covoiturage, deux passagers | Offre « 1 place déjà prise sur 3 », panneau chauffeur à deux passagers, ordre indicatif des arrêts côté passager |
+| Livraison | Formulaire, offre « Livraison · Colis petit », code de prise en charge, code de remise visible par l’expéditeur, photo prise avec l’appareil du téléphone, mauvais code refusé (« Il reste 4 essais »), bon code accepté |
+| Fin de livraison côté expéditeur | Écran « Colis remis », rappel du montant réglé au retrait (vu après correction) |
+| Connexion par e-mail | Message « Votre code Teko », code à 6 chiffres saisi dans l’app, retour sur le même compte (boîte de test du banc) |
+| Permission caméra de l’app chauffeur | Demandée au premier « Prendre la photo », sans le micro |
+
+Écarts corrigés pendant le contrôle :
+
+- la précision d’un repère répétait son nom côté chauffeur quand le passager n’avait rien saisi : elle ne s’affiche plus dans ce cas ;
+- « 2 place(s) occupée(s) sur 3 » s’accorde maintenant ;
+- le numéro du destinataire s’affichait « +074… » côté chauffeur : le « + » n’est plus ajouté devant un numéro local ;
+- à la fin d’une livraison, l’expéditeur aurait vu « Payez votre course » : l’écran annonce maintenant « Colis remis » et rappelle le montant réglé au retrait ;
+- la confirmation de déconnexion parlait encore du numéro de téléphone : elle parle de l’adresse e-mail.
+
+Constats laissés en l’état :
+
+- à l’acceptation d’un deuxième passager, le panneau chauffeur bascule sur lui alors que le premier reste à prendre ;
+- le libellé « Chercher le repère de départ… » est coupé sur deux lignes dans le champ de recherche ;
+- le panneau expéditeur dit « La course démarre » pour une livraison, et la notification de fin dit « Course terminée — Merci d’avoir voyagé avec Teko » ;
+- sur le banc, un téléphone immobile n’envoie pas de battement GPS : la présence du chauffeur expire après 5 minutes et aucune offre ne lui arrive. Limite du banc, à surveiller en voiture à l’arrêt prolongé.
+
+## 7. Ce qui n’est pas vérifié
+
+- Aucun parcours Maestro n’a été écrit pour ces lots.
 - La connexion Google n’a jamais été exécutée de bout en bout, faute de client OAuth.
 - Le code par e-mail a été vérifié sur une instance jetable avec une boîte de test, pas avec un vrai relais.
 - La connexion par e-mail du portail d’installation est écrite mais n’a jamais tourné.
-- Le covoiturage n’a pas été essayé à trois passagers réels ; la règle de proximité est une estimation à vol d’oiseau sur l’itinéraire devisé, pas un recalcul d’itinéraire.
+- Le covoiturage n’a pas été essayé à trois passagers réels ni conduit jusqu’aux descentes ; la règle de proximité est une estimation à vol d’oiseau sur l’itinéraire devisé, pas un recalcul d’itinéraire.
 - Les arrêts ne peuvent pas être saisis dès la commande : ils s’ajoutent par une modification une fois la course acceptée.
 - Covoiturage côté chauffeur : version minimale, un passager affiché à la fois ; la carte ne montre pas tous les arrêts.
-- La permission caméra de l’app chauffeur (photo de remise) est déclarée mais aucun APK n’a été construit pour le confirmer.
-- Sur l’OPPO A15, le panneau de course passager avec le bloc livraison ou plusieurs arrêts peut dépasser la hauteur de l’écran : à contrôler en premier.
-- Historique, reçu et notation n’ont rien de propre au covoiturage ni à la livraison.
+- Historique, reçu et notation n’ont rien d’autre de propre au covoiturage ni à la livraison.
 - La console n’a pas d’écran dédié aux livraisons et à leurs litiges : les colis se lisent en base, les photos dans le stockage.

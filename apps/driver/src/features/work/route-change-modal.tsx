@@ -59,7 +59,7 @@ function Destination({ change, name }: { change: RouteChange; name: string | nul
       <Text style={styles.destName} testID="route-change-destination">
         {name ?? change.dest_hint ?? t("work:modif.destinationInconnue")}
       </Text>
-      {name && change.dest_hint ? (
+      {name && change.dest_hint && change.dest_hint !== name ? (
         <Text style={styles.destHint}>{t("work:modif.precision", { hint: change.dest_hint })}</Text>
       ) : null}
       <Text style={styles.stops} testID="route-change-stops">

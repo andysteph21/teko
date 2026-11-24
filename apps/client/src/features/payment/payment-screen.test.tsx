@@ -97,6 +97,22 @@ describe("C-15 espèces", () => {
   });
 });
 
+describe("C-15 livraison (lot R5)", () => {
+  it("annonce le colis remis et ne redemande aucun paiement", async () => {
+    mockGetRide.mockResolvedValue(ride({ service_type: "delivery", price_final: "1000" }));
+    renderScreen(<PaymentScreen />);
+
+    expect(await screen.findByText("Colis remis")).toBeOnTheScreen();
+    expect(screen.queryByText("Payez votre course")).toBeNull();
+    expect(
+      screen.getByText(
+        `Vous avez réglé ${formatXaf(1000, "FCFA")} au coursier à la prise en charge.`,
+      ),
+    ).toBeOnTheScreen();
+    expect(mockListPayments).not.toHaveBeenCalled();
+  });
+});
+
 describe("C-15 Airtel Money", () => {
   it("en attente : push USSD envoyé au numéro de la session", async () => {
     mockGetRide.mockResolvedValue(ride({ payment_method: "airtel" }));

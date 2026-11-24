@@ -56,7 +56,7 @@ export const accountFr = {
     parametres: "Paramètres",
     deconnecter: "Se déconnecter",
     deconnecterTitre: "Se déconnecter ?",
-    deconnecterTexte: "Vous pourrez vous reconnecter avec votre numéro de téléphone.",
+    deconnecterTexte: "Vous pourrez vous reconnecter avec votre adresse e-mail.",
   },
   parametres: {
     titre: "Paramètres",

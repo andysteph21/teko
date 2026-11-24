@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CheckBadge, collectAmount } from "./complete-panel";
+import { dialableRecipientPhone } from "./ride-kind";
 
 function ParcelLine({ parcel }: { parcel: RideParcel | null }) {
   const { t } = useTranslation();
@@ -41,7 +42,7 @@ export function ParcelCard({ ride, parcel }: { ride: RideRow; parcel: RideParcel
 
 function Recipient({ parcel }: { parcel: RideParcel }) {
   const { t } = useTranslation();
-  const phone = parcel.recipient_phone ? `+${parcel.recipient_phone}` : null;
+  const phone = dialableRecipientPhone(parcel.recipient_phone);
   return (
     <View style={styles.recipient} testID="delivery-recipient">
       <View style={styles.recipientBody}>
