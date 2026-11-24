@@ -329,13 +329,45 @@ et [le rapport de test](../plan/22-rapport-test-20-novembre.md).
   suggestions de l’essai (compte par e-mail ou Google, accueil avec options,
   changement de destination et arrêts, covoiturage à la place, livraison).
   Le covoiturage et la livraison, exclus du MVP, y entrent.
-- **Appliqué par défaut, à confirmer par le porteur — arbitrages A1 à A19 :**
-  la réponse ne les tranche pas un par un. Les recommandations du plan
-  s’appliquent lot par lot et sont à confirmer avant chaque publication.
+- **Clôturé — arbitrages A1 à A19 :** tranchés un par un par le porteur le
+  23 novembre, voir la section suivante.
 - **Clôturé — accueil (lot R2) :** options de service affichées dès
   l’accueil ; une destination récente préremplit la commande et ouvre le
   devis. Écart assumé avec la maquette C-07, à mettre à jour.
 - **Ouvert :** identifiants Google et service d’envoi d’e-mails, à fournir
   par le porteur avant le lot R1 ; avis juridique avant toute livraison
   réelle (A18).
+
+## Arbitrages des retours du 20 novembre — réponses du porteur du 23 novembre 2026
+
+Réponses données question par question. Sauf mention, la recommandation du
+[plan](../plan/21-plan-retours-essai-20-novembre.md) est retenue.
+
+| N° | Sujet | Décision |
+|---|---|---|
+| A1 | SMS pour les chauffeurs | **Écart avec la recommandation.** Le code par SMS reste prévu comme option, proposée une fois un prestataire activé. D’ici là, la connexion se fait par e-mail, mis en avant, pour les passagers comme pour les chauffeurs. |
+| A2 | Méthodes de connexion | Bouton Google en premier, code à 6 chiffres par e-mail en second. Pas de mot de passe. |
+| A3 | Unicité du numéro | Aucune unicité bloquante : le numéro sert au contact, l’e-mail à l’identité. |
+| A4 | Invitations alpha | Rattachées à l’e-mail vérifié. |
+| A5 | Comptes multiples | Les frais dus restent bloquants pour tout compte déclarant le même numéro ou utilisant le même appareil. |
+| A6 | Prix après modification du trajet | Distance parcourue + itinéraire restant recalculé par le serveur, jamais inférieur au prix accepté, confirmé par le passager. |
+| A7 | Refus par le chauffeur | Oui, 30 secondes pour répondre ; sans réponse ou refus, la course initiale se poursuit. |
+| A8 | Limites | 2 arrêts et 3 modifications par course ; attente gratuite 3 minutes puis facturée à la minute. |
+| A9 | Places de covoiturage | 3 places par véhicule ; un client peut en prendre 1 à 3. |
+| A10 | Distance facturée | Trajet direct du passager, calculé à la commande. |
+| A11 | Zone limitrophe | 400 m de l’itinéraire restant et 5 minutes de détour au plus, réglables. |
+| A12 | Commission covoiturage | 15 % par place. |
+| A13 | Véhicules en covoiturage | **Écart avec la recommandation.** Toutes les voitures reçoivent le covoiturage d’office ; le chauffeur peut le désactiver. |
+| A14 | Règle « passagère à bord » | Aucune prise en charge hors application ; engagement de la charte chauffeur, signalement possible. |
+| A15 | Annulation en covoiturage | Règle classique, calculée sur le prix de la place. |
+| A16 | Paiement de la livraison | L’expéditeur, en espèces, à la remise du colis au coursier. |
+| A17 | Preuve de remise | **Écart avec la recommandation.** Code à 4 chiffres **et** photo du colis remis. |
+| A18 | Cadre juridique de la livraison | Développement sur le banc ; ouverture aux vraies livraisons bloquée côté serveur jusqu’à l’avis du cabinet. |
+| — | Véhicules de livraison | **Écart avec la recommandation.** Voitures et motos dès le départ ; tarif propre à chacun. |
+| A19 | Ordre des lots | Compte par e-mail avant l’ouverture, modification de trajet pendant l’alpha, covoiturage puis livraison après les premières semaines de vraies courses. |
+
+Conséquences à traiter dans les lots : la catégorie Moto, masquée le
+17 novembre, redevient nécessaire côté chauffeur pour la livraison ; la photo
+de remise ajoute un stockage et une durée de conservation à définir ; le
+prestataire SMS reste à choisir pour l’option SMS.
 
